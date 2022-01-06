@@ -1,0 +1,47 @@
+version: "2"
+
+services:
+
+  db:
+    image: kartoza/postgis:14
+    environment:
+      POSTGRES_DBNAME: safers
+      POSTGRES_USER: safers
+      POSTGRES_PASS: safers
+      ALLOW_IP_RANGE: 0.0.0.0/0
+    ports:
+      - "5666:5432"
+
+  auth:
+    image: fusionauth/fusionauth-app:latest
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/fusionauth
+      DATABASE_ROOT_USERNAME: safers
+      DATABASE_ROOT_PASSWORD: safers
+      DATABASE_USERNAME: fusionauth
+      DATABASE_PASSWORD: fusionauth
+      FUSIONAUTH_APP_MEMORY: 512M
+      FUSIONAUTH_APP_RUNTIME_MODE: development
+      FUSIONAUTH_APP_URL: http://fusionauth:9011
+      SEARCH_TYPE: database
+    volumes:
+      - ./auth/fa_config:/usr/local/fusionauth/confg
+    ports:
+      - "9011:9011"
+
+
+  server:
+    build:
+      context: .
+    tty: true
+    environment:
+      SYS_ENV: development
+      ENABLE_DJANGO: 1
+      DJANGO_SETTINGS_MODULE: config.settings
+    volumes:
+      - ./server:/home/app/server
+    ports:
+      - "8000:8000"
+
