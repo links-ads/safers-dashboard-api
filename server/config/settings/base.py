@@ -3,10 +3,18 @@ Django settings for safers-gateway project.
 """
 
 import environ
+import re
+
 from pathlib import Path
 
 from django.utils.html import escape
 from django.utils.text import slugify
+
+import dj_database_url
+
+#########
+# setup #
+#########
 
 env = environ.Env()
 
@@ -14,24 +22,28 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 CONFIG_DIR = BASE_DIR / "config"
 APP_DIR = BASE_DIR / "safers"
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
-
 PROJECT_NAME = "Safers Gateway"
 PROJECT_SLUG = slugify(PROJECT_NAME)
 
-# DEBUG & SECRET_KEY are overridden in environment-specific settings
-DEBUG = True
-SECRET_KEY = 'shhh...'
+WSGI_APPLICATION = 'config.wsgi.application'
 
-SITE_ID = 1
+ROOT_URLCONF = 'config.urls'
+
+# some of these are overridden in development / deployment
+
+DEBUG = True
+
+SECRET_KEY = 'shhh...'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+SITE_ID = 1
+
 ALLOWED_HOSTS = []
 
-
-# Application definition
+########
+# Apps #
+########
 
 DJANGO_APPS = [
     'django.contrib.auth',
@@ -62,6 +74,10 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
+##############
+# middleware #
+##############
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -72,14 +88,25 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'config.urls'
+#############
+# templates #
+#############
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [
+            APP_DIR / "core/templates",
+        ],
+        'APP_DIRS': True,        
         'OPTIONS': {
+            "debug": DEBUG,
+            # "loaders": [
+            #     # first look at templates in DIRS...
+            #     "django.template.loaders.filesystem.Loader",
+            #     # then look in the standard place for each INSTALLED_APP...
+            #     "django.template.loaders.app_directories.Loader",
+            # ],
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
@@ -90,12 +117,22 @@ TEMPLATES = [
     },
 ]
 
+############
+# Database #
+############
 
-WSGI_APPLICATION = 'config.wsgi.application'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': CONFIG_DIR / 'db.sqlite3',
+    }
+}
 
-
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+# DATABASE_URL format is "postgis://USER:PASSWORD@HOST:PORT/NAME"
+# heroku formats it as "postgres://whatever"; hence the re below
+DATABASE_URL = re.sub("^postgres://", "postgis://", env("DATABASE_URL", default=""))
+if DATABASE_URL:
+    DATABASES["default"] = dj_database_url.config(conn_max_age=0)
 
 # DATABASES = {
 #     "default": {
@@ -109,15 +146,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
+#############
+# Passwords #
+#############
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -164,6 +196,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = str(APP_DIR / "static")
 
+###############
+# Media Files #
+###############
+
+# handled in development / deployment
 
 #########
 # Admin #
@@ -175,8 +212,9 @@ ADMIN_SITE_HEADER = f"{PROJECT_NAME} administration console"
 ADMIN_SITE_TITLE = f"{PROJECT_NAME} administration console"
 ADMIN_INDEX_TITLE = f"Welcome to the {PROJECT_NAME} administration console"
 
-# API
-
+#######
+# API #
+#######
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
