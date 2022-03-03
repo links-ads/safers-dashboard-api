@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from safers.core.behaviors import SingletonMixin
+from safers.core.mixins import SingletonMixin
 
 
 class SafersSettings(SingletonMixin, models.Model):

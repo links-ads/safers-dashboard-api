@@ -1,1 +1,0 @@
-from .views_settings import SafersSettingsView

@@ -44,9 +44,9 @@ api_schema_view = get_schema_view(
 )
 
 api_schema_views = [
-    re_path(r'^swagger(?P<format>\.json|\.yaml)$', api_schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    re_path(r'^swagger/$', api_schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    re_path(r'^redoc/$', api_schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    re_path(r'^swagger/?(?P<format>\.json|\.yaml)$', api_schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    re_path(r'^swagger/?$', api_schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    re_path(r'^redoc/?$', api_schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 
 ##############
@@ -75,8 +75,18 @@ urlpatterns = [
     # app-specific patterns...
     path("core/", include(core_urlpatterns)),
     path("users/", include(users_urlpatterns)),
- 
 ]
+
 
 # media files...
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+if settings.DEBUG:
+
+    # enable django-debug-toolbar during development...
+    if "debug_toolbar" in settings.INSTALLED_APPS:
+        import debug_toolbar
+        urlpatterns = [
+            path("__debug__", include(debug_toolbar.urls))
+        ] + urlpatterns

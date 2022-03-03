@@ -1,7 +1,7 @@
 import environ
 import glob
 import os
-from importlib import import_module
+
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -39,5 +39,7 @@ else:
 
 from .base import *
 
-import_module(environment_settings_module)
+exec(f"from {environment_settings_module} import *") in globals()
 
+import django_on_heroku
+django_on_heroku.settings(locals())

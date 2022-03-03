@@ -1,5 +1,0 @@
-# don't include the contents of the media directory
-*
-*/
-!.gitignore
-

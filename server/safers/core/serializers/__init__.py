@@ -1,2 +1,2 @@
 from .serializers_settings import SafersSettingsSerializer
-from .serializers_utils import ContextVariableDefault
+from .serializers_utils import ContextVariableDefault, SwaggerCurrentUserDefault

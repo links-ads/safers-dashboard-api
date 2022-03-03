@@ -1,5 +1,0 @@
-# don't include the contents of the static directory
-*
-*/
-!.gitignore
-
