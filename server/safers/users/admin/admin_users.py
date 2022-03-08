@@ -11,9 +11,9 @@ class UserAdmin(auth_admin.UserAdmin):
     model = User
     add_form = UserCreationForm
     form = UserChangeForm
-    fieldsets =((None, {"fields": ("id", "username", "password")}),) + auth_admin.UserAdmin.fieldsets[1:]    
-    list_display = ["email", "id"]
-    readonly_fields = ("id",) + auth_admin.UserAdmin.readonly_fields
+    fieldsets =((None, {"fields": ("id", "auth_id", "username", "password")}),) + auth_admin.UserAdmin.fieldsets[1:]    
+    list_display = ["email", "id",]
+    readonly_fields = ("id", "auth_id",) + auth_admin.UserAdmin.readonly_fields
 
 # class CalculatedFieldFilter(admin.SimpleListFilter):
            

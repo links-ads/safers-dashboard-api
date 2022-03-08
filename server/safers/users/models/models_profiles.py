@@ -78,12 +78,8 @@ class UserProfile(models.Model):
 
     objects = UserProfileManager.from_queryset(UserProfileQuerySet)()
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
-    auth_id = models.UUIDField(editable=False, blank=True, null=True, help_text=_("The corresponding id of the FusionAuth User"))
-    # local_user = models.OneToOneField(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE, help_text=_("A local user to access safers while bypassing FusionAuth (used for admin and testing and development)."))
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     
-    # is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.user)
@@ -95,9 +91,3 @@ class UserProfile(models.Model):
     # @property
     # def is_remote(self):
     #     return not self.local_user and self.auth_id
-
-    @property
-    def user(self):
-        return "foobar"
-        # return self.local_user or AUTH_CLIENT.retrieve_user(self.auth_id)
-        

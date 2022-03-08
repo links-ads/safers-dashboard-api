@@ -57,20 +57,22 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    'rest_framework',
-    'rest_framework_gis',
     'django_celery_beat',
     'django_celery_results',
     'drf_yasg',
-]   
+    'oauth2_provider',
+    'rest_framework',
+    'rest_framework_gis',
+    'rest_framework_simplejwt',
+]
 
 LOCAL_APPS = [
     'safers.core',
     'safers.users',
-    # 'safers.tasks',
-    # 'safers.alerts',
-    # 'safers.events',
-]
+  # 'safers.tasks',
+  # 'safers.alerts',
+  # 'safers.events',
+]  # yapf: disable
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -95,12 +97,11 @@ MIDDLEWARE = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            APP_DIR / "core/templates",
-        ],
-        'APP_DIRS': True,        
+        'DIRS': [APP_DIR / "core/templates", ],
+        'APP_DIRS': True,
         'OPTIONS': {
-            "debug": DEBUG,
+            "debug":
+                DEBUG,
             # "loaders": [
             #     # first look at templates in DIRS...
             #     "django.template.loaders.filesystem.Loader",
@@ -130,22 +131,11 @@ DATABASES = {
 
 # DATABASE_URL format is "postgis://USER:PASSWORD@HOST:PORT/NAME"
 # heroku formats it as "postgres://whatever"; hence the re below
-DATABASE_URL = re.sub("^postgres://", "postgis://", env("DATABASE_URL", default=""))
+DATABASE_URL = re.sub(
+    "^postgres://", "postgis://", env("DATABASE_URL", default="")
+)
 if DATABASE_URL:
     DATABASES["default"] = dj_database_url.config(conn_max_age=0)
-
-# DATABASES = {
-#     "default": {
-#         "ATOMIC_REQUESTS": True,
-#         "ENGINE": "django.contrib.gis.db.backends.postgis",
-#         "NAME": env("DJANGO_DB_NAME", default=""),
-#         "USER": env("DJANGO_DB_USER", default=""),
-#         "PASSWORD": env("DJANGO_DB_PASSWORD", default=""),
-#         "HOST": env("DJANGO_DB_HOST", default="db"),
-#         "PORT": env("DJANGO_DB_PORT", default="5432"),
-#     }
-# }
-
 
 #############
 # Passwords #
@@ -153,16 +143,20 @@ if DATABASE_URL:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME':
+            'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME':
+            'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME':
+            'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME':
+            'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
@@ -187,7 +181,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 ################
 # Static Files #
@@ -218,8 +211,9 @@ ADMIN_INDEX_TITLE = f"Welcome to the {PROJECT_NAME} administration console"
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        # 'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ]
 }
@@ -230,17 +224,17 @@ SWAGGER_SETTINGS = {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header",
-            "description": escape("Enter 'Token <token>'"),
+            "description": escape("Enter 'Bearer <token>'"),
         },
-        "Basic": {
-            "type": "basic"
-        },
+        # "Basic": {
+        #     "type": "basic"
+        # },
     },
     "DOC_EXPANSION": "none",
     "OPERATIONS_SORTER": None,
     "TAGS_SORTER": "alpha",
     "DEFAULT_MODEL_RENDERING": "example",
-}
+}  # yapf: disable
 
 #################
 # Authentiation #
@@ -248,10 +242,8 @@ SWAGGER_SETTINGS = {
 
 AUTH_USER_MODEL = "users.User"
 
-FUSION_AUTH_APP_ID = env("FUSION_AUTH_APP_ID", default="")
+FUSION_AUTH_CLIENT_ID = env("FUSION_AUTH_CLIENT_ID", default="")
 FUSION_AUTH_CLIENT_SECRET = env("FUSION_AUTH_CLIENT_SECRET", default="")
 FUSION_AUTH_API_KEY = env("FUSION_AUTH_API_KEY", default="")
-FUSION_AUTH_BASE_URL = env("FUSION_AUTH_BASE_URL", default="") 
-
-# GOOGLE_OAUTH_CLIENT_ID = "230917725684-gc2nk79fpo1op20sv2i5q9h8baf642l6.apps.googleusercontent.com"
-# GOOGLE_OAUTH_CLIENT_SECRET = "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"
+FUSION_AUTH_EXTERNAL_BASE_URL = env("FUSION_AUTH_EXTERNAL_BASE_URL", default="")
+FUSION_AUTH_INTERNAL_BASE_URL = env("FUSION_AUTH_INTERNAL_BASE_URL", default="")

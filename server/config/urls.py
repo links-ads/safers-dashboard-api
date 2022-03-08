@@ -73,7 +73,7 @@ urlpatterns = [
     path("api/", include(api_urlpatterns)),
 
     # app-specific patterns...
-    path("core/", include(core_urlpatterns)),
+    path("", include(core_urlpatterns)),
     path("users/", include(users_urlpatterns)),
 ]
 

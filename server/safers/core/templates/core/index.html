@@ -1,0 +1,16 @@
+{% extends "core/base.html" %}
+
+{% load i18n %}
+{% load static %}
+
+{% block title %} 
+  safers-gateway: index
+{% endblock %} 
+
+{% block content %} 
+  <p>Hello World.</p>
+  <p>There's not much to see here; It is the index page for safers-gateway.</p>
+  <p>This page is just for testing the link to <code>FusionAuth</code>.</p>
+  <p>There are <b>{{ n_users }}</b> users in the db.</p>
+  <p><a href="{% url 'dashboard' %}">Here</a> is a page that will require authentication.</p>
+{% endblock %} 
