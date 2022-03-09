@@ -54,9 +54,12 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'django.contrib.admin',
-]
+]  # yapf: disable
 
 THIRD_PARTY_APPS = [
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
     'django_celery_beat',
     'django_celery_results',
     'drf_yasg',
@@ -64,7 +67,10 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_gis',
     'rest_framework_simplejwt',
-]
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+]  # yapf: disable
 
 LOCAL_APPS = [
     'safers.core',
@@ -211,12 +217,36 @@ ADMIN_INDEX_TITLE = f"Welcome to the {PROJECT_NAME} administration console"
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         # 'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ]
 }
+
+REST_USE_JWT = True
+
+JWT_AUTH_COOKIE = "safers-gateway-auth"
+JWT_AUTH_REFRESH_COOKIE = "safers-gateway-refresh"
+
+# custom serializers...
+REST_AUTH_SERIALIZERS = {
+    "JWT_SERIALIZER": "safers.users.serializers.JWTSerializer",
+    "JWT_TOKEN_CLAIMS_SERIALIZER": "safers.users.serializers.TokenObtainPairSerializer",
+    "LOGIN_SERIALIZER": "safers.users.serializers.LoginSerializer",
+    "PASSWORD_CHANGE_SERIALIZER": "safers.users.serializers.PasswordChangeSerializer",
+    "PASSWORD_RESET_SERIALIZER": "safers.users.serializers.PasswordResetSerializer",
+    "PASSWORD_RESET_CONFIRM_SERIALIZER": "safers.users.serializers.PasswordResetConfirmSerializer",
+    "TOKEN_SERIALIZER": "safers.users.serializers.TokenSerializer",
+    "USER_DETAILS_SERIALIZER": "safers.users.serializers.UserDetailsSerializer",
+}  # yapf: disable
+
+# more custom serializers...
+REST_AUTH_REGISTER_SERIALIZERS = {
+    "REGISTER_SERIALIZER": "safers.users.serializers.RegisterSerializer"
+}  # yapf: disable
+
 
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
@@ -230,17 +260,36 @@ SWAGGER_SETTINGS = {
         #     "type": "basic"
         # },
     },
+    # "USE_SESSION_AUTH": False,
+    "DEFAULT_MODEL_RENDERING": "example",
     "DOC_EXPANSION": "none",
     "OPERATIONS_SORTER": None,
     "TAGS_SORTER": "alpha",
-    "DEFAULT_MODEL_RENDERING": "example",
-}  # yapf: disable
+}   # yapf: disable
 
 #################
 # Authentiation #
 #################
 
 AUTH_USER_MODEL = "users.User"
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+ACCOUNT_ADAPTER = "safers.users.adapters.AccountAdapter"
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # "optional" | "none"
+ACCOUNT_USERNAME_BLACKLIST = ["admin", "current"]
+
+ACCOUNT_CONFIRM_EMAIL_CLIENT_URL = env(
+    "ACCOUNT_CONFIRM_EMAIL_CLIENT_URL", default=""
+)
+ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL = env(
+    "ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL", default=""
+)
 
 FUSION_AUTH_CLIENT_ID = env("FUSION_AUTH_CLIENT_ID", default="")
 FUSION_AUTH_CLIENT_SECRET = env("FUSION_AUTH_CLIENT_SECRET", default="")

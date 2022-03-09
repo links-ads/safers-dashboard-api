@@ -9,13 +9,24 @@ class SafersSettings(SingletonMixin, models.Model):
         verbose_name = "Safers Settings"
         verbose_name_plural = "Safers Settings"
 
-
     allow_registration = models.BooleanField(
         default=True,
         help_text=_("Allow users to register w/ Safers."),
     )
 
+    require_verification = models.BooleanField(
+        default=True,
+        help_text=_(
+            "Require an email verification step to the sign up process."
+        ),
+    )
+
+    require_terms_acceptance = models.BooleanField(
+        default=True,
+        help_text=_(
+            "Require a user to accept the terms & conditions during the sign up process."
+        ),
+    )
+
     def __str__(self):
         return "Safers Settings"
-
-

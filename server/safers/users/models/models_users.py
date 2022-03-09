@@ -8,6 +8,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from allauth.account.models import EmailAddress
+
 from safers.users.utils import AUTH_CLIENT
 
 ########################
@@ -88,6 +90,45 @@ class User(AbstractUser):
     )
 
     email = models.EmailField(_('email address'), unique=True)
+
+    change_password = models.BooleanField(
+        default=False,
+        help_text=_("Force user to change password at next login.")
+    )
+
+    accepted_terms = models.BooleanField(
+        default=False,
+        help_text=_("Has this user accepted the terms & conditions?")
+    )
+
+    def verify(self):
+        """
+        Manually verifies a user's primary email address
+        """
+
+        emailaddresses = self.emailaddress_set.all()
+
+        try:
+            primary_emailaddress = emailaddresses.get(primary=True)
+        except EmailAddress.DoesNotExist:
+            primary_emailaddress, _ = EmailAddress.objects.get_or_create(
+                user=self, email=self.email
+            )
+            primary_emailaddress.set_as_primary(conditional=True)
+
+        primary_emailaddress.verified = True
+        primary_emailaddress.save()
+
+    @property
+    def is_verified(self):
+        """
+        Checks if the primary email address belonging to this user has been verified.
+        """
+        return (
+            self.emailaddress_set.only("verified", "primary").filter(
+                primary=True, verified=True
+            ).exists()
+        )
 
     @property
     def auth_user_data(self):

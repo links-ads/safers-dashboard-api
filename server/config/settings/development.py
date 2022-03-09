@@ -5,8 +5,13 @@ DEBUG = True
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+CORS_ORIGIN_ALLOW_ALL = True
 
+#########
+# email #
+#########
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ###############
 # Media files #
