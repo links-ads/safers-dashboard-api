@@ -28,5 +28,15 @@ class SafersSettings(SingletonMixin, models.Model):
         ),
     )
 
+    max_favorite_alerts = models.PositiveBigIntegerField(
+        default=3,
+        help_text=_("Number of alerts that a user can mark as 'favorite'."),
+    )
+
+    max_favorite_events = models.PositiveBigIntegerField(
+        default=3,
+        help_text=_("Number of alerts that a user can mark as 'favorite'."),
+    )
+
     def __str__(self):
         return "Safers Settings"

@@ -8,4 +8,8 @@ class SafersSettingsSerializer(serializers.ModelSerializer):
         model = SafersSettings
         fields = (
             "allow_registration",
+            "require_verification",
+            "require_terms_acceptance",
+            "max_favorite_alerts",
+            "max_favorite_events",
         )
