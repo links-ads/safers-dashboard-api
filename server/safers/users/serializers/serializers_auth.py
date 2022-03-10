@@ -161,8 +161,6 @@ class RegisterSerializer(serializers.Serializer):
         }
 
     def save(self, request):
-        import pdb
-        pdb.set_trace()
         adapter = get_adapter()
         user = adapter.new_user(request)
         # note the 3rd argument to `save_user` below; we are pretending that

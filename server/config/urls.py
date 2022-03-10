@@ -22,10 +22,13 @@ from safers.users.urls import (
     api_urlpatterns as users_api_urlpatterns,
 )
 
+from safers.core.permissions import default_admin_site_has_permission
+
 ################
 # admin config #
 ################
 
+# admin.site.has_permission = default_admin_site_has_permission
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.site_title = settings.ADMIN_SITE_TITLE
 admin.site.index_title = settings.ADMIN_INDEX_TITLE
@@ -35,18 +38,30 @@ admin.site.index_title = settings.ADMIN_INDEX_TITLE
 #################
 
 api_schema_view = get_schema_view(
-   openapi.Info(
-      title=f"{settings.PROJECT_NAME} API",
-      default_version='v1',
-   ),
-   public=True,
-   permission_classes=[permissions.AllowAny],
+    openapi.Info(
+        title=f"{settings.PROJECT_NAME} API",
+        default_version='v1',
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
 )
 
 api_schema_views = [
-    re_path(r'^swagger/?(?P<format>\.json|\.yaml)$', api_schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    re_path(r'^swagger/?$', api_schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    re_path(r'^redoc/?$', api_schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    re_path(
+        r'^swagger/?(?P<format>\.json|\.yaml)$',
+        api_schema_view.without_ui(cache_timeout=0),
+        name='schema-json'
+    ),
+    re_path(
+        r'^swagger/?$',
+        api_schema_view.with_ui('swagger', cache_timeout=0),
+        name='schema-swagger-ui'
+    ),
+    re_path(
+        r'^redoc/?$',
+        api_schema_view.with_ui('redoc', cache_timeout=0),
+        name='schema-redoc'
+    ),
 ]
 
 ##############
@@ -77,10 +92,8 @@ urlpatterns = [
     path("users/", include(users_urlpatterns)),
 ]
 
-
 # media files...
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 
 if settings.DEBUG:
 

@@ -62,7 +62,7 @@ _register_request_schema = openapi.Schema(
         ("email", openapi.Schema(type=openapi.TYPE_STRING, example="user@example.com")),
         ("first_name", openapi.Schema(type=openapi.TYPE_STRING)),
         ("last_name", openapi.Schema(type=openapi.TYPE_STRING)),
-        ("password", openapi.Schema(type=openapi.TYPE_STRING, example="some-random-password")),
+        ("password", openapi.Schema(type=openapi.TYPE_STRING, example="RandomPassword123")),
         ("role", openapi.Schema(type=openapi.TYPE_STRING, example=str(Role.objects.first()))),
         ("organization", openapi.Schema(type=openapi.TYPE_STRING, example=str(Organization.objects.first()))),
         ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
