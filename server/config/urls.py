@@ -28,7 +28,7 @@ from safers.core.permissions import default_admin_site_has_permission
 # admin config #
 ################
 
-# admin.site.has_permission = default_admin_site_has_permission
+admin.site.has_permission = default_admin_site_has_permission
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.site_title = settings.ADMIN_SITE_TITLE
 admin.site.index_title = settings.ADMIN_INDEX_TITLE

@@ -103,6 +103,7 @@ class User(AbstractUser):
 
     role = models.ForeignKey(
         "Role",
+        blank=True,
         null=True,
         on_delete=models.PROTECT,
         related_name="users",
@@ -110,6 +111,7 @@ class User(AbstractUser):
 
     organization = models.ForeignKey(
         "Organization",
+        blank=True,
         null=True,
         on_delete=models.PROTECT,
         related_name="users",
