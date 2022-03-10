@@ -13,6 +13,8 @@ from .views import (
     RegisterView,
     VerifyEmailView,
     ResendEmailVerificationView,
+    OrganizationView,
+    RoleView,
     UserView,
 )
 
@@ -20,16 +22,19 @@ api_router = routers.DefaultRouter()
 # api_router.register("users/(?P<user_id>[^/.]+)/aois", AoiViewSet, basename="aois")
 api_urlpatterns = [
     path("", include(api_router.urls)),
-    path("users/<slug:user_id>", UserView.as_view(), name="user"),
+    path("organizations/", OrganizationView.as_view(), name="organizations"),
+    path("roles/", RoleView.as_view(), name="roles"),
+    path("users/<slug:user_id>", UserView.as_view(), name="users"),
 ]
 
 # redefining dj-rest-auth URLS here to use custom views...
 api_urlpatterns += [
-    re_path(
-        r'^password-reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$',
-        TemplateView.as_view(template_name="password_reset_confirm.html"),
-        name='password_reset_confirm'
-    ),
+    # not needed; password-reset comes from client
+    # re_path(
+    #     r'^password-reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$',
+    #     TemplateView.as_view(template_name="password_reset_confirm.html"),
+    #     name='password_reset_confirm'
+    # ),
     path('auth/password/reset/', PasswordResetView.as_view(), name='rest_password_reset'),
     path('auth/password/reset/confirm/', PasswordResetConfirmView.as_view(), name='rest_password_reset_confirm'),
     path('auth/login/', LoginView.as_view(), name='rest_login'),

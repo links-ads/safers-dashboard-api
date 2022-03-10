@@ -1,0 +1,38 @@
+[
+{
+    "model": "users.role",
+    "pk": "7fef8e5e-f458-4a32-8c69-5db7b052bed2",
+    "fields": {
+        "name": "Organization Manager",
+        "description": "",
+        "is_active": true
+    }
+},
+{
+    "model": "users.role",
+    "pk": "8aae6241-4631-47fe-97a9-e46b7c7e9055",
+    "fields": {
+        "name": "Decision Maker",
+        "description": "",
+        "is_active": true
+    }
+},
+{
+    "model": "users.role",
+    "pk": "b5ac4ac5-feae-429d-a17f-f142a07ecd97",
+    "fields": {
+        "name": "First Responder",
+        "description": "",
+        "is_active": true
+    }
+},
+{
+    "model": "users.role",
+    "pk": "e38000a4-e121-427c-94f0-0330741a5a16",
+    "fields": {
+        "name": "Citizen",
+        "description": "",
+        "is_active": true
+    }
+}
+]

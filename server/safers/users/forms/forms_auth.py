@@ -13,7 +13,7 @@ class PasswordResetForm(DjRestAuthPasswordResetForm):
     dj-rest-auth is pretty inconsistent when it comes to forms vs. serializers
     in this case dj-rest-auth overloads the django-allauth PasswordResetForm to customize
     how emails are sent (but it uses serializers / adapters for everything else); I am forced
-    to overload 
+    to overload this form so that I can use my custom get_password_reset_url fn.
     """
     def save(self, request, **kwargs):
         current_site = get_current_site(request)

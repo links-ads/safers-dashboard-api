@@ -15,16 +15,22 @@ class UserAdmin(auth_admin.UserAdmin):
     model = User
     add_form = UserCreationForm
     form = UserChangeForm
-    fieldsets = ((None, {
-        "fields": ("id", "auth_id", "username", "password")
-    }), ) + auth_admin.UserAdmin.fieldsets[1:]
+    fieldsets = (
+        (None, {"fields": ["id", "auth_id", "username", "email", "password"]}),
+        ("Personal Info", {"fields": ["first_name", "last_name", "role", "organization",]}),
+        ("Permissions", {"fields": ["is_active", "is_staff","is_superuser", "accepted_terms","groups", "user_permissions"] }),
+        ("Important Dates", {"fields": ["last_login", "date_joined"]}),
+    )  # yapf: disable
+
     list_display = [
         "email",
         "id",
         "is_verified_for_list_display",
         "accepted_terms",
+        "role",
+        "organization",
     ]
-    # list_filter =  ("organization", ) + auth_admin.UserAdmin.list_filter
+    list_filter = ("role", "organization") + auth_admin.UserAdmin.list_filter
     readonly_fields = (
         "id",
         "auth_id",

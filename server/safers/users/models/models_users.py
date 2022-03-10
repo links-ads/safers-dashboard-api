@@ -101,6 +101,20 @@ class User(AbstractUser):
         help_text=_("Has this user accepted the terms & conditions?")
     )
 
+    role = models.ForeignKey(
+        "Role",
+        null=True,
+        on_delete=models.PROTECT,
+        related_name="users",
+    )
+
+    organization = models.ForeignKey(
+        "Organization",
+        null=True,
+        on_delete=models.PROTECT,
+        related_name="users",
+    )
+
     def verify(self):
         """
         Manually verifies a user's primary email address

@@ -3,11 +3,16 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.exceptions import APIException
 
-from allauth.account import app_settings as allauth_app_settings
+from allauth.account import app_settings as allauth_settings
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.forms import default_token_generator
-from allauth.account.utils import user_pk_to_url_str, url_str_to_user_pk
-
+from allauth.account.utils import (
+    user_email,
+    user_field,
+    user_username,
+    user_pk_to_url_str,
+    url_str_to_user_pk,
+)
 # from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 
 from safers.core.models import SafersSettings
@@ -54,6 +59,17 @@ class AccountAdapter(DefaultAccountAdapter):
             raise APIException("A password reset email has been sent.")
 
         return True
+
+    def populate_username(self, request, user):
+        """
+        Fills in a valid username, if required and missing.
+        Customizing this to use email as username
+        """
+
+        email = user_email(user)
+        username = user_username(user)
+        if username is None:
+            user_field(user, allauth_settings.USER_MODEL_USERNAME_FIELD, email)
 
     def get_email_confirmation_url(self, request, emailconfirmation):
 

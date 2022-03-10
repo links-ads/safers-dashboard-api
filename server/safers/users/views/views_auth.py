@@ -26,7 +26,8 @@ from dj_rest_auth.registration.views import (
     ResendEmailVerificationView as DjRestAuthResendEmailVerificationView,
 )
 
-from safers.users.serializers import JWTSerializer
+from safers.users.models import Role, Organization
+from safers.users.serializers import JWTSerializer, RegisterSerializer
 
 ###################
 # swagger schemas #
@@ -55,6 +56,18 @@ _resend_email_request_schema = openapi.Schema(
     )),
 )  # yapf: disable
 
+_register_request_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties=OrderedDict((
+        ("email", openapi.Schema(type=openapi.TYPE_STRING, example="user@example.com")),
+        ("first_name", openapi.Schema(type=openapi.TYPE_STRING)),
+        ("last_name", openapi.Schema(type=openapi.TYPE_STRING)),
+        ("password", openapi.Schema(type=openapi.TYPE_STRING, example="some-random-password")),
+        ("role", openapi.Schema(type=openapi.TYPE_STRING, example=str(Role.objects.first()))),
+        ("organization", openapi.Schema(type=openapi.TYPE_STRING, example=str(Organization.objects.first()))),
+        ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
+    )),
+)  # yapf: disable
 
 _detail_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -112,6 +125,13 @@ class PasswordResetConfirmView(DjRestAuthPasswordResetConfirmView):
     pass
 
 
+@method_decorator(
+    swagger_auto_schema(
+        request_body=_register_request_schema,
+        responses={status.HTTP_200_OK: _detail_schema},
+    ),
+    name="post",
+)
 class RegisterView(DjRestAuthRegisterView):
     pass
 

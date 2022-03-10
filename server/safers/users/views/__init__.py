@@ -1,3 +1,5 @@
+from .views_organizations import OrganizationView
+from .views_roles import RoleView
 from .views_auth import (
     LoginView,
     LogoutView,
