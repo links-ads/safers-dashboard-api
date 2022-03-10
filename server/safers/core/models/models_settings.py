@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -36,6 +37,22 @@ class SafersSettings(SingletonMixin, models.Model):
     max_favorite_events = models.PositiveBigIntegerField(
         default=3,
         help_text=_("Number of alerts that a user can mark as 'favorite'."),
+    )
+
+    possible_event_distance = models.FloatField(
+        default=10.0,
+        validators=[MinValueValidator(0), MaxValueValidator(1000)],
+        help_text=_(
+            "Radius (in kms) within which alerts can be transformed into events"
+        )
+    )
+
+    possible_event_timerange = models.FloatField(
+        default=72.0,
+        validators=[MinValueValidator(0), MaxValueValidator(168)],
+        help_text=_(
+            "Time range (in hours) within which alerts can be transformed into events"
+        )
     )
 
     def __str__(self):

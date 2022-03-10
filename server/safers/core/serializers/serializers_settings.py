@@ -12,4 +12,6 @@ class SafersSettingsSerializer(serializers.ModelSerializer):
             "require_terms_acceptance",
             "max_favorite_alerts",
             "max_favorite_events",
+            "possible_event_distance",
+            "possible_event_timerange",
         )

@@ -59,17 +59,18 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
+    # 'allauth.socialaccount',
+    'anymail',
+    'corsheaders',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
     'django_celery_beat',
     'django_celery_results',
     'drf_yasg',
-    'oauth2_provider',
     'rest_framework',
     'rest_framework_gis',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
-    'dj_rest_auth',
-    'dj_rest_auth.registration',
 ]  # yapf: disable
 
 LOCAL_APPS = [
