@@ -1,7 +1,7 @@
 from .base import *
 from .base import env
 
-DEBUG = True
+DEBUG = env("DJANGO_DEBUG", default="false") == "true"
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 
