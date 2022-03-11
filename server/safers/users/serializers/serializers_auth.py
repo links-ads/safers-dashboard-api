@@ -59,6 +59,14 @@ class LoginSerializer(DjRestAutLoginSerializer):
     password = serializers.CharField(style={'input_type': 'password'})
     accepted_terms = serializers.BooleanField(required=False)
 
+    # TODO: WHILE EMAIL ISN'T WORKING, EVEN IF ALLAUTH IS SET FOR MANDATORY VERIFICATION
+    # TODO: DON'T BOTHER CHECKING IT IF SafersSettings.require_verification IS FALSE
+    @staticmethod
+    def validate_email_verification_status(user):
+        safers_settings = SafersSettings.load()
+        if safers_settings.require_verification:
+            DjRestAutLoginSerializer.validate_email_verification_status(user)
+
     def validate(self, data):
         validated_data = super().validate(data)
         user = validated_data["user"]
