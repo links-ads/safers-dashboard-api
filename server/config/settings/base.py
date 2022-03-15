@@ -265,6 +265,7 @@ REST_KNOX = {
 }
 
 REST_AUTH_TOKEN_MODEL = 'knox.models.AuthToken'
+REST_AUTH_TOKEN_CREATOR = 'safers.users.utils.create_knox_token'
 
 # REST_USE_JWT = True
 # JWT_AUTH_COOKIE = "safers-gateway-auth"
@@ -278,7 +279,7 @@ REST_AUTH_SERIALIZERS = {
     "PASSWORD_CHANGE_SERIALIZER": "safers.users.serializers.PasswordChangeSerializer",
     "PASSWORD_RESET_SERIALIZER": "safers.users.serializers.PasswordResetSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "safers.users.serializers.PasswordResetConfirmSerializer",
-    "TOKEN_SERIALIZER": "safers.users.serializers.TokenSerializer",
+    "TOKEN_SERIALIZER": "safers.users.serializers.KnoxTokenSerializer",
     "USER_DETAILS_SERIALIZER": "safers.users.serializers.UserDetailsSerializer",
 }  # yapf: disable
 

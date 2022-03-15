@@ -27,7 +27,7 @@ from dj_rest_auth.registration.views import (
 )
 
 from safers.users.models import Role, Organization
-from safers.users.serializers import JWTSerializer, RegisterSerializer
+from safers.users.serializers import KnoxTokenSerializer, JWTSerializer, RegisterSerializer
 
 ###################
 # swagger schemas #
@@ -87,7 +87,7 @@ _detail_schema = openapi.Schema(
 @method_decorator(
     swagger_auto_schema(
         request_body=_login_request_schema,
-        responses={status.HTTP_200_OK: JWTSerializer},
+        responses={status.HTTP_200_OK: KnoxTokenSerializer},
     ),
     name="post",
 )
@@ -95,7 +95,19 @@ class LoginView(DjRestAuthLoginView):
     """
     Check the credentials and return the REST Token if the credentials are valid and authenticated.
     """
-    pass
+    def get_response(self):
+        # just a few tweaks to work w/ KnoxToken
+        serializer_class = self.get_response_serializer()
+        data = {
+            "user": self.user,
+            "token": self.token,
+            "expiry": self.token.expiry,
+        }
+        serializer = serializer_class(
+            instance=data, context={'request': self.request}
+        )
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @method_decorator(

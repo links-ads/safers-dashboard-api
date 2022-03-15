@@ -23,12 +23,10 @@ from knox.views import (
     LogoutAllView as KnoxLogoutAllView,
 )
 
-from fusionauth.fusionauth_client import FusionAuthClient
-
-from safers.users.models import User
-
 from safers.users.exceptions import AuthenticationException
+from safers.users.models import User
 from safers.users.serializers import AuthenticateSerializer, KnoxTokenSerializer
+from safers.users.utils import AUTH_CLIENT, create_knox_token
 """
 code to authenticate using OAUTH2
 (SHOULD EVENTUALLY REPLACE dj-rest-auth, ETC. IN "views_auth.py")
@@ -38,10 +36,6 @@ code to authenticate using OAUTH2
 3. if code is in GET, client POSTS code to AuthenticateView
 4. that gets user details and generates token for client
 """
-
-AUTH_CLIENT = FusionAuthClient(
-    settings.FUSION_AUTH_API_KEY, settings.FUSION_AUTH_INTERNAL_BASE_URL
-)
 
 AUTH_USER_FIELDS = [
     # fields from auth_user to duplicate in user
@@ -122,17 +116,17 @@ class LoginView(GenericAPIView):
 
             user_logged_in.send(sender=User, request=request, user=user)
 
+            token = create_knox_token(None, user, None)
+            token_serializer = KnoxTokenSerializer(token)
+
+            return Response(
+                token_serializer.data,
+                status=status.HTTP_201_CREATED
+                if created else status.HTTP_200_OK
+            )
+
         except Exception as e:
             raise AuthenticationException(e)
-
-        token_serializer = KnoxTokenSerializer(user)
-        # (token serializer will include a nested "user" object)
-
-        response = Response(
-            token_serializer.data,
-            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
-        )
-        return response
 
 
 class LogoutView(KnoxLogoutView):
