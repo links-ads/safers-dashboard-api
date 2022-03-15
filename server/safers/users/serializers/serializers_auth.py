@@ -1,9 +1,13 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 from rest_framework.settings import api_settings as drf_settings
+
+from knox.models import AuthToken as KnoxToken
+from knox.settings import knox_settings
 
 from allauth.utils import email_address_exists
 from allauth.account import app_settings as allauth_settings
@@ -34,6 +38,48 @@ from safers.core.models import SafersSettings
 from safers.users.forms import PasswordResetForm
 from safers.users.models import Role, Organization
 from safers.users.serializers import UserSerializerLite
+
+##############################
+# authentication serializers #
+##############################
+
+
+class KnoxTokenSerializer(serializers.Serializer):
+    # TODO: this is a bit sloppy
+    token = serializers.CharField(required=False)
+    expiry = serializers.DateTimeField(required=False)
+    user = serializers.SerializerMethodField()
+
+    @swagger_serializer_method(knox_settings.USER_SERIALIZER)
+    def get_user(self, obj):
+        UserSerializerClass = knox_settings.USER_SERIALIZER
+        user_serializer = UserSerializerClass(obj, context=self.context)
+        return user_serializer.data
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        token_limit_per_user = knox_settings.TOKEN_LIMIT_PER_USER
+        if token_limit_per_user is not None:
+            now = timezone.now()
+            token = instance.user.auth_token_set.filter(expiry__gt=now)
+            if token.count() > token_limit_per_user:
+                raise serializers.ValidationError(
+                    "Maximum amount of tokens allowed per user exceeded"
+                )
+        # token_ttl = knox_settings.TOKEN_TTL
+        token_instance, token_key = KnoxToken.objects.create(instance)
+        representation["token"] = token_key
+        representation["expiry"] = serializers.DateTimeField(
+            format=knox_settings.EXPIRY_DATETIME_FORMAT
+        ).to_representation(token_instance.expiry)
+
+        return representation
+
+
+#######################################
+# redefined drf-rest-auth serializers #
+#######################################
 
 
 class JWTSerializer(DjRestAuthJWTSerializer):

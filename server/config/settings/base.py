@@ -5,6 +5,7 @@ Django settings for safers-gateway project.
 import environ
 import re
 
+from datetime import timedelta
 from pathlib import Path
 
 from django.utils.html import escape
@@ -67,10 +68,14 @@ THIRD_PARTY_APPS = [
     'django_celery_beat',
     'django_celery_results',
     'drf_yasg',
+    'knox',
     'rest_framework',
     'rest_framework_gis',
-    'rest_framework_simplejwt',
-    'rest_framework.authtoken',
+    # 'oauth2_provider',
+    # 'social_django',
+    # 'drf_social_oauth2',
+    # 'rest_framework_simplejwt',
+    # 'rest_framework.authtoken',
 ]  # yapf: disable
 
 LOCAL_APPS = [
@@ -98,11 +103,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-##########
+########
 # CORS #
 ########
 
 CLIENT_HOST = env("CLIENT_HOST", default="")
+
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGIN_REGEXES = [rf"^{CLIENT_HOST}$"]
@@ -136,6 +142,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # 'social_django.context_processors.backends',
+                # 'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -238,16 +246,29 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # 'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
+        'knox.auth.TokenAuthentication',
         # 'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        # 'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        # 'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        # 'drf_social_oauth2.authentication.SocialAuthentication',
     ]
 }
 
-REST_USE_JWT = True
+REST_KNOX = {
+    'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
+    'AUTH_TOKEN_CHARACTER_LENGTH': 64,
+    'TOKEN_TTL': timedelta(hours=10),
+    'USER_SERIALIZER': 'safers.users.serializers.UserSerializer',
+    'TOKEN_LIMIT_PER_USER': None,
+    'AUTO_REFRESH': False,
+}
 
-JWT_AUTH_COOKIE = "safers-gateway-auth"
-JWT_AUTH_REFRESH_COOKIE = "safers-gateway-refresh"
+REST_AUTH_TOKEN_MODEL = 'knox.models.AuthToken'
+
+# REST_USE_JWT = True
+# JWT_AUTH_COOKIE = "safers-gateway-auth"
+# JWT_AUTH_REFRESH_COOKIE = "safers-gateway-refresh"
 
 # custom serializers...
 REST_AUTH_SERIALIZERS = {
@@ -295,6 +316,8 @@ AUTH_USER_MODEL = "users.User"
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
+    # 'drf_social_oauth2.backends.DjangoOAuth2',  # local oauth2
+    # 'safers.users.backends.FusionAuthBackend',  # remote oauth2
 ]
 
 ACCOUNT_ADAPTER = "safers.users.adapters.AccountAdapter"
@@ -316,3 +339,8 @@ FUSION_AUTH_CLIENT_SECRET = env("FUSION_AUTH_CLIENT_SECRET", default="")
 FUSION_AUTH_API_KEY = env("FUSION_AUTH_API_KEY", default="")
 FUSION_AUTH_EXTERNAL_BASE_URL = env("FUSION_AUTH_EXTERNAL_BASE_URL", default="")
 FUSION_AUTH_INTERNAL_BASE_URL = env("FUSION_AUTH_INTERNAL_BASE_URL", default="")
+
+# SOCIAL_AUTH_JSONFIELD_ENABLED = True
+
+# SOCIAL_AUTH_FUSIONAUTH_KEY = env("FUSION_AUTH_API_KEY", default="")
+# SOCIAL_AUTH_FUSIONAUTH_SECRET = env("FUSION_AUTH_CLIENT_SECRET", default="")

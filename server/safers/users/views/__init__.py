@@ -10,5 +10,9 @@ from .views_auth import (
     VerifyEmailView,
     ResendEmailVerificationView,
 )
-
+from .views_oauth2 import (
+    LoginView as Oath2LoginView,
+    LogoutView as Oauth2LogoutView,
+    LogoutAllView as Oauth2LogoutAllView,
+)
 from .views_users import UserView

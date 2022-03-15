@@ -83,9 +83,10 @@ class User(AbstractUser):
         editable=False,
     )
     auth_id = models.UUIDField(
-        editable=False,
         blank=True,
+        editable=False,
         null=True,
+        # TODO: unique=True
         help_text=_("The corresponding id of the FusionAuth User"),
     )
 
@@ -116,6 +117,9 @@ class User(AbstractUser):
         on_delete=models.PROTECT,
         related_name="users",
     )
+
+    # favorite alerts
+    # favorite events
 
     def verify(self):
         """

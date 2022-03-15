@@ -10,19 +10,21 @@ gunicorn = "*"
 argon2-cffi = "*"  
 celery = "*"  
 dj-database-url = "*"
+dj-rest-auth = {extras = ["with_social"], version = "*"}
 django-anymail = {extras = ["mailgun", "sendgrid", "sparkpost"], version = "*"}
 django-celery-beat = "*"
 django-celery-results = "*"
 django-cors-headers = "*"
 django-environ = "*"
 django-oauth-toolkit = "*"
+django-rest-knox = "*"
 djangorestframework = "*"
 djangorestframework-gis = "*"
 djangorestframework-simplejwt = "*"
 drf-yasg = "*"
+drf-social-oauth2 = "*"
 fusionauth-client = "*"
 psycopg2-binary = "*"
-dj-rest-auth = {extras = ["with_social"], version = "*"}
 
 [dev-packages]
 factory-boy = "*"

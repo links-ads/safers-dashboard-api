@@ -5,6 +5,9 @@ from django.views.generic import TemplateView
 from rest_framework import routers
 
 from .views import (
+    Oath2LoginView,
+    Oauth2LogoutView,
+    Oauth2LogoutAllView,
     LoginView,
     LogoutView,
     PasswordChangeView,
@@ -19,12 +22,19 @@ from .views import (
 )
 
 api_router = routers.DefaultRouter()
-# api_router.register("users/(?P<user_id>[^/.]+)/aois", AoiViewSet, basename="aois")
+# TODO: AOI VIEWSET
 api_urlpatterns = [
     path("", include(api_router.urls)),
+    path("oauth2/login", Oath2LoginView.as_view(), name="oauth2-login"),
+    path("oauth2/logout", Oauth2LogoutView.as_view(), name="oauth2-logout"),
+    path(
+        "oauth2/logoutall",
+        Oauth2LogoutAllView.as_view(),
+        name="oauth2-logoutall"
+    ),
+    path("users/<slug:user_id>", UserView.as_view(), name="users"),
     path("organizations/", OrganizationView.as_view(), name="organizations"),
     path("roles/", RoleView.as_view(), name="roles"),
-    path("users/<slug:user_id>", UserView.as_view(), name="users"),
 ]
 
 # redefining dj-rest-auth URLS here to use custom views...
