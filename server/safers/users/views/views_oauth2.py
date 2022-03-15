@@ -64,7 +64,7 @@ class LoginView(GenericAPIView):
             code=data["code"],
             client_id=settings.FUSION_AUTH_CLIENT_ID,
             # redirect_uri=request.build_absolute_uri(reverse("authenticate")),
-            redirect_uri=f"{settings.CLIENT_HOST}/test",
+            redirect_uri=f"{settings.CLIENT_HOST}/auth/sign-in",
             client_secret=settings.FUSION_AUTH_CLIENT_SECRET,
         )
         if not response.was_successful():
@@ -88,6 +88,7 @@ class LoginView(GenericAPIView):
         responses={status.HTTP_200_OK: KnoxTokenSerializer},
     )
     def post(self, request, *args, **kwargs):
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
