@@ -43,9 +43,6 @@ exec(f"from {environment_settings_module} import *") in globals()
 
 import django_on_heroku
 
-django_on_heroku.settings(locals())
-
-# As per https://stackoverflow.com/a/52857672/1060339 heroku formats DATABASE_URL
-# as "postgres" even though it's "postgis".  Since DATABASE_URL is imported by
-# django_on_heroku, I have to wait until this line to address the issue:
-DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
+# heroku sets the DATABASE_URL scheme as "postgres" even though should be "postgis". I can reset it w/
+# the `geodjango=True` kwarg as per https://github.com/pkrefta/django-on-heroku#enabling-functionality
+django_on_heroku.settings(locals(), geodjango=True)
