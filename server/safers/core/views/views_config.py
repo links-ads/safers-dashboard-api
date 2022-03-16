@@ -3,33 +3,44 @@ from collections import OrderedDict
 from django.conf import settings
 
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from safers.core.models import SafersSettings
+from safers.core.serializers import SafersSettingsSerializer
 
-class ConfigView(APIView):
+_config_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties=OrderedDict((
+        ("commitSha", openapi.Schema(type=openapi.TYPE_STRING)),
+        ("allow_registration", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
+        ("require_verification", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
+        ("require_terms_acceptance", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
+        ("max_favorite_alerts", openapi.Schema(type=openapi.TYPE_INTEGER)),
+        ("max_favorite_events", openapi.Schema(type=openapi.TYPE_INTEGER)),
+        ("possible_event_distance", openapi.Schema(type=openapi.TYPE_INTEGER)),
+        ("possible_event_timerange", openapi.Schema(type=openapi.TYPE_INTEGER)),
+    ))
+)  # yapf: disable
 
-    # AppConfigView has no serializer to generate a swagger schema from
-    # so I define one here just to make the generated documentation work
-    _schema = openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties=OrderedDict((
-            ("commitSha", openapi.Schema(type=openapi.TYPE_STRING)),
-        ))
-    )  # yapf: disable
 
-    permission_classes = [AllowAny]
+@swagger_auto_schema(
+    methods=["GET"], responses={status.HTTP_200_OK: _config_schema}
+)
+@permission_classes([AllowAny])
+@api_view(["GET"])
+def config_view(request):
+    """
+    Returns some information required by the client for initial configuration
+    """
 
-    @swagger_auto_schema(responses={status.HTTP_200_OK: _schema})
-    def get(self, request, format=None):
-        """
-        Returns some information required by the client for initial configuration
-        """
+    data = SafersSettingsSerializer(SafersSettings.load()).data
+    data.update({
+        "commitSha": None,
+    })
 
-        config = {"commitSha": None}
-
-        return Response(config)
+    return Response(data)
