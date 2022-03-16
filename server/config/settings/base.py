@@ -166,12 +166,17 @@ DATABASES = {
 # DATABASE_URL = re.sub(
 #     "^postgres://", "postgis://", env("DATABASE_URL", default="")
 # )
-DATABASE_URL = env("DATABASE_URL", default="")
-if DATABASE_URL:
-    DATABASES["default"] = dj_database_url.config(conn_max_age=0)
-    DATABASES["default"][
-        "ENGINE"
-    ] = "django.contrib.gis.db.backends.postgis"  # heroku formats the db as "postgres" even though it's "postgis"
+DATABASES = {
+    # (see the note in "./_init_.py" about django_on_heroku not recognising postgis)
+    "default": dj_database_url.config(conn_max_age=0)
+}
+
+# DATABASE_URL = env("DATABASE_URL", default="")
+# if DATABASE_URL:
+#     DATABASES["default"] = dj_database_url.config(conn_max_age=0)
+#     DATABASES["default"][
+#         "ENGINE"
+#     ] = "django.contrib.gis.db.backends.postgis"  # heroku formats the db as "postgres" even though it's "postgis"
 
 #############
 # Passwords #
