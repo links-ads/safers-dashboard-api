@@ -132,7 +132,15 @@ class PasswordResetSerializer(DjRestAuthPasswordResetSerializer):
 
 
 class PasswordResetConfirmSerializer(DjRestAuthPasswordResetConfirmSerializer):
-    pass
+    def validate(self, data):
+        try:
+            return super().validate(data)
+        except serializers.ValidationError as e:
+            # consolidate the errors to make things a bit more user-friendly
+            e.detail["password"] = \
+                e.detail.pop("new_password1", []) + \
+                e.detail.pop("new_password2", [])
+            raise e
 
 
 class TokenSerializer(DjRestAuthTokenSerializer):
