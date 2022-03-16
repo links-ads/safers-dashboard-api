@@ -163,11 +163,15 @@ DATABASES = {
 
 # DATABASE_URL format is "postgis://USER:PASSWORD@HOST:PORT/NAME"
 # heroku formats it as "postgres://whatever"; hence the re below
-DATABASE_URL = re.sub(
-    "^postgres://", "postgis://", env("DATABASE_URL", default="")
-)
+# DATABASE_URL = re.sub(
+#     "^postgres://", "postgis://", env("DATABASE_URL", default="")
+# )
+DATABASE_URL = env("DATABASE_URL", default="")
 if DATABASE_URL:
     DATABASES["default"] = dj_database_url.config(conn_max_age=0)
+    DATABASES["default"][
+        "ENGINE"
+    ] = "django.contrib.gis.db.backends.postgis"  # heroku formats the db as "postgres" even though it's "postgis"
 
 #############
 # Passwords #

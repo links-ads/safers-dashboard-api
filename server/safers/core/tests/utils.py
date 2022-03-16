@@ -91,7 +91,6 @@ def mock_storage(monkeypatch):
 
     def _mock_delete(instance, name):
         setattr(instance, f"mock_{clean_name(name)}_exists", False)
-        pass
 
     def _mock_exists(instance, name):
         return getattr(instance, f"mock_{clean_name(name)}_exists", False)
