@@ -137,9 +137,10 @@ class PasswordResetConfirmSerializer(DjRestAuthPasswordResetConfirmSerializer):
             return super().validate(data)
         except serializers.ValidationError as e:
             # consolidate the errors to make things a bit more user-friendly
-            e.detail["password"] = \
-                e.detail.pop("new_password1", []) + \
-                e.detail.pop("new_password2", [])
+            if "new_password1" in e.detail or "new_password2" in e.detail:
+                e.detail["password"] = \
+                    e.detail.pop("new_password1", []) + \
+                    e.detail.pop("new_password2", [])
             raise e
 
 
