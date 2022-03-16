@@ -81,6 +81,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'safers.core',
     'safers.users',
+    'safers.aois',
   # 'safers.tasks',
   # 'safers.alerts',
   # 'safers.events',
