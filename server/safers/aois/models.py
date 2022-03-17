@@ -16,8 +16,8 @@ class AoiQuerySet(models.QuerySet):
 
 class Aoi(gis_models.Model):
     class Meta:
-        verbose_name = "Safers AOI"
-        verbose_name_plural = "Safers AOIs"
+        verbose_name = "AOI"
+        verbose_name_plural = "AOIs"
 
     PRECISION = 12
 

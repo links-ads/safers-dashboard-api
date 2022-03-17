@@ -18,4 +18,4 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ###############
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = str(APP_DIR / "media")
+MEDIA_ROOT = str(BASE_DIR / "media")
