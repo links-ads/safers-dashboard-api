@@ -186,7 +186,11 @@ class User(AbstractUser):
 
     @property
     def is_local(self):
-        return self.profile is not None
+        try:
+            return self.profile is not None
+        except User.profile.RelatedObjectDoesNotExist:
+            # need to protect against null OneToOneFields
+            return False
 
     @property
     def is_remote(self):

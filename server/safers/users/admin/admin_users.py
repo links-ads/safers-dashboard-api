@@ -7,7 +7,7 @@ from safers.users.models import User
 
 
 class LocalOrRemoteFilter(admin.SimpleListFilter):
-    title = "Local or Remote"
+    title = "authentication type"
     parameter_name = "_ignore"  # ignoring parameter_name and computing qs manually
 
     def lookups(self, request, model_admin):
@@ -46,6 +46,7 @@ class UserAdmin(auth_admin.UserAdmin):
         "accepted_terms",
         "role",
         "organization",
+        "get_authentication_type_for_list_display",
     ]
     list_filter = (
         LocalOrRemoteFilter,
@@ -97,66 +98,12 @@ class UserAdmin(auth_admin.UserAdmin):
     is_verified_for_list_display.boolean = True
     is_verified_for_list_display.short_description = "IS VERIFIED"
 
+    def get_authentication_type_for_list_display(self, instance):
+        import pdb
+        pdb.set_trace()
+        if instance.is_local:
+            return "local"
+        elif instance.is_remote:
+            return "remote"
 
-# class CalculatedFieldFilter(admin.SimpleListFilter):
-
-#     lookup_values_map = {
-#         # map of qs lookup values to filter values
-#         True: ("yes", _("Yes")),
-#         False: ("no", _("No")),
-#     }
-
-#     def lookups(self, request, model_admin):
-#         return self.lookup_values_map.values()
-
-#     def queryset(self, request, qs):
-#         value = self.value()
-#         for k, v in self.lookup_values_map.items():
-#             if value == v[0]:
-#                 return qs.filter(**{self.parameter_name: k})
-#         return qs
-
-# class IsLocalFilter(CalculatedFieldFilter):
-#     parameter_name = title = "is_local"
-
-# class IsRemoteFilter(CalculatedFieldFilter):
-#     parameter_name = title = "is_remote"
-
-# class UserProfileAdminForm(ModelForm):
-#     class Meta:
-#         model = UserProfile
-#         fields = "__all__"
-
-#     def clean(self):
-#         """
-#         Check a UserProfile's constraints during cleaning
-#         """
-
-#         cleaned_data = super().clean()
-
-#         data = UserProfileSerializer(self.instance).data
-#         data.update(cleaned_data)
-
-#         if not bool(data["local_user"]) ^ bool(data["auth_id"]):
-#             raise ValidationError("UserProfile must have either a local user or a remote (auth_id) user.")
-
-#         return cleaned_data
-
-# @admin.register(UserProfile)
-# class UserProfileAdmin(admin.ModelAdmin):
-#     fields = (
-#         "auth_id",
-#         # "local_user",
-#         # "is_active",
-#     )
-#     form = UserProfileAdminForm
-#     list_display = (
-#         # "user",
-#     )
-#     list_filter = (
-#         IsLocalFilter,
-#         IsRemoteFilter,
-#     )
-#     readonly_fields = (
-#         "auth_id",
-#     )
+    get_authentication_type_for_list_display.short_description = "AUTHENTICATION TYPE"

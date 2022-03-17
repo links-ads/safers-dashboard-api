@@ -20,3 +20,6 @@ user_signed_up.connect(
     sender=get_user_model(),
     dispatch_uid="safers_user_signed_up_handler",
 )
+
+# no signal handlers are needed for User post_delete because
+# UserProfile and Oauth2User both use `on_delete=models.CASCADE`
