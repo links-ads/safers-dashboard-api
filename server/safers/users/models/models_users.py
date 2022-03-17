@@ -1,11 +1,13 @@
+from email.headerregistry import HeaderRegistry
 import uuid
 
 from django.apps import apps
-from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.expressions import ExpressionWrapper
+from django.db.models.query_utils import Q
 from django.utils.translation import gettext_lazy as _
 
 from allauth.account.models import EmailAddress
@@ -59,6 +61,30 @@ class UserManager(BaseUserManager):
             username = email
 
         return self.create_user(username, email, password, **extra_fields)
+
+    def get_queryset(self):
+        """
+        Add some calculated fields to the default queryset
+        """
+        qs = super().get_queryset()
+
+        return qs.annotate(
+            _is_local=ExpressionWrapper(
+                Q(profile__isnull=False) & Q(auth_id__isnull=True),
+                output_field=models.BooleanField()
+            ),
+            _is_remote=ExpressionWrapper(
+                Q(profile__isnull=True) & Q(auth_id__isnull=False),
+                output_field=models.BooleanField()
+            )
+        )
+
+    class UserQuerySet(models.QuerySet):
+        def local(self):
+            return self.filter(_is_local=True)
+
+        def remote(self):
+            return self.filter(_is_remote=True)
 
 
 ##########
@@ -157,6 +183,14 @@ class User(AbstractUser):
                 primary=True, verified=True
             ).exists()
         )
+
+    @property
+    def is_local(self):
+        return self.profile is not None
+
+    @property
+    def is_remote(self):
+        return self.auth_id is not None
 
     @property
     def auth_user_data(self):

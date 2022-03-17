@@ -1,23 +1,22 @@
-# from django.contrib.auth import get_user_model
-# from django.db.models.signals import post_save, post_delete
+from django.contrib.auth import get_user_model
 
-# from safers.users.models import UserProfile
+from allauth.account.signals import user_signed_up
 
-
-# def post_save_user_hander(sender, *args, **kwargs):
-#     """
-#     If a local user has just been created,
-#     then the corresponding profile must also be created.
-#     """
-
-#     created = kwargs.get("created", False)
-#     instance = kwargs.get("instance", None)
-#     if created and instance:
-#         UserProfile.objects.create(local_user=instance)
+from safers.users.models import UserProfile
 
 
-# post_save.connect(
-#     post_save_user_hander,
-#     sender=get_user_model(),
-#     dispatch_uid="post_save_user_handler",
-# )
+def user_signed_up_handler(sender, *args, **kwargs):
+    """
+    If a local user has just signed-up (via dj-rest-auth),
+    then the corresponding profile must also be created.
+    """
+    user = kwargs.get("user", None)
+    if user:
+        UserProfile.objects.create(user=user)
+
+
+user_signed_up.connect(
+    user_signed_up_handler,
+    sender=get_user_model(),
+    dispatch_uid="safers_user_signed_up_handler",
+)

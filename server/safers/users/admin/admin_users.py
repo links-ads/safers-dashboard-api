@@ -6,6 +6,23 @@ from safers.users.forms import UserCreationForm, UserChangeForm
 from safers.users.models import User
 
 
+class LocalOrRemoteFilter(admin.SimpleListFilter):
+    title = "Local or Remote"
+    parameter_name = "_ignore"  # ignoring parameter_name and computing qs manually
+
+    def lookups(self, request, model_admin):
+        return (
+            ("_is_local", _("Local")),
+            ("_is_remote", _("Remote")),
+        )
+
+    def queryset(self, request, qs):
+        value = self.value()
+        if value:
+            qs = qs.filter(**{value: True})
+        return qs
+
+
 @admin.register(User)
 class UserAdmin(auth_admin.UserAdmin):
     actions = (
@@ -30,7 +47,11 @@ class UserAdmin(auth_admin.UserAdmin):
         "role",
         "organization",
     ]
-    list_filter = ("role", "organization") + auth_admin.UserAdmin.list_filter
+    list_filter = (
+        LocalOrRemoteFilter,
+        "role",
+        "organization",
+    ) + auth_admin.UserAdmin.list_filter
     readonly_fields = (
         "id",
         "auth_id",
