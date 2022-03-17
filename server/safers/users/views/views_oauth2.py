@@ -135,6 +135,10 @@ class LogoutView(KnoxLogoutView):
         responses={status.HTTP_204_NO_CONTENT: None},
     )
     def post(self, request, **kwargs):
+        user = request.user
+
+        user_logged_out.send(sender=User, request=request, user=user)
+
         # first delete oauth2 token...
         # TODO
 
@@ -147,6 +151,10 @@ class LogoutAllView(KnoxLogoutAllView):
         responses={status.HTTP_204_NO_CONTENT: None},
     )
     def post(self, request, **kwargs):
+        user = request.user
+
+        user_logged_out.send(sender=User, request=request, user=user)
+
         # first delete oauth2 token...
         # TODO
 
