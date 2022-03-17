@@ -13,9 +13,25 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-###############
-# Media files #
-###############
+########################
+# static & media files #
+########################
+
+STATICFILES_STORAGE = "safers.core.storage.LocalStaticStorage"
+DEFAULT_FILE_STORAGE = "safers.core.storage.LocalMediaStorage"
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "_static"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = str(BASE_DIR / "media")
+MEDIA_ROOT = BASE_DIR / "_media"
+
+# These next env vars aren't used in development, but they still ought
+# to be defined so that the classes in "storages.py" module can load...
+
+STATIC_LOCATION = ""
+STATIC_DEFAULT_ACL = ""
+PUBLIC_MEDIA_LOCATION = ""
+PUBLIC_MEDIA_DEFAULT_ACL = ""
+PRIVATE_MEDIA_LOCATION = ""
+PRIVATE_MEDIA_DEFAULT_ACL = ""

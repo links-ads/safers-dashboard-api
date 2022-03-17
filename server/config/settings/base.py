@@ -3,7 +3,6 @@ Django settings for safers-gateway project.
 """
 
 import environ
-import re
 
 from datetime import timedelta
 from pathlib import Path
@@ -76,6 +75,7 @@ THIRD_PARTY_APPS = [
     # 'drf_social_oauth2',
     # 'rest_framework_simplejwt',
     # 'rest_framework.authtoken',
+    'storages',
 ]  # yapf: disable
 
 LOCAL_APPS = [
@@ -96,6 +96,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -213,16 +214,9 @@ USE_L10N = True
 
 USE_TZ = True
 
-################
-# Static Files #
-################
-
-STATIC_URL = '/static/'
-STATIC_ROOT = str(APP_DIR / "static")
-
-###############
-# Media Files #
-###############
+########################
+# static & media files #
+########################
 
 # handled in development / deployment
 

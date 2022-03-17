@@ -99,8 +99,16 @@ urlpatterns = [
     path("aois/", include(aois_urlpatterns)),
 ]
 
-# media files...
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# local static & media files...
+if settings.ENVIRONMENT == "development":
+    urlpatterns += static(
+        settings.STATIC_URL,
+        document_root=settings.STATIC_ROOT,
+    )
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT,
+    )
 
 if settings.DEBUG:
 

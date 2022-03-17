@@ -47,3 +47,34 @@ EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 
 DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER", default=EMAIL_HOST_USER)
+
+#########
+# media #
+#########
+
+# Using Bucketeer to allow Heroku to manage storage in AWS S3.  PublicMediaS3Storage is
+# used by default; I can also specify PrivateMediaS3Storage on a field-by-field basis.
+
+STATICFILES_STORAGE = "safers.core.storage.StaticS3Storage"
+DEFAULT_FILE_STORAGE = "safers.core.storage.PublicMediaS3Storage"
+
+AWS_ACCESS_KEY_ID = env("BUCKETEER_AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = env("BUCKETEER_AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = env("BUCKETEER_BUCKET_NAME")
+AWS_S3_ENDPOINT_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+AWS_S3_REGION_NAME = env("BUCKETEER_AWS_REGION")
+AWS_S3_SIGNATURE_VERSION = env("S3_SIGNATURE_VERSION", default="s3v4")
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+AWS_DEFAULT_ACL = None
+
+STATIC_DEFAULT_ACL = 'public-read'
+STATIC_LOCATION = 'static'
+STATIC_URL = f'{AWS_S3_ENDPOINT_URL}/{STATIC_LOCATION}/'
+
+PUBLIC_MEDIA_DEFAULT_ACL = 'public-read'
+PUBLIC_MEDIA_LOCATION = 'media/public'
+PUBLIC_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PUBLIC_MEDIA_LOCATION}/'
+
+PRIVATE_MEDIA_DEFAULT_ACL = 'private'
+PRIVATE_MEDIA_LOCATION = 'media/private'
+PRIVATE_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PRIVATE_MEDIA_LOCATION}/'
