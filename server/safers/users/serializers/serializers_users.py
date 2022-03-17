@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from drf_yasg.utils import swagger_serializer_method
 
+from safers.aois.models import Aoi
 from safers.users.models import User
 
 
@@ -41,7 +42,12 @@ class UserSerializer(UserSerializerLite):
             "is_verified",
             "accepted_terms",
             "last_login",
+            "default_aoi",
         )
+
+    default_aoi = serializers.PrimaryKeyRelatedField(
+        queryset=Aoi.objects.active()
+    )
 
     def validate_username(self, value):
         if value in settings.ACCOUNT_USERNAME_BLACKLIST:

@@ -118,6 +118,14 @@ class User(AbstractUser):
         related_name="users",
     )
 
+    default_aoi = models.ForeignKey(
+        "aois.Aoi",
+        blank=True,
+        null=True,
+        on_delete=models.PROTECT,
+        related_name="users",
+    )
+
     # favorite alerts
     # favorite events
 
