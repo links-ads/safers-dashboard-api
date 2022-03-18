@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from django.utils.decorators import method_decorator
 
 from rest_framework import permissions
@@ -19,19 +17,27 @@ from safers.aois.serializers import AoiSerializer
 _geojson_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     example={
-        "id": 1,
-        "type": "Feature",
-        "geometry": {
-            "type": "Polygon",
-            "coordinates": [
-                [1, 2],
-                [3, 4],
-            ]
-        },
-        "properties": {
-            "name": "string",
-            "description": "string"
-        }
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [1, 2],
+                        [3, 4],
+                    ]
+                },
+                "properties": {
+                    "id": 1,
+                    "name": "string",
+                    "description": "string",
+                    "country": "string",
+                    "zoomLevel": 0,
+                    "midPoint": [1, 2]
+                }
+            }
+        ]
     }
 )  # yapf: disable
 

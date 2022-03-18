@@ -5,7 +5,6 @@ from functools import partial
 from django.conf import settings
 from django.contrib.admin import AdminSite
 
-
 #####################
 # admin permissions #
 #####################
@@ -34,15 +33,17 @@ default_admin_site_has_permission = partial(
 # other permissions #
 #####################
 
-class IsAuthenticatedOrAdmin(BasePermission):
-    """
-    any authenticated user can access a safe method;
-    but only the admin can access other methods
-    """
 
+class IsAdminOrAuthenticated(BasePermission):
     def has_permission(self, request, view):
         user = request.user
         if request.method in SAFE_METHODS:
             return user.is_authenticated
-        else:
-            return user.is_superuser
+        return user.is_superuser
+
+
+class IsAdminOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.is_superuser

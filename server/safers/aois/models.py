@@ -33,6 +33,20 @@ class Aoi(gis_models.Model):
         blank=True,
         null=True,
     )
+    country = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+    )
+    zoom_level = models.FloatField(
+        blank=True,
+        null=True,  # TODO: min/max validation
+    )
+    midpoint = gis_models.PointField(
+        blank=True,
+        null=True,
+        # TODO: min/max validation (or assert geometry.contains(midpoint))
+    )
 
     is_active = models.BooleanField(default=True)
 
