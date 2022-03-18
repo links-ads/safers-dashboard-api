@@ -19,8 +19,6 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
-        import pdb
-        pdb.set_trace()
         return super().get(request, *args, **kwargs)
 
 

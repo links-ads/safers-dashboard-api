@@ -99,8 +99,6 @@ class UserAdmin(auth_admin.UserAdmin):
     is_verified_for_list_display.short_description = "IS VERIFIED"
 
     def get_authentication_type_for_list_display(self, instance):
-        import pdb
-        pdb.set_trace()
         if instance.is_local:
             return "local"
         elif instance.is_remote:

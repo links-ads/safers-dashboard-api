@@ -165,7 +165,7 @@ class RegisterSerializer(serializers.Serializer):
         slug_field="name", queryset=Role.objects.all()
     )
     organization = serializers.SlugRelatedField(
-        slug_field="name", queryset=Organization.objects.all()
+        slug_field="name", queryset=Organization.objects.all(), required=False
     )
     accepted_terms = serializers.BooleanField()
 
