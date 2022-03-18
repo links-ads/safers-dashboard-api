@@ -38,6 +38,18 @@ services:
     ports:
       - "9011:9011"
 
+  broker:
+    image: rabbitmq:3-management
+    hostname: safers
+    volumes:
+      - ./broker/etc/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./broker/etc/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./broker/db:/var/lib/rabbitmq/mnesia/rabbit@safers
+      - ./broker/logs:/var/log/rabbitmq/log
+    ports:
+      - 5672:5672  # internal queue
+      - 15672:15672  # management client
+
   server:
     build:
       context: .
