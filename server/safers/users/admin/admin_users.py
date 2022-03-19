@@ -37,13 +37,14 @@ class UserAdmin(auth_admin.UserAdmin):
         ("Personal Info", {"fields": ["first_name", "last_name", "role", "organization",]}),
         ("Permissions", {"fields": ["is_active", "is_staff","is_superuser", "accepted_terms","groups", "user_permissions"] }),
         ("Important Dates", {"fields": ["last_login", "date_joined"]}),
-        ("Safers", {"fields": ["default_aoi", "favorite_alerts", "favorite_events"]}),
+        ("Safers", {"fields": ["default_aoi", "favorite_alerts", "favorite_events", "favorite_camera_medias"]}),
     )  # yapf: disable
     filter_horizontal = (
         "groups",
         "user_permissions",
         "favorite_alerts",
         "favorite_events",
+        "favorite_camera_medias",
     )
     list_display = [
         "email",

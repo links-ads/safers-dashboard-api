@@ -160,6 +160,10 @@ class User(AbstractUser):
         "events.Event", related_name="favorited_users"
     )
 
+    favorite_camera_medias = models.ManyToManyField(
+        "cameras.CameraMedia", related_name="favorited_users"
+    )
+
     def verify(self):
         """
         Manually verifies a user's primary email address

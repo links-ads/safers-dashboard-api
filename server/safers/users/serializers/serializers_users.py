@@ -10,6 +10,8 @@ from safers.alerts.models import Alert
 
 from safers.events.models import Event
 
+from safers.cameras.models import CameraMedia
+
 from safers.users.models import User
 
 
@@ -50,6 +52,7 @@ class UserSerializer(UserSerializerLite):
             "default_aoi",
             "favorite_alerts",
             "favorite_events",
+            "favorite_camera_medias",
         )
 
     default_aoi = serializers.PrimaryKeyRelatedField(
@@ -62,6 +65,10 @@ class UserSerializer(UserSerializerLite):
 
     favorite_events = serializers.PrimaryKeyRelatedField(
         queryset=Event.objects.all(), many=True
+    )
+
+    favorite_camera_medias = serializers.PrimaryKeyRelatedField(
+        queryset=CameraMedia.objects.all(), many=True
     )
 
     def validate_username(self, value):

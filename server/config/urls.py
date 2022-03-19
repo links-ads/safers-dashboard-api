@@ -37,6 +37,11 @@ from safers.events.urls import (
     api_urlpatterns as events_api_urlpatterns,
 )
 
+from safers.cameras.urls import (
+    urlpatterns as cameras_urlpatterns,
+    api_urlpatterns as cameras_api_urlpatterns,
+)
+
 from safers.core.permissions import default_admin_site_has_permission
 
 ################
@@ -93,6 +98,7 @@ api_urlpatterns += users_api_urlpatterns
 api_urlpatterns += aois_api_urlpatterns
 api_urlpatterns += alerts_api_urlpatterns
 api_urlpatterns += events_api_urlpatterns
+api_urlpatterns += cameras_api_urlpatterns
 
 #################
 # normal routes #
@@ -105,12 +111,13 @@ urlpatterns = [
     # API...
     path("api/", include(api_urlpatterns)),
 
-    # app-specific patterns...
+    # app-specific patterns (just in case)...
     path("", include(core_urlpatterns)),
     path("users/", include(users_urlpatterns)),
     path("aois/", include(aois_urlpatterns)),
     path("alerts/", include(alerts_urlpatterns)),
     path("events/", include(events_urlpatterns)),
+    path("cameras/", include(cameras_urlpatterns)),
 ]
 
 # local static & media files...
