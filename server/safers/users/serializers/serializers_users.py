@@ -4,9 +4,11 @@ from rest_framework import serializers
 
 from drf_yasg.utils import swagger_serializer_method
 
+from safers.aois.models import Aoi
+
 from safers.alerts.models import Alert
 
-from safers.aois.models import Aoi
+from safers.events.models import Event
 
 from safers.users.models import User
 
@@ -47,6 +49,7 @@ class UserSerializer(UserSerializerLite):
             "last_login",
             "default_aoi",
             "favorite_alerts",
+            "favorite_events",
         )
 
     default_aoi = serializers.PrimaryKeyRelatedField(
@@ -57,9 +60,15 @@ class UserSerializer(UserSerializerLite):
         queryset=Alert.objects.all(), many=True
     )
 
+    favorite_events = serializers.PrimaryKeyRelatedField(
+        queryset=Event.objects.all(), many=True
+    )
+
     def validate_username(self, value):
         if value in settings.ACCOUNT_USERNAME_BLACKLIST:
             raise serializers.ValidationError(
                 f"{value} is not an allowed username"
             )
         return value
+
+    # TODO: NESTED SERIALIZERS

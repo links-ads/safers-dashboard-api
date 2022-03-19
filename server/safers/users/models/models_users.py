@@ -156,6 +156,10 @@ class User(AbstractUser):
         "alerts.Alert", related_name="favorited_users"
     )
 
+    favorite_events = models.ManyToManyField(
+        "events.Event", related_name="favorited_users"
+    )
+
     def verify(self):
         """
         Manually verifies a user's primary email address

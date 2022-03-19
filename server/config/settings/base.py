@@ -86,7 +86,7 @@ LOCAL_APPS = [
     'safers.aois',
   # 'safers.tasks',
     'safers.alerts',
-  # 'safers.events',
+  'safers.events',
 ]  # yapf: disable
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
