@@ -3,6 +3,23 @@
 
 # from rest_framework import exceptions as rest_exceptions
 
+from rest_framework import mixins
+from rest_framework import viewsets
+
+
+class CannotDeleteViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet
+):
+    """
+    A viewset that excludes the `delete` action.
+    """
+    pass
+
+
 # def get_error_message(exc) -> str:
 #     if hasattr(exc, 'message_dict'):
 #         return exc.message_dict

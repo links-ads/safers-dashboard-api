@@ -34,7 +34,6 @@ from rest_framework_simplejwt.serializers import (
 
 from drf_yasg.utils import swagger_serializer_method
 
-from safers.core.models import SafersSettings
 from safers.users.forms import PasswordResetForm
 from safers.users.models import Role, Organization
 from safers.users.serializers import UserSerializerLite
@@ -92,8 +91,7 @@ class LoginSerializer(DjRestAutLoginSerializer):
     # TODO: DON'T BOTHER CHECKING IT IF SafersSettings.require_verification IS FALSE
     @staticmethod
     def validate_email_verification_status(user):
-        safers_settings = SafersSettings.load()
-        if safers_settings.require_verification:
+        if settings.SAFERS_REQUIRE_VERIFICATION:
             DjRestAutLoginSerializer.validate_email_verification_status(user)
 
     def validate(self, data):
@@ -179,8 +177,7 @@ class RegisterSerializer(serializers.Serializer):
         return email
 
     def validate_accepted_terms(self, value):
-        safers_settings = SafersSettings.load()
-        if safers_settings.require_terms_acceptance and not value:
+        if settings.SAFERS_REQUIRE_TERMS_ACCEPTANCE and not value:
             raise serializers.ValidationError(
                 "Accepting terms & conditions is required."
             )

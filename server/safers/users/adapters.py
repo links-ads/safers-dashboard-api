@@ -15,8 +15,6 @@ from allauth.account.utils import (
 )
 # from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 
-from safers.core.models import SafersSettings
-
 UserModel = get_user_model()
 
 
@@ -25,8 +23,7 @@ class AccountAdapter(DefaultAccountAdapter):
     custom tweaks to django-allauth
     """
     def is_open_for_signup(self, request):
-        safers_settings = SafersSettings.load()
-        return safers_settings.allow_registration
+        return settings.SAFERS_ALLOW_REGISTRATION
 
     def check_user(self, user, **kwargs):
         """
@@ -34,12 +31,10 @@ class AccountAdapter(DefaultAccountAdapter):
         which aren't necessarily form/serializer errors.
         """
 
-        safers_settings = SafersSettings.load()
-
         # verification (overriding the check here in order to not automatically resend the verification email)
         if (
             kwargs.get("check_verification", True) and
-            safers_settings.require_verification and not user.is_verified
+            settings.SAFERS_REQUIRE_VERIFICATION and not user.is_verified
         ):
             # send_email_confirmation(request, user)
             raise APIException(f"User {user} is not verified.")
@@ -47,7 +42,7 @@ class AccountAdapter(DefaultAccountAdapter):
         # terms acceptance
         if (
             kwargs.get("check_terms_acceptance", True) and
-            safers_settings.require_terms_acceptance and not user.accepted_terms
+            settings.SAFERS_REQUIRE_TERMS_ACCEPTANCE and not user.accepted_terms
         ):
             raise APIException(
                 "Please accept our latest Terms & Conditions and Privacy Policy."

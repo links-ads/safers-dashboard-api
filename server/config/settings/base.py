@@ -12,6 +12,8 @@ from django.utils.text import slugify
 
 import dj_database_url
 
+from safers.core.utils import DynamicSetting
+
 #########
 # setup #
 #########
@@ -83,7 +85,7 @@ LOCAL_APPS = [
     'safers.users',
     'safers.aois',
   # 'safers.tasks',
-  # 'safers.alerts',
+    'safers.alerts',
   # 'safers.events',
 ]  # yapf: disable
 
@@ -337,3 +339,29 @@ FUSION_AUTH_INTERNAL_BASE_URL = env("FUSION_AUTH_INTERNAL_BASE_URL", default="")
 
 # SOCIAL_AUTH_FUSIONAUTH_KEY = env("FUSION_AUTH_API_KEY", default="")
 # SOCIAL_AUTH_FUSIONAUTH_SECRET = env("FUSION_AUTH_CLIENT_SECRET", default="")
+
+############################
+# safers-specific settings #
+############################
+
+SAFERS_ALLOW_REGISTRATION = DynamicSetting(
+    "core.SafersSettings.allow_registration", True
+)
+SAFERS_REQUIRE_VERIFICATION = DynamicSetting(
+    "core.SafersSettings.require_verification", True
+)
+SAFERS_REQUIRE_TERMS_ACCEPTANCE = DynamicSetting(
+    "core.SafersSettings.require_terms_acceptance", True
+)
+SAFERS_POSSIBLE_EVENT_DISTANCE = DynamicSetting(
+    "core.SafersSettings.possible_event_distance", 10
+)
+SAFERS_POSSIBLE_EVENT_TIMERANGE = DynamicSetting(
+    "core.SafersSettings.possible_event_timerange", 72
+)
+SAFERS_MAX_FAVORITE_ALERTS = DynamicSetting(
+    "core.SafersSettings.max_favorite_alerts", 3
+)
+SAFERS_MAX_FAVORITE_EVENTS = DynamicSetting(
+    "core.SafersSettings.max_favorite_events", 3
+)

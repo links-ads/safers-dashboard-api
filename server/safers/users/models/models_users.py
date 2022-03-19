@@ -152,8 +152,9 @@ class User(AbstractUser):
         related_name="users",
     )
 
-    # favorite alerts
-    # favorite events
+    favorite_alerts = models.ManyToManyField(
+        "alerts.Alert", related_name="favorited_users"
+    )
 
     def verify(self):
         """

@@ -27,6 +27,11 @@ from safers.aois.urls import (
     api_urlpatterns as aois_api_urlpatterns,
 )
 
+from safers.alerts.urls import (
+    urlpatterns as alerts_urlpatterns,
+    api_urlpatterns as alerts_api_urlpatterns,
+)
+
 from safers.core.permissions import default_admin_site_has_permission
 
 ################
@@ -81,6 +86,7 @@ api_urlpatterns = [
 api_urlpatterns += core_api_urlpatterns
 api_urlpatterns += users_api_urlpatterns
 api_urlpatterns += aois_api_urlpatterns
+api_urlpatterns += alerts_api_urlpatterns
 
 #################
 # normal routes #
@@ -97,6 +103,7 @@ urlpatterns = [
     path("", include(core_urlpatterns)),
     path("users/", include(users_urlpatterns)),
     path("aois/", include(aois_urlpatterns)),
+    path("alerts/", include(alerts_urlpatterns)),
 ]
 
 # local static & media files...

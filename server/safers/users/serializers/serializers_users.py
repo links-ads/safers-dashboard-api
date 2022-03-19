@@ -4,7 +4,10 @@ from rest_framework import serializers
 
 from drf_yasg.utils import swagger_serializer_method
 
+from safers.alerts.models import Alert
+
 from safers.aois.models import Aoi
+
 from safers.users.models import User
 
 
@@ -43,10 +46,15 @@ class UserSerializer(UserSerializerLite):
             "accepted_terms",
             "last_login",
             "default_aoi",
+            "favorite_alerts",
         )
 
     default_aoi = serializers.PrimaryKeyRelatedField(
         queryset=Aoi.objects.active()
+    )
+
+    favorite_alerts = serializers.PrimaryKeyRelatedField(
+        queryset=Alert.objects.all(), many=True
     )
 
     def validate_username(self, value):

@@ -37,8 +37,13 @@ class UserAdmin(auth_admin.UserAdmin):
         ("Personal Info", {"fields": ["first_name", "last_name", "role", "organization",]}),
         ("Permissions", {"fields": ["is_active", "is_staff","is_superuser", "accepted_terms","groups", "user_permissions"] }),
         ("Important Dates", {"fields": ["last_login", "date_joined"]}),
+        ("Safers", {"fields": ["default_aoi", "favorite_alerts"]}),
     )  # yapf: disable
-
+    filter_horizontal = (
+        "groups",
+        "user_permissions",
+        "favorite_alerts",
+    )
     list_display = [
         "email",
         "id",
