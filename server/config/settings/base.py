@@ -68,6 +68,7 @@ THIRD_PARTY_APPS = [
     'dj_rest_auth.registration',
     'django_celery_beat',
     'django_celery_results',
+    'django_filters',
     'drf_yasg',
     'knox',
     'rest_framework',
@@ -83,8 +84,8 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'safers.core',
     'safers.users',
+    'safers.tasks',
     'safers.aois',
-  # 'safers.tasks',
     'safers.alerts',
     'safers.events',
     'safers.cameras',
@@ -247,7 +248,7 @@ REST_FRAMEWORK = {
         # 'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
         # 'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         # 'drf_social_oauth2.authentication.SocialAuthentication',
-    ]
+    ],
 }
 
 REST_KNOX = {
@@ -340,6 +341,29 @@ FUSION_AUTH_INTERNAL_BASE_URL = env("FUSION_AUTH_INTERNAL_BASE_URL", default="")
 
 # SOCIAL_AUTH_FUSIONAUTH_KEY = env("FUSION_AUTH_API_KEY", default="")
 # SOCIAL_AUTH_FUSIONAUTH_SECRET = env("FUSION_AUTH_CLIENT_SECRET", default="")
+
+#########
+# Tasks #
+#########
+
+# TODO...
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_RESULT_SERIALIZER = "json"
+# CELERY_TASK_SERIALIZER = "json"
+# CELERY_TASK_SOFT_TIME_LIMIT = 60 * 5  # 5 minutes until SoftTimeLimitExceeded
+# CELERY_TASK_TIME_LIMIT = 60 * 25  # 25 minutes until worker is killed & replace
+
+# CELERY_BROKER_URL = "{protocol}://:{password}@{host}:{port}/{dbnum}".format(
+#     protocol=quote_plus(env("DJANGO_CELERY_BROKER_PROTOCOL", default="amqp")),
+#     host=quote_plus(env("DJANGO_CELERY_BROKER_HOST", default="localhost")),
+#     port=quote_plus(env("DJANGO_CELERY_BROKER_PORT", default="5672")),
+#     password=quote_plus(env("DJANGO_CELERY_BROKER_REDIS_PASSWORD", default="")),
+#     dbnum=quote_plus(env("DJANGO_CELERY_BROKER_REDIS_DB", default="0")),
+# )
+
+CELERY_RESULT_BACKEND = "django-db"  # django-celery-results
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"  # django-celery-beat
 
 ############################
 # safers-specific settings #

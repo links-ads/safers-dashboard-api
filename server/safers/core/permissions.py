@@ -47,3 +47,9 @@ class IsAdminOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return request.user.is_superuser
+
+
+class IsAdminOrDebug(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        return user.is_superuser or settings.DEBUG

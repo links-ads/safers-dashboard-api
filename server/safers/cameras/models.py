@@ -1,5 +1,6 @@
 import uuid
 
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.utils.translation import gettext_lazy as _
@@ -91,8 +92,23 @@ class CameraMedia(HashableMixin, gis_models.Model):
     )
     timestamp = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    smoke_column_class = models.CharField(max_length=128, blank=True, null=True)
-    geographical_direction = models.FloatField(blank=True, null=True)
+    smoke_column_class = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        help_text=_(
+            "A classification of the type of smoke detected from the camera."
+            "Possible classes are: CL1 (fires involving wood/plants), CL2 (fires involving flammable materials/liquids), CL3 (fires involving gas)."
+        )
+    )
+    geographical_direction = models.FloatField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(360)],
+        help_text=_(
+            "The geographical direction in angles of the detected fire with respect to the camera location"
+        )
+    )
     geometry = gis_models.GeometryField(blank=False, null=False)
     bounding_box = gis_models.PolygonField(blank=True, null=True)
 

@@ -22,7 +22,7 @@ class AoiSerializer(gis_serializers.GeoFeatureModelSerializer):
             "midpoint",
             "geometry",
         )
-        id_field = "id"
+        id_field = False
         geo_field = "geometry"
         list_serializer_class = serializers.ListSerializer  # don't combine multiple AOIs into a FeatureCollection
 
