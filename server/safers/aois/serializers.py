@@ -48,5 +48,6 @@ class AoiSerializer(gis_serializers.GeoFeatureModelSerializer):
         """
         Extracts the single feature from the FeatureCollection
         """
+
         feature = data["features"][0]
         return super().to_internal_value(feature)

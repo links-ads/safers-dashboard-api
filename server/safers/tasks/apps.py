@@ -21,5 +21,5 @@ class TasksConfig(AppConfig):
         except ImportError:
             pass
 
-        # load celery
+        # load celery !
         import safers.tasks.celery

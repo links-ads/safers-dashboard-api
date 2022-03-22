@@ -12,7 +12,6 @@ APP_DEPENDENCIES = [
 def check_dependencies(app_configs, **kwargs):
     """
     Makes sure that all django app dependencies are met.
-    (Standard python dependencies are handled in setup.py.)
     Called by `AppConfig.ready()`.
     """
 

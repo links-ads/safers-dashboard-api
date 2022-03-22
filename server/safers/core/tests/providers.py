@@ -57,7 +57,7 @@ class GeometryProvider(BaseProvider):
         polygon = Polygon(linear_ring, srid=SRID)
         return polygon
 
-    def multi_polygon(self, n_polygons=2):
+    def multipolygon(self, n_polygons=2):
         assert n_polygons >= 2
         polygons = [self.generator.polygon() for _ in range(n_polygons)]
         multi_polygon = MultiPolygon(polygons, srid=SRID)

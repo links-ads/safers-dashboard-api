@@ -3,20 +3,49 @@ import json
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.gis.admin import GeoModelAdmin
-from django.forms import Form, FileField
+from django.forms import Form, FileField, ModelForm, JSONField
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import path, reverse
 from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework.utils.encoders import JSONEncoder
+from rest_framework_gis.fields import GeometryField
 
+from safers.aois.constants import NAMED_AOIS
 from safers.aois.models import Aoi
 from safers.aois.serializers import AoiSerializer
 
 
+class AoiAdminForm(ModelForm):
+    """
+    Custom admin form that allows me to add an extra (ie: non-model) field
+    """
+    class Meta:
+        model = Aoi
+        fields = "__all__"
+
+    geometry_data = JSONField(
+        required=False,
+        disabled=True,
+        help_text=_("GeoJSON representation of geometry."),
+    )
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        initial_data = kwargs.pop("initial", {})
+        if instance:
+            initial_data.update({
+                "geometry_data":
+                    GeometryField().to_representation(instance.geometry)
+            })
+        super().__init__(*args, **kwargs, initial=initial_data)
+
+
 @admin.register(Aoi)
 class AoiAdmin(GeoModelAdmin):
+    form = AoiAdminForm
     fields = None
     fieldsets = (
         (
@@ -41,6 +70,7 @@ class AoiAdmin(GeoModelAdmin):
                     "midpoint",
                     "is_active",
                     "geometry",
+                    "geometry_data",
                 )
             },
         ),
@@ -57,6 +87,10 @@ class AoiAdmin(GeoModelAdmin):
     list_editable = ("is_active", )
     list_filter = ("is_active", )
     search_fields = ("name", )
+
+    # safers should default to somewhere in europe
+    default_lat = NAMED_AOIS["rome"].latitude
+    default_lon = NAMED_AOIS["rome"].longitude
 
     #############################################
     # some fns to help w/ custom detail actions #
@@ -144,6 +178,8 @@ class AoiAdmin(GeoModelAdmin):
                     data=json.load(load_form.cleaned_data["file"])
                 )
                 try:
+                    # THESE FILES MUST BE PERFECTLY VALID GEOJSON
+                    # IE: IF POLYGONS ARE NOT CLOSED, IT WILL FAIL
                     serializer.is_valid(raise_exception=True)
                     serializer.save()
                     self.message_user(

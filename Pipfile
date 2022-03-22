@@ -32,6 +32,7 @@ psycopg2-binary = "*"
 [dev-packages]
 factory-boy = "*"
 pytest = "*"
+pytest-django = "*"
 pytest-html = "*"
 yapf = "*"
 

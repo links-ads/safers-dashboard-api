@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
+from django.contrib.auth.models import Group, Permission
 from django.utils.translation import gettext_lazy as _
 
 from safers.users.forms import UserCreationForm, UserChangeForm
@@ -112,3 +113,13 @@ class UserAdmin(auth_admin.UserAdmin):
             return "remote"
 
     get_authentication_type_for_list_display.short_description = "AUTHENTICATION TYPE"
+
+
+try:
+    admin.site.register(Group)
+except admin.sites.AlreadyRegistered:
+    pass
+try:
+    admin.site.register(Permission)
+except admin.sites.AlreadyRegistered:
+    pass

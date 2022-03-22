@@ -1,6 +1,6 @@
 # just redefining celery-related classes as proxies
 # so I can maybe reference them as part of _this_ app
-# and group them all together in the admin
+# and group them all together in the django admin
 
 from django_celery_beat.models import (
     ClockedSchedule as CeleryBeatClockedSchedule,
