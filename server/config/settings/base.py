@@ -73,11 +73,11 @@ THIRD_PARTY_APPS = [
     'knox',
     'rest_framework',
     'rest_framework_gis',
-    # 'oauth2_provider',
-    # 'social_django',
-    # 'drf_social_oauth2',
-    # 'rest_framework_simplejwt',
-    # 'rest_framework.authtoken',
+# 'oauth2_provider',
+# 'social_django',
+# 'drf_social_oauth2',
+# 'rest_framework_simplejwt',
+# 'rest_framework.authtoken',
     'storages',
 ]  # yapf: disable
 
@@ -234,76 +234,6 @@ ADMIN_SITE_HEADER = f"{PROJECT_NAME} administration console"
 ADMIN_SITE_TITLE = f"{PROJECT_NAME} administration console"
 ADMIN_INDEX_TITLE = f"Welcome to the {PROJECT_NAME} administration console"
 
-#######
-# API #
-#######
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
-        # 'rest_framework.authentication.TokenAuthentication',
-        'knox.auth.TokenAuthentication',
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # 'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
-        # 'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-        # 'drf_social_oauth2.authentication.SocialAuthentication',
-    ],
-}
-
-REST_KNOX = {
-    'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
-    'AUTH_TOKEN_CHARACTER_LENGTH': 64,
-    'TOKEN_TTL': timedelta(hours=10),
-    'USER_SERIALIZER': 'safers.users.serializers.UserSerializer',
-    'TOKEN_LIMIT_PER_USER': None,
-    'AUTO_REFRESH': False,
-}
-
-REST_AUTH_TOKEN_MODEL = 'knox.models.AuthToken'
-REST_AUTH_TOKEN_CREATOR = 'safers.users.utils.create_knox_token'
-
-# REST_USE_JWT = True
-# JWT_AUTH_COOKIE = "safers-gateway-auth"
-# JWT_AUTH_REFRESH_COOKIE = "safers-gateway-refresh"
-
-# custom serializers...
-REST_AUTH_SERIALIZERS = {
-    "JWT_SERIALIZER": "safers.users.serializers.JWTSerializer",
-    "JWT_TOKEN_CLAIMS_SERIALIZER": "safers.users.serializers.TokenObtainPairSerializer",
-    "LOGIN_SERIALIZER": "safers.users.serializers.LoginSerializer",
-    "PASSWORD_CHANGE_SERIALIZER": "safers.users.serializers.PasswordChangeSerializer",
-    "PASSWORD_RESET_SERIALIZER": "safers.users.serializers.PasswordResetSerializer",
-    "PASSWORD_RESET_CONFIRM_SERIALIZER": "safers.users.serializers.PasswordResetConfirmSerializer",
-    "TOKEN_SERIALIZER": "safers.users.serializers.KnoxTokenSerializer",
-    "USER_DETAILS_SERIALIZER": "safers.users.serializers.UserDetailsSerializer",
-}  # yapf: disable
-
-# more custom serializers...
-REST_AUTH_REGISTER_SERIALIZERS = {
-    "REGISTER_SERIALIZER": "safers.users.serializers.RegisterSerializer"
-}  # yapf: disable
-
-
-SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS": {
-        "Token": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header",
-            "description": escape("Enter 'Bearer <token>'"),
-        },
-        # "Basic": {
-        #     "type": "basic"
-        # },
-    },
-    # "USE_SESSION_AUTH": False,
-    "DEFAULT_MODEL_RENDERING": "example",
-    "DOC_EXPANSION": "none",
-    "OPERATIONS_SORTER": None,
-    "TAGS_SORTER": "alpha",
-}   # yapf: disable
-
 #################
 # Authentiation #
 #################
@@ -341,6 +271,88 @@ FUSION_AUTH_INTERNAL_BASE_URL = env("FUSION_AUTH_INTERNAL_BASE_URL", default="")
 
 # SOCIAL_AUTH_FUSIONAUTH_KEY = env("FUSION_AUTH_API_KEY", default="")
 # SOCIAL_AUTH_FUSIONAUTH_SECRET = env("FUSION_AUTH_CLIENT_SECRET", default="")
+
+#######
+# API #
+#######
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
+        'knox.auth.TokenAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        # 'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        # 'drf_social_oauth2.authentication.SocialAuthentication',
+    ],
+}
+
+REST_KNOX = {
+    "SECURE_HASH_ALGORITHM": "cryptography.hazmat.primitives.hashes.SHA512",
+    "AUTH_TOKEN_CHARACTER_LENGTH": 64,
+    "TOKEN_TTL": timedelta(hours=10),
+    "USER_SERIALIZER": "safers.users.serializers.UserSerializer",
+    "TOKEN_LIMIT_PER_USER": None,
+    "AUTO_REFRESH": False,
+    "AUTH_HEADER_PREFIX": "Bearer",
+}
+
+REST_AUTH_TOKEN_MODEL = "knox.models.AuthToken"
+REST_AUTH_TOKEN_CREATOR = "safers.users.utils.create_knox_token"
+
+# REST_USE_JWT = True
+# JWT_AUTH_COOKIE = "safers-gateway-auth"
+# JWT_AUTH_REFRESH_COOKIE = "safers-gateway-refresh"
+
+# custom serializers...
+REST_AUTH_SERIALIZERS = {
+    "JWT_SERIALIZER": "safers.users.serializers.JWTSerializer",
+    "JWT_TOKEN_CLAIMS_SERIALIZER": "safers.users.serializers.TokenObtainPairSerializer",
+    "LOGIN_SERIALIZER": "safers.users.serializers.LoginSerializer",
+    "PASSWORD_CHANGE_SERIALIZER": "safers.users.serializers.PasswordChangeSerializer",
+    "PASSWORD_RESET_SERIALIZER": "safers.users.serializers.PasswordResetSerializer",
+    "PASSWORD_RESET_CONFIRM_SERIALIZER": "safers.users.serializers.PasswordResetConfirmSerializer",
+    "TOKEN_SERIALIZER": "safers.users.serializers.KnoxTokenSerializer",
+    "USER_DETAILS_SERIALIZER": "safers.users.serializers.UserDetailsSerializer",
+}  # yapf: disable
+
+# more custom serializers...
+REST_AUTH_REGISTER_SERIALIZERS = {
+    "REGISTER_SERIALIZER": "safers.users.serializers.RegisterSerializer"
+}  # yapf: disable
+
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Token": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": escape("Enter 'Bearer <token>'"),
+        },
+        "OAuth2": {
+            "type": "oauth2",
+            "flow": "authorizationCode",
+            "authorizationUrl": f"{FUSION_AUTH_EXTERNAL_BASE_URL}/oauth2/authorize",
+            "tokenUrl": "/api/oauth2/login",
+        },
+        # "Basic": {
+        #     "type": "basic"
+        # },
+    },
+    "OAUTH2_CONFIG": {
+      "clientId": FUSION_AUTH_CLIENT_ID,
+      "clientSecret": FUSION_AUTH_CLIENT_SECRET,
+      "appName": "safers-gateway",  # PROJECT_SLUG
+    },
+    # "USE_SESSION_AUTH": False,
+    "DEFAULT_MODEL_RENDERING": "example",
+    "DOC_EXPANSION": "none",
+    "OPERATIONS_SORTER": None,
+    "TAGS_SORTER": "alpha",
+}   # yapf: disable
 
 #########
 # Tasks #

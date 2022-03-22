@@ -6,9 +6,6 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.settings import api_settings as drf_settings
 
-from knox.models import AuthToken as KnoxToken
-from knox.settings import knox_settings
-
 from allauth.utils import email_address_exists
 from allauth.account import app_settings as allauth_settings
 from allauth.account.adapter import get_adapter
@@ -37,27 +34,6 @@ from drf_yasg.utils import swagger_serializer_method
 from safers.users.forms import PasswordResetForm
 from safers.users.models import Role, Organization
 from safers.users.serializers import UserSerializerLite
-
-##############################
-# authentication serializers #
-##############################
-
-
-class KnoxTokenSerializer(serializers.Serializer):
-
-    token = serializers.SerializerMethodField()
-    expiry = serializers.DateTimeField(
-        required=False, format=knox_settings.EXPIRY_DATETIME_FORMAT
-    )
-    user = knox_settings.USER_SERIALIZER()
-
-    @swagger_serializer_method(serializers.CharField)
-    def get_token(self, obj):
-        if isinstance(obj, dict):
-            # when called from auth/login obj will be a dict instead of a token
-            obj = obj["token"]
-        return obj.digest
-
 
 #######################################
 # redefined drf-rest-auth serializers #

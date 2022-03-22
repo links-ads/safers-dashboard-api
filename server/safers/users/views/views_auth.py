@@ -96,12 +96,13 @@ class LoginView(DjRestAuthLoginView):
     Check the credentials and return the REST Token if the credentials are valid and authenticated.
     """
     def get_response(self):
+
         # just a few tweaks to work w/ KnoxToken
         serializer_class = self.get_response_serializer()
         data = {
-            "user": self.user,
+            # (self.token is actually a @dataclass)
             "token": self.token,
-            "expiry": self.token.expiry,
+            "user": self.user,
         }
         serializer = serializer_class(
             instance=data, context={'request': self.request}

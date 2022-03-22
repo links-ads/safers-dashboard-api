@@ -1,10 +1,12 @@
+import json
+
 from collections import OrderedDict
+from sys import stdout
 
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.signals import user_logged_in, user_logged_out
-# from django.shortcuts import redirect
-# from django.urls import resolve, reverse
+from django.templatetags.static import static
 
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
@@ -14,8 +16,6 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from knox.auth import TokenAuthentication
-from knox.models import AuthToken
 from knox.settings import knox_settings
 from knox.views import (
     LoginView as KnoxLoginView,
@@ -59,12 +59,21 @@ class LoginView(GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = AuthenticateSerializer
 
+    @property
+    def is_swagger(self):
+        return "api/swagger" in self.request.headers.get("referer", "")
+
     def _get_auth_token(self, request, data):
+        redirect_uri = request.build_absolute_uri(
+            static("drf-yasg/swagger-ui-dist/oauth2-redirect.html")
+        ) if self.is_swagger else f"{settings.CLIENT_HOST}/auth/sign-in"
+
         response = AUTH_CLIENT.exchange_o_auth_code_for_access_token(
             code=data["code"],
             client_id=settings.FUSION_AUTH_CLIENT_ID,
             # redirect_uri=request.build_absolute_uri(reverse("authenticate")),
-            redirect_uri=f"{settings.CLIENT_HOST}/auth/sign-in",
+            # redirect_uri=f"{settings.CLIENT_HOST}/auth/sign-in",
+            redirect_uri=redirect_uri,
             client_secret=settings.FUSION_AUTH_CLIENT_SECRET,
         )
         if not response.was_successful():
@@ -117,8 +126,11 @@ class LoginView(GenericAPIView):
 
             user_logged_in.send(sender=User, request=request, user=user)
 
-            token = create_knox_token(None, user, None)
-            token_serializer = KnoxTokenSerializer(token)
+            token_dataclass = create_knox_token(None, user, None)
+            token_serializer = KnoxTokenSerializer(token_dataclass)
+
+            if self.is_swagger:
+                json.dump(token_serializer.data, fp=stdout, indent=2)
 
             return Response(
                 token_serializer.data,
