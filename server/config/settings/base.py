@@ -261,6 +261,8 @@ ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL = env(
     "ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL", default=""
 )
 
+OLD_PASSWORD_FIELD_ENABLED = True
+
 FUSION_AUTH_CLIENT_ID = env("FUSION_AUTH_CLIENT_ID", default="")
 FUSION_AUTH_CLIENT_SECRET = env("FUSION_AUTH_CLIENT_SECRET", default="")
 FUSION_AUTH_API_KEY = env("FUSION_AUTH_API_KEY", default="")
@@ -365,17 +367,18 @@ DJANGO_CELERY_BEAT = {}
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_RESULT_SERIALIZER = "json"
-# CELERY_TASK_SERIALIZER = "json"
-# CELERY_TASK_SOFT_TIME_LIMIT = 60 * 5  # 5 minutes until SoftTimeLimitExceeded
-# CELERY_TASK_TIME_LIMIT = 60 * 25  # 25 minutes until worker is killed & replace
+CELERY_TASK_SERIALIZER = "json"
+CELERY_TASK_SOFT_TIME_LIMIT = 60 * 5  # 5 minutes until SoftTimeLimitExceeded
+CELERY_TASK_TIME_LIMIT = 60 * 25  # 25 minutes until worker is killed & replace
 
-# CELERY_BROKER_URL = "{protocol}://:{password}@{host}:{port}/{dbnum}".format(
-#     protocol=quote_plus(env("DJANGO_CELERY_BROKER_PROTOCOL", default="amqp")),
-#     host=quote_plus(env("DJANGO_CELERY_BROKER_HOST", default="localhost")),
-#     port=quote_plus(env("DJANGO_CELERY_BROKER_PORT", default="5672")),
-#     password=quote_plus(env("DJANGO_CELERY_BROKER_REDIS_PASSWORD", default="")),
-#     dbnum=quote_plus(env("DJANGO_CELERY_BROKER_REDIS_DB", default="0")),
-# )
+CELERY_BROKER_URL = "{transport}://{username}:{password}@{host}:{port}/{virtual_host}".format(
+    transport=env("DJANGO_CELERY_BROKER_TRANSPORT", default="amqp"),
+    username=env("DJANGO_CELERY_BROKER_USERNAME", default=""),
+    password=env("DJANGO_CELERY_BROKER_PASSWORD", default=""),
+    host=env("DJANGO_CELERY_BROKER_HOST", default="localhost"),
+    port=env("DJANGO_CELERY_BROKER_PORT", default="5672"),
+    virtual_host=env("DJANGO_CELERY_BROKER_VIRTUAL_HOST", default=""),
+)
 
 CELERY_RESULT_BACKEND = "django-db"  # django-celery-results
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"  # django-celery-beat
