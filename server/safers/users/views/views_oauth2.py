@@ -12,6 +12,7 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.utils.encoders import JSONEncoder
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -130,7 +131,9 @@ class LoginView(GenericAPIView):
             token_serializer = KnoxTokenSerializer(token_dataclass)
 
             if self.is_swagger:
-                json.dump(token_serializer.data, fp=stdout, indent=2)
+                json.dump(
+                    token_serializer.data, fp=stdout, indent=2, cls=JSONEncoder
+                )
 
             return Response(
                 token_serializer.data,
