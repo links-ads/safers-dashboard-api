@@ -8,7 +8,7 @@ from drf_yasg.utils import swagger_serializer_method
 
 class KnoxTokenSerializer(serializers.Serializer):
     # actually serializers a @dataclass instead of a token instance
-    token = serializers.SerializerMethodField()
+    access_token = serializers.SerializerMethodField()
     expiry = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()
 
@@ -23,7 +23,7 @@ class KnoxTokenSerializer(serializers.Serializer):
         return obj.key
 
     @swagger_serializer_method(serializers.CharField)
-    def get_token(self, obj):
+    def get_access_token(self, obj):
         key = self._token_key(obj)
         return key
 
