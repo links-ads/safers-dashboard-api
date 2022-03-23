@@ -18,20 +18,23 @@ class AoiSerializer(gis_serializers.GeoFeatureModelSerializer):
             "name",
             "description",
             "country",
-            "zoom_level",
-            "midpoint",
+            "zoomLevel",
+            "midPoint",
             "geometry",
         )
+
         id_field = False
         geo_field = "geometry"
         list_serializer_class = serializers.ListSerializer  # don't combine multiple AOIs into a FeatureCollection
 
-    geometry = gis_serializers.GeometryField(
-        precision=Aoi.PRECISION, remove_duplicates=True
+    zoomLevel = serializers.FloatField(source="zoom_level")
+
+    midPoint = SimplifiedGeometryField(
+        precision=Aoi.PRECISION, geometry_class=Point, source="midpoint"
     )
 
-    midpoint = SimplifiedGeometryField(
-        precision=Aoi.PRECISION, geometry_class=Point
+    geometry = gis_serializers.GeometryField(
+        precision=Aoi.PRECISION, remove_duplicates=True
     )
 
     def to_representation(self, data):
