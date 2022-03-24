@@ -21,6 +21,10 @@ RabbitMQ
 
 Celery
 
+### worker monitor
+
+Flower ?
+
 ### storage
 
 AWS S3

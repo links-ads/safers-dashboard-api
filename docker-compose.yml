@@ -40,12 +40,19 @@ services:
 
   broker:
     image: rabbitmq:3-management
-    hostname: safers
-    volumes:
-      - ./broker/etc/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
-      - ./broker/etc/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-      - ./broker/db:/var/lib/rabbitmq/mnesia/rabbit@safers
-      - ./broker/logs:/var/log/rabbitmq/log
+    hostname: broker
+    # TODO: WILL WANT SOME CONFIG IN DEFINITIONS TO SETUP QUEUES
+    # TODO: BUT NOT PWDS, ETC
+    # volumes:
+    #   - ./broker/etc/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+    #   - ./broker/etc/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    #   - ./broker/db:/var/lib/rabbitmq/mnesia/rabbit@safers
+    #   - ./broker/logs:/var/log/rabbitmq/log
+    environment:
+      - RABBITMQ_DEFAULT_USER=safers_user
+      - RABBITMQ_DEFAULT_PASS=safers_pwd
+    networks:
+      - safers
     ports:
       - 5672:5672  # internal queue
       - 15672:15672  # management client
@@ -54,7 +61,6 @@ services:
     build: .
     depends_on:
       - broker
-      - server
     environment:
       SYS_ENV: development
       ENABLE_CELERY: 1
@@ -63,6 +69,16 @@ services:
       - ./server:/home/app/server
     networks:
       - safers
+
+  flower:  
+    image: mher/flower
+    depends_on:
+      - broker
+    environment:
+      - CELERY_BROKER_URL=amqp://safers_user:safers_pwd@broker:5672
+      - FLOWER_PORT=5555
+    ports:  
+      - 5555:5555
 
   server:
     build:
@@ -78,6 +94,7 @@ services:
       - safers
     ports:
       - "8000:8000"
+
 
 networks:
   safers:
