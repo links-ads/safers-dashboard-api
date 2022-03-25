@@ -6,7 +6,7 @@ from safers.users.models import UserProfile
 
 
 @admin.register(UserProfile)
-class UserProfileAdmin(CannotDeleteModelAdminBase, admin.ModelAdmin):
+class UserProfileAdmin(admin.ModelAdmin):
 
     list_display = (
         "get_name_for_list_display",

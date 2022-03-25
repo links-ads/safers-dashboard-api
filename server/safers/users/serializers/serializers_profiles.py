@@ -23,9 +23,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         """
         used to indicate to the frontend which profile fields should be read-only
         """
-        if obj.user.is_remote:
-            return obj.user.auth_user.profile_fields
-        return []
+        return self.context.get("prevent_remote_profile_fields", {}).keys()
 
     def validate(self, data):
         # TODO: CAN REFACTOR THIS NOW THAT Oauth2User HAS A profile_fields PROPERTY
