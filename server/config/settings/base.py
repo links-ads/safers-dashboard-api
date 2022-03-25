@@ -250,7 +250,7 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_ADAPTER = "safers.users.adapters.AccountAdapter"
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # "optional" | "none"
+ACCOUNT_EMAIL_VERIFICATION = "none"  # "mandatory" | "optional" | "none"
 ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
 ACCOUNT_USERNAME_BLACKLIST = ["admin", "current", "sentinel"]
 
@@ -370,6 +370,7 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_SERIALIZER = "json"
 CELERY_TASK_SOFT_TIME_LIMIT = 60 * 5  # 5 minutes until SoftTimeLimitExceeded
 CELERY_TASK_TIME_LIMIT = 60 * 25  # 25 minutes until worker is killed & replace
+CELERY_TASK_DEFAULT_QUEUE = env("DJANGO_CELERY_DEFAULT_QUEUE", default="qastro")
 
 CELERY_BROKER_URL = "{transport}://{username}:{password}@{host}:{port}/{virtual_host}".format(
     transport=env("DJANGO_CELERY_BROKER_TRANSPORT", default="amqp"),

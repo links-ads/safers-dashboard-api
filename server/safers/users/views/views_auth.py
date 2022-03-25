@@ -11,6 +11,8 @@ from drf_yasg.utils import swagger_auto_schema
 
 from allauth.account.models import EmailAddress
 
+from dj_rest_auth.app_settings import create_token
+from dj_rest_auth.models import get_token_model
 from dj_rest_auth.views import (
     LoginView as DjRestAuthLoginView,
     LogoutView as DjRestAuthLogoutView,
@@ -141,12 +143,16 @@ class PasswordResetConfirmView(DjRestAuthPasswordResetConfirmView):
 @method_decorator(
     swagger_auto_schema(
         request_body=_register_request_schema,
-        responses={status.HTTP_200_OK: _detail_schema},
+        responses={status.HTTP_200_OK: KnoxTokenSerializer},
     ),
     name="post",
 )
 class RegisterView(DjRestAuthRegisterView):
-    pass
+    def get_response_data(self, user):
+        # some more tweaks to work w/ knox
+        token_model = get_token_model()
+        user.auth_token = create_token(token_model, user, None)
+        return super().get_response_data(user)
 
 
 class VerifyEmailView(DjRestAuthVerifyEmailView):
