@@ -4,8 +4,7 @@ from rest_framework.permissions import BasePermission
 class IsSelfOrAdmin(BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
-        return user.is_superuser
-        # TODO : I AM HERE
+        return user.is_superuser or user == obj
 
 
 class IsOwnerorAdmin(BasePermission):

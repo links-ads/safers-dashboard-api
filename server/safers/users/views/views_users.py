@@ -1,25 +1,48 @@
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
 
 from rest_framework import generics
+# from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
+
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 from safers.core.decorators import swagger_fake
 
 from safers.users.models import User
 from safers.users.permissions import IsSelfOrAdmin
-from safers.users.serializers import UserSerializer
+from safers.users.serializers import UserSerializerLite, UserSerializer
 
 
 class UserView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
     lookup_url_kwarg = "user_id"
-    permission_classes = [IsAuthenticated]
+    # parser_classes = [
+    #     MultiPartParser, FormParser
+    # ]  # the client sends data as multipart/form data
+    permission_classes = [IsAuthenticated, IsSelfOrAdmin]
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+    @swagger_fake(None)
+    def get_object(self):
+        if self.kwargs[self.lookup_url_kwarg].upper() == "CURRENT":
+            return self.request.user
+        return super().get_object()
+
+    def get_serializer_context(self):
+        # if this is a remote user, I want to prevent updating any
+        # profile fields which come from the remote auth_user
+        context = super().get_serializer_context()
+        user = self.get_object()
+        if user.is_remote:
+            context["prevent_remote_profile_fields"] = {
+                field: getattr(user.profile, field)
+                for field in user.auth_user.profile_fields
+            }
+        return context
 
 
 class UserViewMixin(object):

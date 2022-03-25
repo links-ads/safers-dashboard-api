@@ -25,8 +25,8 @@ from knox.views import (
 )
 
 from safers.users.exceptions import AuthenticationException
-from safers.users.models import User
-from safers.users.serializers import AuthenticateSerializer, KnoxTokenSerializer
+from safers.users.models import User, Oauth2User, AUTH_USER_FIELDS, AUTH_PROFILE_FIELDS, AUTH_TOKEN_FIELDS
+from safers.users.serializers import AuthenticateSerializer, KnoxTokenSerializer, UserProfileSerializer
 from safers.users.utils import AUTH_CLIENT, create_knox_token
 """
 code to authenticate using OAUTH2
@@ -38,11 +38,7 @@ code to authenticate using OAUTH2
 4. that gets user details and generates token for client
 """
 
-AUTH_USER_FIELDS = [
-    # fields from auth_user to duplicate in user
-    "email",
-    "username",
-]
+# TODO: PREVENT LOGIN IF LOCAL USER TRIES TO LOGIN AS REMOTE
 
 
 class LoginView(GenericAPIView):
@@ -112,20 +108,37 @@ class LoginView(GenericAPIView):
                 auth_token_data,
             )
 
-            user, created = User.objects.get_or_create(
+            user, created_user = User.objects.get_or_create(
                 auth_id=auth_token_data["userId"],
                 defaults={
-                    k: v
+                    AUTH_USER_FIELDS[k]: v
                     for k, v in auth_user_data.items() if k in AUTH_USER_FIELDS
                 }
             )
-            if created:
-                # TODO: register user
+            if created_user:
+                profile_serializer = UserProfileSerializer()
+                profile_data = {
+                    AUTH_PROFILE_FIELDS[k]: v
+                    for k,
+                    v in auth_user_data.items() if k in AUTH_PROFILE_FIELDS
+                }
+                profile_serializer.update(user.profile, profile_data)
+
+                # TODO: register user extr steps ?
                 pass
 
             # any additional user checks ?
+            # user_logged_in.send(sender=User, request=request, user=user)
 
-            user_logged_in.send(sender=User, request=request, user=user)
+            auth_data, created_auth_data = Oauth2User.objects.get_or_create(
+                user=user,
+                defaults={
+                    AUTH_TOKEN_FIELDS[k]: v
+                    for k, v in auth_token_data.items() if k in AUTH_TOKEN_FIELDS
+                }
+            )
+            auth_data.data = auth_user_data
+            auth_data.save()
 
             token_dataclass = create_knox_token(None, user, None)
             token_serializer = KnoxTokenSerializer(token_dataclass)
@@ -138,7 +151,7 @@ class LoginView(GenericAPIView):
             return Response(
                 token_serializer.data,
                 status=status.HTTP_201_CREATED
-                if created else status.HTTP_200_OK
+                if created_user else status.HTTP_200_OK
             )
 
         except Exception as e:

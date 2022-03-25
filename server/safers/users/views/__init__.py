@@ -1,5 +1,6 @@
 from .views_organizations import OrganizationView
 from .views_roles import RoleView
+from .views_users import UserView
 from .views_auth import (
     LoginView,
     LogoutView,
@@ -15,4 +16,3 @@ from .views_oauth2 import (
     LogoutView as Oauth2LogoutView,
     LogoutAllView as Oauth2LogoutAllView,
 )
-from .views_users import UserView

@@ -24,4 +24,9 @@ def create_knox_token(token_model, user, serializer):
         assert tokens.count() <= token_limit_per_user, "Maximum amount of tokens allowed per user exceeded."
 
     token_instance, token_key = KnoxToken.objects.create(user=user)
+
+    # TODO: THIS IS A SECURITY RISK; DELETE IN PRODUCTION
+    user.active_token_key = token_key
+    user.save()
+
     return KnoxData(token_instance, token_key)

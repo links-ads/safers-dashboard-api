@@ -34,7 +34,7 @@ class UserAdmin(auth_admin.UserAdmin):
     add_form = UserCreationForm
     form = UserChangeForm
     fieldsets = (
-        (None, {"fields": ["id", "auth_id", "username", "email", "password"]}),
+        (None, {"fields": ["id", "auth_id", "username", "email", "password", "active_token_key"]}),
         ("Personal Info", {"fields": ["first_name", "last_name", "role", "organization",]}),
         ("Permissions", {"fields": ["is_active", "is_staff","is_superuser", "accepted_terms","groups", "user_permissions"] }),
         ("Important Dates", {"fields": ["last_login", "date_joined"]}),
@@ -64,6 +64,7 @@ class UserAdmin(auth_admin.UserAdmin):
     readonly_fields = (
         "id",
         "auth_id",
+        "active_token_key",
     ) + auth_admin.UserAdmin.readonly_fields
 
     def toggle_accepted_terms(self, request, queryset):

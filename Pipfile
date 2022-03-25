@@ -27,6 +27,7 @@ djangorestframework-simplejwt = "*"
 drf-yasg = "*"
 drf-social-oauth2 = "*"
 fusionauth-client = "*"
+pillow = "*"
 psycopg2-binary = "*"
 
 [dev-packages]

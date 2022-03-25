@@ -33,7 +33,7 @@ from drf_yasg.utils import swagger_serializer_method
 
 from safers.users.forms import PasswordResetForm
 from safers.users.models import Role, Organization
-from safers.users.serializers import UserSerializerLite
+# from safers.users.serializers import UserSerializerLite
 
 #######################################
 # redefined drf-rest-auth serializers #
@@ -48,10 +48,19 @@ class JWTSerializer(DjRestAuthJWTSerializer):
     refresh_token = serializers.CharField()
     user = serializers.SerializerMethodField()
 
-    @swagger_serializer_method(serializer_or_field=UserSerializerLite)
+    # @swagger_serializer_method(serializer_or_field=UserSerializerLite)
+    @swagger_serializer_method(
+        serializer_or_field=settings.
+        REST_AUTH_SERIALIZERS["USER_DETAILS_SERIALIZER"]
+    )
     def get_user(self, obj):
 
-        user_serializer = UserSerializerLite(obj['user'], context=self.context)
+        UserDetailsSerializerClass = settings.REST_AUTH_SERIALIZERS[
+            "USER_DETAILS_SERIALIZER"]
+        user_serializer = UserDetailsSerializerClass(
+            obj["user"], context=self.context
+        )
+        # user_serializer = UserSerializerLite(obj['user'], context=self.context)
         return user_serializer.data
 
 

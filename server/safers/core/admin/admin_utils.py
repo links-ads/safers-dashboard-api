@@ -1,4 +1,7 @@
+import json
+
 from django.contrib import admin
+from django.forms import widgets
 from django.urls import resolve, reverse
 from django.utils.html import format_html
 
@@ -27,3 +30,23 @@ def get_clickable_fk_list_display(obj):
     admin_change_url_name = f"admin:{model_class._meta.db_table}_change"
     list_display = f"<a href='{reverse(admin_change_url_name, args=[obj.pk])}'>{str(obj)}</a>"
     return format_html(list_display)
+
+
+class JSONAdminWidget(widgets.Textarea):
+    def __init__(self, attrs=None):
+        default_attrs = {
+            # make things a bit bigger
+            "cols": "80",
+            "rows": "20",
+            "class": "vLargeTextField",
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
+
+    def format_value(self, value):
+        try:
+            value = json.dumps(json.loads(value), indent=2, sort_keys=True)
+        except Exception:
+            pass
+        return value

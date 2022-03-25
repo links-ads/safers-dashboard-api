@@ -1,25 +1,25 @@
 from django.contrib.auth import get_user_model
-
-from allauth.account.signals import user_signed_up
+from django.db.models.signals import post_save
 
 from safers.users.models import UserProfile
 
 
-def user_signed_up_handler(sender, *args, **kwargs):
+def post_save_user_handler(sender, *args, **kwargs):
     """
-    If a local user has just signed-up (via dj-rest-auth),
-    then the corresponding profile must also be created.
+    If a User has just been created,
+    then the corresponding Profile must also be created,
     """
-    user = kwargs.get("user", None)
-    if user:
-        UserProfile.objects.create(user=user)
+    created = kwargs.get("created", False)
+    instance = kwargs.get("instance", None)
+    if created and instance:
+        UserProfile.objects.create(user=instance)
 
 
-user_signed_up.connect(
-    user_signed_up_handler,
+post_save.connect(
+    post_save_user_handler,
     sender=get_user_model(),
-    dispatch_uid="safers_user_signed_up_handler",
+    dispatch_uid="safers_post_save_user_handler",
 )
 
 # no signal handlers are needed for User post_delete because
-# UserProfile and Oauth2User both use `on_delete=models.CASCADE`
+# UserProfile and uses `on_delete=models.CASCADE`

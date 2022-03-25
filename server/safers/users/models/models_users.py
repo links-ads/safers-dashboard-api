@@ -70,12 +70,10 @@ class UserManager(BaseUserManager):
 
         return qs.annotate(
             _is_local=ExpressionWrapper(
-                Q(profile__isnull=False) & Q(auth_id__isnull=True),
-                output_field=models.BooleanField()
+                Q(auth_id__isnull=True), output_field=models.BooleanField()
             ),
             _is_remote=ExpressionWrapper(
-                Q(profile__isnull=True) & Q(auth_id__isnull=False),
-                output_field=models.BooleanField()
+                Q(auth_id__isnull=False), output_field=models.BooleanField()
             )
         )
 
@@ -112,8 +110,14 @@ class User(AbstractUser):
         blank=True,
         editable=False,
         null=True,
-        # TODO: unique=True
+        unique=True,
         help_text=_("The corresponding id of the FusionAuth User"),
+    )
+
+    active_token_key = models.TextField(
+        blank=True,
+        null=True,
+        help_text=_("TODO: THIS IS A SECURITY RISK; REMOVE IN PRODUCTION")
     )
 
     email = models.EmailField(_('email address'), unique=True)
@@ -195,11 +199,7 @@ class User(AbstractUser):
 
     @property
     def is_local(self):
-        try:
-            return self.profile is not None
-        except User.profile.RelatedObjectDoesNotExist:
-            # need to protect against null OneToOneFields
-            return False
+        return self.auth_id is None
 
     @property
     def is_remote(self):
