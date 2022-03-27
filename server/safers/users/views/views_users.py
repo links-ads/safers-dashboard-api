@@ -32,6 +32,7 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
             return self.request.user
         return super().get_object()
 
+    @swagger_fake({})
     def get_serializer_context(self):
         # if this is a remote user, I want to prevent updating any
         # profile fields which come from the remote auth_user
