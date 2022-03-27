@@ -55,8 +55,8 @@ class TestAoiSerializer:
         assert feature_properties["name"] == aoi.name
         assert feature_properties["description"] == aoi.description
         assert feature_properties["country"] == aoi.country
-        assert feature_properties["zoom_level"] == aoi.zoom_level
-        assert feature_properties["midpoint"] == list(aoi.midpoint.coords)
+        assert feature_properties["zoomLevel"] == aoi.zoom_level
+        assert feature_properties["midPoint"] == list(aoi.midpoint.coords)
 
     def test_serializes_from_featurecollection(self):
         """
