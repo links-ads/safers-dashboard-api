@@ -78,3 +78,16 @@ class TestAoiSerializer:
         assert aoi.name == test_aoi.name
         assert aoi.midpoint == test_aoi.midpoint
         assert aoi.geometry == test_aoi.geometry
+
+    def test_ordering(self):
+
+        aoi_4 = AoiFactory(country="b", name="b")
+        aoi_3 = AoiFactory(country="b", name="a")
+        aoi_1 = AoiFactory(country="a", name="a")
+        aoi_2 = AoiFactory(country="a", name="b")
+
+        aoi_ids = Aoi.objects.values_list("pk", flat=True)
+        assert aoi_ids[0] == aoi_1.id
+        assert aoi_ids[1] == aoi_2.id
+        assert aoi_ids[2] == aoi_3.id
+        assert aoi_ids[3] == aoi_4.id

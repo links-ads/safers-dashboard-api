@@ -16,6 +16,12 @@ class AoiQuerySet(models.QuerySet):
 
 class Aoi(gis_models.Model):
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["country", "name"], name="unique_country_name"
+            ),
+        ]
+        ordering = ["country", "name"]
         verbose_name = "AOI"
         verbose_name_plural = "AOIs"
 
@@ -23,18 +29,17 @@ class Aoi(gis_models.Model):
 
     objects = AoiManager.from_queryset(AoiQuerySet)()
 
+    country = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+    )
     name = models.CharField(
         max_length=128,
         blank=False,
         null=False,
-        unique=True,
     )
     description = models.TextField(
-        blank=True,
-        null=True,
-    )
-    country = models.CharField(
-        max_length=128,
         blank=True,
         null=True,
     )
@@ -53,4 +58,6 @@ class Aoi(gis_models.Model):
     geometry = gis_models.GeometryField(blank=False)
 
     def __str__(self):
+        if self.country:
+            return f"{self.country}: {self.name}"
         return self.name
