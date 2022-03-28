@@ -372,8 +372,8 @@
                 "id": 1,
                 "name": "Italy",
                 "country": "Italy",
-                "zoom_level": 4,
-                "midpoint": [
+                "zoomLevel": 4,
+                "midPoint": [
                     12.440872742750281,
                     42.33504249084801
                 ]

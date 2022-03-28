@@ -6,14 +6,21 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from django_filters import rest_framework as filters
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from safers.core.decorators import swagger_fake
+from safers.core.filters import BBoxFilterSetMixin
 from safers.core.views import CannotDeleteViewSet
 
 from safers.alerts.models import Alert
 from safers.alerts.serializers import AlertSerializer
+
+###########
+# swagger #
+###########
 
 _alert_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -42,6 +49,24 @@ _alert_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=_alert_schema
 )
 
+###########
+# filters #
+###########
+
+
+class AlertFilterSet(BBoxFilterSetMixin, filters.FilterSet):
+    class Meta:
+        model = Alert
+        fields = {}
+
+    geometry__bboverlaps = filters.Filter(method="filter_geometry")
+    geometry__bbcontains = filters.Filter(method="filter_geometry")
+
+
+#########
+# views #
+#########
+
 
 @method_decorator(
     swagger_auto_schema(responses={status.HTTP_200_OK: _alert_list_schema}),
@@ -65,31 +90,34 @@ class AlertViewSet(CannotDeleteViewSet):
     lookup_field = "id"
     lookup_url_kwarg = "alert_id"
 
+    filter_backends = (filters.DjangoFilterBackend, )
+    filterset_class = AlertFilterSet
+
     @swagger_fake(Alert.objects.none())
     def get_queryset(self):
         user = self.request.user
         # TODO: GET ALL THE ALERTS THIS USER CAN ACCESS
         return Alert.objects.all()
 
-    # TODO: NOT SURE IF I SHOULD HAVE A SEPARATE ACTION HERE
-    # TODO: OR JUST USE A PUT REQUEST TO THE USERS API
     @action(detail=True, methods=["post"])
-    def favorite(self, request, pk=None):
+    def favorite(self, request, **kwargs):
+        """
+        Toggles the favorite status of the specified object
+        """
         user = request.user
-        aoi = self.get_object()
+        obj = self.get_object()
 
-        max_favorite_alerts = settings.SAFERS_MAX_FAVORITE_ALERTS
-        if user.favorite_alerts.count() >= max_favorite_alerts:
-            return Response(
-                data={
-                    "error":
-                        f"{user} cannot have more than {max_favorite_alerts} alerts."
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        user.favorite_alerts.add(aoi)
+        if obj not in user.favorite_alerts.all():
+            max_favorites = settings.SAFERS_MAX_FAVORITE_ALERTS
+            if user.favorite_alerts.count() >= max_favorites:
+                raise ValidationError(
+                    f"cannot have more than {max_favorites} events."
+                )
+            user.favorite_alerts.add(obj)
+        else:
+            user.favorite_alerts.remove(obj)
 
-        return Response(
-            data={"detail": f"{user} favorited {aoi}."},
-            status=status.HTTP_200_SUCCESS,
-        )
+        SerializerClass = self.get_serializer_class()
+        serializer = SerializerClass(obj, context=self.get_serializer_context())
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

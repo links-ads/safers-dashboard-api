@@ -32,24 +32,24 @@ from safers.tasks.models import (
 )
 
 # TODO: SOMETHING'S GOING WRONG W/ CeleryResultsTaskResultAdmin ?
-# for model in (
-#     CeleryBeatIntervalSchedule,
-#     CeleryBeatCrontabSchedule,
-#     CeleryBeatSolarSchedule,
-#     CeleryBeatClockedSchedule,
-#     CeleryBeatPeriodicTask,
-#     CeleryResultsTaskResult,
-#     CeleryResultsGroupResult,
-# ):
-#     try:
-#         admin.site.unregister(model)
-#     except admin.sites.NotRegistered:
-#         pass
+for model in (
+    CeleryBeatIntervalSchedule,
+    CeleryBeatCrontabSchedule,
+    CeleryBeatSolarSchedule,
+    CeleryBeatClockedSchedule,
+    CeleryBeatPeriodicTask,
+    CeleryResultsTaskResult,
+    CeleryResultsGroupResult,
+):
+    try:
+        admin.site.unregister(model)
+    except admin.sites.NotRegistered:
+        pass
 
-# admin.site.register(IntervalSchedule)
-# admin.site.register(CrontabSchedule)
-# admin.site.register(SolarSchedule)
-# admin.site.register(ClockedSchedule, CeleryBeatClockedScheduleAdmin)
-# admin.site.register(PeriodicTask, CeleryBeatPeriodicTaskAdmin)
-# admin.site.register(TaskResult, CeleryResultsTaskResultAdmin)
-# admin.site.register(GroupResult, CeleryResultsGroupResultAdmin)
+admin.site.register(IntervalSchedule)
+admin.site.register(CrontabSchedule)
+admin.site.register(SolarSchedule)
+admin.site.register(ClockedSchedule, CeleryBeatClockedScheduleAdmin)
+admin.site.register(PeriodicTask, CeleryBeatPeriodicTaskAdmin)
+admin.site.register(TaskResult, CeleryResultsTaskResultAdmin)
+admin.site.register(GroupResult, CeleryResultsGroupResultAdmin)

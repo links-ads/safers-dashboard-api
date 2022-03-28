@@ -54,9 +54,6 @@ class UserSerializer(UserSerializerLite):
             "organization",
             "role",
             "default_aoi",
-            "favorite_alerts",
-            "favorite_events",
-            "favorite_camera_medias",
             "profile",
         )
 
@@ -70,18 +67,6 @@ class UserSerializer(UserSerializerLite):
 
     default_aoi = serializers.PrimaryKeyRelatedField(
         queryset=Aoi.objects.active(), required=False, allow_null=True
-    )
-
-    favorite_alerts = serializers.PrimaryKeyRelatedField(
-        queryset=Alert.objects.all(), many=True
-    )
-
-    favorite_events = serializers.PrimaryKeyRelatedField(
-        queryset=Event.objects.all(), many=True
-    )
-
-    favorite_camera_medias = serializers.PrimaryKeyRelatedField(
-        queryset=CameraMedia.objects.all(), many=True
     )
 
     profile = UserProfileSerializer()

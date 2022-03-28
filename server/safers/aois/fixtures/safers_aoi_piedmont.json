@@ -1538,8 +1538,8 @@
         "id": 3,
         "name": "Piedmont",
         "country": "Italy",
-        "zoom_level": 6,
-        "midpoint": [
+        "zoomLevel": 6,
+        "midPoint": [
           7.83942968205914,
           45.23827910853055
         ]

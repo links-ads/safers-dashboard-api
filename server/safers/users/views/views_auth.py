@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from django.db import ProgrammingError
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
@@ -31,9 +32,18 @@ from dj_rest_auth.registration.views import (
 from safers.users.models import Role, Organization
 from safers.users.serializers import KnoxTokenSerializer, JWTSerializer, RegisterSerializer
 
-###################
-# swagger schemas #
-###################
+#################
+# swagger stuff #
+#################
+
+try:
+    sample_role = Role.objects.first()
+except ProgrammingError:
+    sample_role = None
+try:
+    sample_organization = Organization.objects.first()
+except ProgrammingError:
+    sample_organization = None
 
 _login_request_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -65,8 +75,8 @@ _register_request_schema = openapi.Schema(
         ("first_name", openapi.Schema(type=openapi.TYPE_STRING)),
         ("last_name", openapi.Schema(type=openapi.TYPE_STRING)),
         ("password", openapi.Schema(type=openapi.TYPE_STRING, example="RandomPassword123")),
-        ("role", openapi.Schema(type=openapi.TYPE_STRING, example=str(Role.objects.first()))),
-        ("organization", openapi.Schema(type=openapi.TYPE_STRING, example=str(Organization.objects.first()))),
+        ("role", openapi.Schema(type=openapi.TYPE_STRING, example=str(sample_role))),
+        ("organization", openapi.Schema(type=openapi.TYPE_STRING, example=str(sample_organization))),
         ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
     )),
 )  # yapf: disable

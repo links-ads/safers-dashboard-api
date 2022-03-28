@@ -89,6 +89,7 @@ LOCAL_APPS = [
     'safers.alerts',
     'safers.events',
     'safers.cameras',
+    'safers.social',
 ]  # yapf: disable
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -370,7 +371,19 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_SERIALIZER = "json"
 CELERY_TASK_SOFT_TIME_LIMIT = 60 * 5  # 5 minutes until SoftTimeLimitExceeded
 CELERY_TASK_TIME_LIMIT = 60 * 25  # 25 minutes until worker is killed & replace
-CELERY_TASK_DEFAULT_QUEUE = env("DJANGO_CELERY_DEFAULT_QUEUE", default="qastro")
+
+CELERY_DEFAULT_QUEUE_NAME = env(
+    "DJANGO_CELERY_DEFAULT_QUEUE_NAME", default="qastro"
+)
+CELERY_DEFAULT_EXCHANGE_NAME = env(
+    "DJANGO_CELERY_DEFAULT_EXCHANGE_NAME", default="safers.b2b"
+)
+CELERY_DEFAULT_EXCHANGE_TYPE = env(
+    "DJANGO_CELERY_DEFAULT_EXCHANGE_TYPE", default="topic"
+)
+
+CELERY_USERNAME = env("DJANGO_CELERY_BROKER_USERNAME", default="")
+CELERY_PASSWORD = env("DJANGO_CELERY_BROKER_PASSWORD", default="")
 
 CELERY_BROKER_URL = "{transport}://{username}:{password}@{host}:{port}/{virtual_host}".format(
     transport=env("DJANGO_CELERY_BROKER_TRANSPORT", default="amqp"),
@@ -408,4 +421,7 @@ SAFERS_MAX_FAVORITE_ALERTS = DynamicSetting(
 )
 SAFERS_MAX_FAVORITE_EVENTS = DynamicSetting(
     "core.SafersSettings.max_favorite_events", 3
+)
+SAFERS_MAX_FAVORITE_CAMERA_MEDIA = DynamicSetting(
+    "core.SafersSettings.max_favorite_camera_media", 3
 )

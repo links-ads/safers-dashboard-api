@@ -4442,8 +4442,8 @@
                 "id": 4,
                 "name": "France",
                 "country": "France",
-                "zoom_level": 4,
-                "midpoint": [
+                "zoomLevel": 4,
+                "midPoint": [
                     2.0374288219643675,
                     46.587435956475424
                 ]

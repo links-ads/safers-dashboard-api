@@ -1302,8 +1302,8 @@
                 "id": 2,
                 "name": "Central Macedonia",
                 "country": "Greece",
-                "zoom_level": 6.5,
-                "midpoint": [
+                "zoomLevel": 6.5,
+                "midPoint": [
                     22.9814839342153,
                     40.61465097484172
                 ]

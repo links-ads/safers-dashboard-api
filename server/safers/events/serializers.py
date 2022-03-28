@@ -19,6 +19,7 @@ class EventSerializer(serializers.ModelSerializer):
             "status",
             "geometry",
             "bounding_box",
+            "favorite",
         )
 
     geometry = gis_serializers.GeometryField(
@@ -28,8 +29,14 @@ class EventSerializer(serializers.ModelSerializer):
 
     status = serializers.SerializerMethodField()
 
+    favorite = serializers.SerializerMethodField(method_name="is_favorite")
+
     def get_status(self, obj):
         if obj.closed:
             return EventStatus.CLOSED
         elif obj.open:
             return EventStatus.OPEN
+
+    def is_favorite(self, obj):
+        user = self.context["request"].user
+        return obj in user.favorite_events.all()

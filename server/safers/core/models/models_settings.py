@@ -39,6 +39,13 @@ class SafersSettings(SingletonMixin, models.Model):
         help_text=_("Number of alerts that a user can mark as 'favorite'."),
     )
 
+    max_favorite_camera_media = models.PositiveBigIntegerField(
+        default=3,
+        help_text=_(
+            "Number of camera_medias that a user can mark as 'favorite'."
+        ),
+    )
+
     possible_event_distance = models.FloatField(
         default=10.0,
         validators=[MinValueValidator(0), MaxValueValidator(1000)],

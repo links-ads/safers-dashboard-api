@@ -119,5 +119,6 @@ class CameraMedia(HashableMixin, gis_models.Model):
 
     def save(self, *args, **kwargs):
         if self.has_hash_source_changed(self.hash_source):
-            self.bounding_box = self.geometry.envelope
+            if self.geometry.geom_type != "Point":
+                self.bounding_box = self.geometry.envelope
         return super().save(*args, **kwargs)

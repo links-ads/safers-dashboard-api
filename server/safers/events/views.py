@@ -6,14 +6,21 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from django_filters import rest_framework as filters
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from safers.core.decorators import swagger_fake
+from safers.core.filters import BBoxFilterSetMixin
 from safers.core.views import CannotDeleteViewSet
 
 from safers.events.models import Event, EventStatus
 from safers.events.serializers import EventSerializer
+
+###########
+# swagger #
+###########
 
 _event_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -42,6 +49,24 @@ _event_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=_event_schema
 )
 
+###########
+# filters #
+###########
+
+
+class EventFilterSet(BBoxFilterSetMixin, filters.FilterSet):
+    class Meta:
+        model = Event
+        fields = {}
+
+    geometry__bboverlaps = filters.Filter(method="filter_geometry")
+    geometry__bbcontains = filters.Filter(method="filter_geometry")
+
+
+#########
+# views #
+#########
+
 
 # @method_decorator(
 #     swagger_auto_schema(responses={status.HTTP_200_OK: _alert_list_schema}),
@@ -65,31 +90,34 @@ class EventViewSet(CannotDeleteViewSet):
     lookup_field = "id"
     lookup_url_kwarg = "event_id"
 
+    filter_backends = (filters.DjangoFilterBackend, )
+    filterset_class = EventFilterSet
+
     @swagger_fake(Event.objects.none())
     def get_queryset(self):
         user = self.request.user
         # TODO: GET ALL THE ALERTS THIS USER CAN ACCESS
         return Event.objects.all()
 
-    # TODO: NOT SURE IF I SHOULD HAVE A SEPARATE ACTION HERE
-    # TODO: OR JUST USE A PUT REQUEST TO THE USERS API
     @action(detail=True, methods=["post"])
-    def favorite(self, request, pk=None):
+    def favorite(self, request, **kwargs):
+        """
+        Toggles the favorite status of the specified object
+        """
         user = request.user
-        event = self.get_object()
+        obj = self.get_object()
 
-        max_favorite_events = settings.SAFERS_MAX_FAVORITE_EVENTS
-        if user.favorite_events.count() >= max_favorite_events:
-            return Response(
-                data={
-                    "error":
-                        f"{user} cannot have more than {max_favorite_events} events."
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        user.favorite_events.add(event)
+        if obj not in user.favorite_events.all():
+            max_favorites = settings.SAFERS_MAX_FAVORITE_EVENTS
+            if user.favorite_events.count() >= max_favorites:
+                raise ValidationError(
+                    f"cannot have more than {max_favorites} events."
+                )
+            user.favorite_events.add(obj)
+        else:
+            user.favorite_events.remove(obj)
 
-        return Response(
-            data={"detail": f"{user} favorited {event}."},
-            status=status.HTTP_200_SUCCESS,
-        )
+        SerializerClass = self.get_serializer_class()
+        serializer = SerializerClass(obj, context=self.get_serializer_context())
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -43,6 +43,7 @@ class CameraMediaSerializer(serializers.ModelSerializer):
             "tags",
             "geometry",
             "bounding_box",
+            "favorite",
         )
 
     tags = serializers.SlugRelatedField(
@@ -55,6 +56,12 @@ class CameraMediaSerializer(serializers.ModelSerializer):
     bounding_box = gis_serializers.GeometryField(
         precision=CameraMedia.PRECISION
     )
+
+    favorite = serializers.SerializerMethodField(method_name="is_favorite")
+
+    def is_favorite(self, obj):
+        user = self.context["request"].user
+        return obj in user.favorite_camera_medias.all()
 
     # TODO: WRITEABLE NESTED SERIALIZER
     # def create(self, validated_data):
