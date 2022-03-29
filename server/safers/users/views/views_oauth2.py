@@ -130,15 +130,12 @@ class LoginView(GenericAPIView):
             # any additional user checks ?
             # user_logged_in.send(sender=User, request=request, user=user)
 
-            auth_data, created_auth_data = Oauth2User.objects.get_or_create(
-                user=user,
-                defaults={
-                    AUTH_TOKEN_FIELDS[k]: v
-                    for k, v in auth_token_data.items() if k in AUTH_TOKEN_FIELDS
-                }
-            )
-            auth_data.data = auth_user_data
-            auth_data.save()
+            auth_user, created_auth_user = Oauth2User.objects.get_or_create(user=user)
+            auth_user.data = auth_user_data
+            for k, v in auth_token_data.items():
+                if k in AUTH_TOKEN_FIELDS:
+                    setattr(auth_user, AUTH_TOKEN_FIELDS[k], v)
+            auth_user.save()
 
             token_dataclass = create_knox_token(None, user, None)
             token_serializer = KnoxTokenSerializer(token_dataclass)

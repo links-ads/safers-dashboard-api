@@ -13,8 +13,8 @@ class TweetViewSet(
 ):
     # permission_classes = [TODO: SOME KIND OF FACTORY FUNCTION HERE]
     serializer_class = TweetSerializer
-    lookup_field = "tweet_id"
-    lookup_url_kwarg = "tweet_id"
+    lookup_field = "external_id"
+    lookup_url_kwarg = "external_id"
 
     @swagger_fake(Tweet.objects.none())
     def get_queryset(self):
