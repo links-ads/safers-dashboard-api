@@ -327,6 +327,7 @@ REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "safers.users.serializers.RegisterSerializer"
 }  # yapf: disable
 
+FILTERS_DEFAULT_LOOKUP_EXPR = "iexact"
 
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
@@ -416,9 +417,9 @@ CELERY_BROKER_URL = "{transport}://{username}:{password}@{host}:{port}/{virtual_
 CELERY_RESULT_BACKEND = "django-db"  # django-celery-results
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"  # django-celery-beat
 
-########################
-# safers.core settings #
-########################
+############################
+# safers-specific settings #
+############################
 
 SAFERS_ALLOW_REGISTRATION = DynamicSetting(
     "core.SafersSettings.allow_registration", True
@@ -443,4 +444,8 @@ SAFERS_MAX_FAVORITE_EVENTS = DynamicSetting(
 )
 SAFERS_MAX_FAVORITE_CAMERA_MEDIA = DynamicSetting(
     "core.SafersSettings.max_favorite_camera_media", 3
+)
+
+SAFERS_SOCIAL_API_URL = env(
+    "SAFERS_SOCIAL_API_URL", default="https://api-test.safers-project.cloud/"
 )

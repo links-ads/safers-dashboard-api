@@ -19,7 +19,7 @@ import ssl
 BINDING_KEYS = {
     # a map of routing_key patterns to classes to run process_message w/ message
     "status.test.#": None,
-    "event.social.*": 'safers.social.models.Tweet',
+    "event.social.*": "safers.social.models.SocialEvent",
 }
 
 
@@ -150,6 +150,11 @@ class RMQ(object):
     def callback(
         channel, method: Method, properties: BasicProperties, body: str
     ):
+        print(f"[{datetime.now()}] Received {method.routing_key}:")
+        print("properties:")
+        print(properties)
+        print(body)
+
         for key, value in BINDING_KEYS.items():
             if value is not None and re.match(
                 binding_key_to_regex(key), method.routing_key
@@ -158,9 +163,3 @@ class RMQ(object):
                 callable.process_message(
                     json.loads(body), properties=properties
                 )
-
-        print(dir(method))
-        print(f"[{datetime.now()}] Received {method.routing_key}:")
-        print("properties:")
-        print(properties)
-        print(body)

@@ -1,17 +1,17 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from safers.social.models import Tweet
+from safers.social.models import SocialEvent
 
 
-class TweetSerializer(serializers.ModelSerializer):
+class SocialEventSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tweet
+        model = SocialEvent
         fields = (
             "id",
             "external_id",
-            "type",
             "category",
+            "severity",
             "start_date",
             "end_date",
             "geometry",
@@ -19,6 +19,8 @@ class TweetSerializer(serializers.ModelSerializer):
         )  # yapf: disable
 
     geometry = gis_serializers.GeometryField(
-        precision=Tweet.PRECISION, remove_duplicates=True
+        precision=SocialEvent.PRECISION, remove_duplicates=True
     )
-    bounding_box = gis_serializers.GeometryField(precision=Tweet.PRECISION)
+    bounding_box = gis_serializers.GeometryField(
+        precision=SocialEvent.PRECISION
+    )

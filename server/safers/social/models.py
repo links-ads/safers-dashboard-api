@@ -1,23 +1,24 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.utils.translation import gettext_lazy as _
 
 from safers.core.mixins import HashableMixin
+from safers.rmq.exceptions import RMQException
 
 # TODO: THIS IS ACTUALLY STORING A PROCESSED EVENT FROM THE SOCIAL MEDIA MODULE
 # TODO: NOT AN INDIVIDUAL TWEET; IT INCLUDES AN ID THAT I CAN USE TO QUERY THE
 # TODO: SOCIAL MEDIA API TO GET THE ACTUAL TWEETS THEMSELVES; THAT MUST BE DONE
-# TODO: AT RUN-TIME B/C IT REQUIRES AUTHENCTICATION W/ THE API; THEREFORE I SHOULD
-# TODO: RENAME ALL OF THESE CLASSES TO BE MORE PRECISE (ie: "SocialEvent" instead of "Tweet")
+# TODO: AT RUN-TIME B/C IT REQUIRES AUTHENCTICATION W/ THE API
 
 
-class TweetManager(models.Manager):
+class SocialEventManager(models.Manager):
     pass
 
 
-class TweetQuerySet(models.QuerySet):
+class SocialEventQuerySet(models.QuerySet):
     def filter_by_distance(self, target, distance=None):
         return self.filter()
 
@@ -25,14 +26,14 @@ class TweetQuerySet(models.QuerySet):
         return self.filter()
 
 
-class Tweet(HashableMixin, gis_models.Model):
+class SocialEvent(HashableMixin, gis_models.Model):
     class Meta:
-        verbose_name = "Tweet"
-        verbose_name_plural = "Tweets"
+        verbose_name = "Social Event"
+        verbose_name_plural = "Social Events"
 
     PRECISION = 12
 
-    objects = TweetManager.from_queryset(TweetQuerySet)()
+    objects = SocialEventManager.from_queryset(SocialEventQuerySet)()
 
     id = models.UUIDField(
         primary_key=True,
@@ -47,9 +48,10 @@ class Tweet(HashableMixin, gis_models.Model):
         null=False,
     )
 
-    type = models.CharField(max_length=128, blank=True, null=True)
     category = models.CharField(max_length=128, blank=True, null=True)
-    start_date = models.DateField(blank=True, null=True)
+    severity = models.CharField(max_length=128, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
 
     data = models.JSONField(default=dict)
@@ -62,26 +64,62 @@ class Tweet(HashableMixin, gis_models.Model):
 
     @property
     def hash_source(self):
-        return self.geometry.hexewkb
+        if self.geometry:
+            return self.geometry.hexewkb
 
     def save(self, *args, **kwargs):
-        if self.has_hash_source_changed(self.hash_source):
+        if self.hash_source and self.has_hash_source_changed(self.hash_source):
             if self.geometry.geom_type != "Point":
                 self.bounding_box = self.geometry.envelope
         return super().save(*args, **kwargs)
 
     @classmethod
-    def process_message(cls, message_body, message_properties={}):
-        tweet, created = cls.objects.get_or_create(
-            external_id=str(message_body["extId"])
-        )
-        tweet.type = message_body.get("type")
-        tweet.category = message_body.get("category")
-        tweet.start_date = message_body.get("startTS")
-        tweet.end_date = message_body.get("endTS")
-        tweet.geometry = message_body.get("locationData")
-        tweet.data = message_body
-        tweet.save()
+    def process_message(cls, message_body, **kwargs):
+        message_properties = kwargs.get("properties", {})
+        try:
+            event_kwargs = {
+                "external_id":
+                    str(message_body["extId"]),
+                "category":
+                    message_body.get("category"),
+                "severity":
+                    message_body.get("severity"),
+                "description":
+                    message_body.get("description"),
+                "start_date":
+                    message_body.get("startTS"),
+                "end_date":
+                    message_body.get("endTS"),
+                "geometry":
+                    social_event_location_data_to_wkt(
+                        message_body.get("locationData")
+                    ),
+                "data":
+                    message_body
+            }
+            event = cls(**event_kwargs)
+            event.save()
+        except Exception as e:
+            msg = f"unable to process_message: {e}"
+            raise RMQException(msg)
+
+
+def social_event_location_data_to_geojson(location_data):
+    return {
+        "type":
+            "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "geometry": {
+                "type": location_data["geometryType"],
+                "coordinates": location_data["coordinatePairs"],
+            }
+        }]
+    }
+
+
+def social_event_location_data_to_wkt(location_data):
+    return f"{location_data['geometryType'].upper()} ({' '.join(map(str, location_data['coordinatePairs']))})"
 
 
 #################
@@ -96,7 +134,7 @@ class Tweet(HashableMixin, gis_models.Model):
 {
   "type": "Report",
   "extId": 14,
-  "situationId": None,
+  "situationId": "None",
   "category": "Wildfire",
   "severity": "MEDIUM",
   "startTS": "2021-11-11T10:47:46.496Z",

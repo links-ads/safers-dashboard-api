@@ -1,0 +1,37 @@
+{% load i18n %}
+
+{# used by safers.core.admin.CharListFilter #}
+
+<h3>{% blocktrans with filter_title=title %} Search by {{ filter_title }} {% endblocktrans %}</h3>
+
+{% with choices.0 as choice_info %}
+
+<ul>
+    <li>
+
+        <form method="GET">
+
+            <input type="text" name="{{ choice_info.lookup_kwarg }}"
+                value="{{ choice_info.lookup_value|default_if_none:'' }}" />
+
+            {# create hidden inputs to preserve params from other filters/searches #}
+            {% for k, v in choice_info.other_params.items %}
+            <input type="hidden" name="{{ k }}" value="{{ v }}">
+            {% endfor %}
+
+            <input type="submit" value="{% trans 'search' %}">
+
+        </form>
+
+    </li>
+
+    <!-- the "all_query_string" resets this filter -->
+    <li {% if choice_info.selected %} class="selected" {% endif %}>
+        <a href="{{ choice_info.all_query_string|iriencode }}">
+            {% trans 'clear search' %}
+        </a>
+    </li>
+
+</ul>
+
+{% endwith %}
