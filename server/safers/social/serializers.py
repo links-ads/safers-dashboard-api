@@ -9,12 +9,16 @@ class TweetSerializer(serializers.ModelSerializer):
         model = Tweet
         fields = (
             "id",
-            "tweet_id",
-            # "geometry",
-            # "bounding_box",
+            "external_id",
+            "type",
+            "category",
+            "start_date",
+            "end_date",
+            "geometry",
+            "bounding_box",
         )  # yapf: disable
 
-    # geometry = gis_serializers.GeometryField(
-    #     precision=Tweet.PRECISION, remove_duplicates=True
-    # )
-    # bounding_box = gis_serializers.GeometryField(precision=Tweet.PRECISION)
+    geometry = gis_serializers.GeometryField(
+        precision=Tweet.PRECISION, remove_duplicates=True
+    )
+    bounding_box = gis_serializers.GeometryField(precision=Tweet.PRECISION)
