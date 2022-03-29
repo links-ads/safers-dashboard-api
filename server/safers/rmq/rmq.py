@@ -1,3 +1,6 @@
+import json
+import re
+from importlib import import_module
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -9,11 +12,33 @@ from pika import BasicProperties
 
 import ssl
 
-BINDING_KEYS = [
-    # TODO: MOVE THIS TO SETTINGS OBJECT
-    "status.test.#",
-    "social.event.*",
-]
+#################
+# routing table #
+#################
+
+BINDING_KEYS = {
+    # a map of routing_key patterns to classes to run process_message w/ message
+    "status.test.#": None,
+    "event.social.*": 'safers.social.models.Tweet',
+}
+
+
+def binding_key_to_regex(binding_key):
+    return binding_key.replace(".", "\.").replace("*", ".*").replace("#", "\d*")
+
+
+def import_callable(path_or_callable):
+    if hasattr(path_or_callable, '__call__'):
+        return path_or_callable
+    else:
+        assert isinstance(path_or_callable, str)
+        package, attr = path_or_callable.rsplit('.', 1)
+        return getattr(import_module(package), attr)
+
+
+##########
+# config #
+##########
 
 
 @dataclass
@@ -27,6 +52,11 @@ class RMQConf:
     vhost: str = None
     transport: str = "amqp"
     app_id: str = "dsh"
+
+
+#####################
+# interface for RMQ #
+#####################
 
 
 class RMQ(object):
@@ -77,7 +107,7 @@ class RMQ(object):
             )
             channel.queue_declare(queue=self.config.queue, passive=True)
 
-            for key in BINDING_KEYS:
+            for key in BINDING_KEYS.keys():
                 channel.queue_bind(
                     queue=self.config.queue,
                     exchange=self.config.exchange,
@@ -120,7 +150,16 @@ class RMQ(object):
     def callback(
         channel, method: Method, properties: BasicProperties, body: str
     ):
+        for key, value in BINDING_KEYS.items():
+            if value is not None and re.match(
+                binding_key_to_regex(key), method.routing_key
+            ):
+                callable = import_callable(value)
+                callable.process_message(
+                    json.loads(body), properties=properties
+                )
 
+        print(dir(method))
         print(f"[{datetime.now()}] Received {method.routing_key}:")
         print("properties:")
         print(properties)
