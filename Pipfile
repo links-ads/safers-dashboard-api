@@ -30,6 +30,7 @@ fusionauth-client = "*"
 pillow = "*"
 psycopg2-binary = "*"
 kombu = "*"
+pika = "*"
 
 [dev-packages]
 factory-boy = "*"

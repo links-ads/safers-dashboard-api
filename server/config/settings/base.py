@@ -84,6 +84,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'safers.core',
     'safers.users',
+    'safers.rmq',
     'safers.tasks',
     'safers.aois',
     'safers.alerts',
@@ -357,6 +358,24 @@ SWAGGER_SETTINGS = {
     "TAGS_SORTER": "alpha",
 }   # yapf: disable
 
+#######
+# RMQ #
+#######
+
+RMQ = {
+    "default": {
+        "TRANSPORT": env("DJANGO_RMQ_TRANSPORT", default="amqp"),
+        "HOST": env("DJANGO_RMQ_HOST", default="broker"),
+        "PORT": env("DJANGO_RMQ_PORT", default="5672"),
+        "VHOST": env("DJANGO_RMQ_VHOST", default=""),
+        "QUEUE": env("DJANGO_RMQ_QUEUE", default="qastro"),
+        "EXCHANGE": env("DJANGO_RMQ_EXCHANGE", default="safers.b2b"),
+        "USERNAME": env("DJANGO_RMQ_USERNAME", default=""),
+        "PASSWORD": env("DJANGO_RMQ_PASSWORD", default=""),
+        "APP_ID": env("DJANGO_RMQ_APP_ID", default="dsh"),
+    }
+}
+
 #########
 # Tasks #
 #########
@@ -397,9 +416,9 @@ CELERY_BROKER_URL = "{transport}://{username}:{password}@{host}:{port}/{virtual_
 CELERY_RESULT_BACKEND = "django-db"  # django-celery-results
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"  # django-celery-beat
 
-############################
-# safers-specific settings #
-############################
+########################
+# safers.core settings #
+########################
 
 SAFERS_ALLOW_REGISTRATION = DynamicSetting(
     "core.SafersSettings.allow_registration", True
