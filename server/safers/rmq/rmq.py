@@ -17,9 +17,12 @@ import ssl
 #################
 
 BINDING_KEYS = {
-    # a map of routing_key patterns to classes to run process_message w/ message
-    "status.test.#": None,
-    "event.social.*": "safers.social.models.SocialEvent",
+    # a map of routing_key patterns to classes to run process_message w/ messages
+    "status.test.*": None,
+    "event.social.wildfire": "safers.social.models.SocialEvent",
+    # "mm.communication.*": "safers.chatbot.models.Communication",
+    # "mm.mission.*": "safers.chatbot.models.Mission",
+    "mm.report.*": "safers.chatbot.models.Report",
 }
 
 
@@ -46,7 +49,7 @@ class RMQConf:
     username: str
     password: str
     host: str
-    queue: str = "qastro"
+    queue: str = "qastro.test"
     exchange: str = "safers.b2b"
     port: str = "5672"
     vhost: str = None
@@ -61,7 +64,7 @@ class RMQConf:
 
 class RMQ(object):
     """
-    encapsulates RabbitMQ functionality 
+    class for communicating w/ RabbitMQ
     (based on https://bitbucket.org/mobilesolutionsismb/rabbit-example-safers/src/master/python/receiver.py)
     """
     def __init__(self):

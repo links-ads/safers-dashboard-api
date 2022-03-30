@@ -88,7 +88,7 @@ class SocialEventDetailListView(SocialEventMixin, generics.ListAPIView):
 
         for external_id in queryset.values_list("external_id", flat=True):
             response = requests.get(
-                f"{settings.SAFERS_SOCIAL_API_URL}/api/services/app/Social/GetEventByID",
+                f"{settings.SAFERS_API_URL}/api/services/app/Social/GetEventByID",
                 auth=ProxyAuthentication(request.user),
                 params={"Id": external_id},
             )
@@ -110,7 +110,7 @@ class SocialEventDetailRetrieveView(SocialEventMixin, generics.RetrieveAPIView):
         obj = self.get_object()
 
         response = requests.get(
-            f"{settings.SAFERS_SOCIAL_API_URL}/api/services/app/Social/GetEventByID",
+            f"{settings.SAFERS_API_URL}/api/services/app/Social/GetEventByID",
             auth=ProxyAuthentication(request.user),
             params={"Id": obj.external_id},
         )

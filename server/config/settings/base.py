@@ -91,6 +91,7 @@ LOCAL_APPS = [
     'safers.events',
     'safers.cameras',
     'safers.social',
+    'safers.chatbot',
 ]  # yapf: disable
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -446,6 +447,6 @@ SAFERS_MAX_FAVORITE_CAMERA_MEDIA = DynamicSetting(
     "core.SafersSettings.max_favorite_camera_media", 3
 )
 
-SAFERS_SOCIAL_API_URL = env(
-    "SAFERS_SOCIAL_API_URL", default="https://api-test.safers-project.cloud/"
+SAFERS_API_URL = env(
+    "SAFERS_API_URL", default="https://api-test.safers-project.cloud/"
 )
