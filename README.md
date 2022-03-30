@@ -19,11 +19,7 @@ RabbitMQ
 
 ### worker
 
-Celery
-
-### worker monitor
-
-Flower ?
+Pika
 
 ### storage
 
