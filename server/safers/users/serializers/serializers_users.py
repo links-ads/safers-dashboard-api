@@ -71,13 +71,6 @@ class UserSerializer(UserSerializerLite):
 
     profile = UserProfileSerializer()
 
-    @property
-    def errors(self):
-        errors = defaultdict(list, super().errors)
-        for k, v in errors.pop("profile", {}).items():
-            errors[k].append(*v)
-        return errors
-
     def validate_username(self, value):
         if value in settings.ACCOUNT_USERNAME_BLACKLIST:
             raise serializers.ValidationError(
@@ -85,26 +78,34 @@ class UserSerializer(UserSerializerLite):
             )
         return value
 
-    def to_representation(self, instance):
-        """
-        moves serialized profile data up to root level
-        """
-        representation = super().to_representation(instance)
-        representation.update(representation.pop("profile"))
-        return representation
+    # TODO: DELETE THE NEXT FNS ONCE I'M SURE THERE
+    # TODO: IS NO NEED TO NEST THE "property" FIELD
+    # @property
+    # def errors(self):
+    #     errors = defaultdict(list, super().errors)
+    #     for k, v in errors.pop("profile", {}).items():
+    #         errors[k].append(*v)
+    #     return errors
 
-    def to_internal_value(self, data):
-        """
-        moves root level profile fields back into nested object
-        """
-        data["profile"] = {
-            k: data.get(k)
-            for k in UserProfileSerializer.Meta.fields
-        }
-        return super().to_internal_value(data)
+    # def to_representation(self, instance):
+    #     """
+    #     moves serialized profile data up to root level
+    #     """
+    #     representation = super().to_representation(instance)
+    #     representation.update(representation.pop("profile"))
+    #     return representation
+
+    # def to_internal_value(self, data):
+    #     """
+    #     moves root level profile fields back into nested object
+    #     """
+    #     data["profile"] = {
+    #         k: data.get(k)
+    #         for k in UserProfileSerializer.Meta.fields
+    #     }
+    #     return super().to_internal_value(data)
 
     def update(self, instance, validated_data):
-
         profile_serializer = UserProfileSerializer(
             instance.profile, context=self.context
         )

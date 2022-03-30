@@ -48,6 +48,9 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
 
 class UserViewMixin(object):
 
+    # TODO: NO LONGER USED
+    # TODO: CAN PROBABLY DELETE
+
     # DRY way of accessing user obj for views which rely
     # DRY way of customizing object retrieval for the 2 views below
 

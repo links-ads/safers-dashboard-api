@@ -14,8 +14,10 @@ class UserProfileAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("id", )
     search_fields = (
-        "user__name",
+        "user__username",
         "user__email",
+        "first_name",
+        "last_name",
     )
 
     @admin.display(description="PROFILE")
