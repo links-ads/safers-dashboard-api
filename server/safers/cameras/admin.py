@@ -21,10 +21,9 @@ class CameraAdmin(gis_admin.GeoModelAdmin):
     )
     readonly_fields = ("id", )
 
+    @admin.display(description="N MEDIA")
     def get_n_camera_media_for_list_display(self, obj):
         return obj.media.count()
-
-    get_n_camera_media_for_list_display.short_description = "N MEDIA"
 
 
 @admin.register(CameraMedia)
@@ -65,15 +64,13 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
         queryset = super().get_queryset(request)
         return queryset.prefetch_related("tags")
 
+    @admin.display(description="CAMERA")
     def get_camera_for_list_display(self, obj):
         return get_clickable_fk_list_display(obj.camera)
 
-    get_camera_for_list_display.short_description = "CAMERA"
-
+    @admin.display(description="TAGS")
     def get_camera_media_tags_for_list_display(self, obj):
         return get_clickable_m2m_list_display(CameraMediaTag, obj.tags.all())
-
-    get_camera_media_tags_for_list_display.short_description = "TAGS"
 
 
 @admin.register(CameraMediaTag)
@@ -84,9 +81,8 @@ class CameraMediaTagAdmin(gis_admin.GeoModelAdmin):
         "get_n_camera_media_for_list_display",
     )
 
+    @admin.display(description="N MEDIA")
     def get_n_camera_media_for_list_display(self, obj):
         return obj.media.count()
-
-    get_n_camera_media_for_list_display.short_description = "N MEDIA"
 
     # TODO: INLINES

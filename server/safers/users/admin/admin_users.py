@@ -101,19 +101,16 @@ class UserAdmin(auth_admin.UserAdmin):
         "Toggles the verification of the selected users' primary email addresses"
     )
 
+    @admin.display(boolean=True, description="IS VERIFIED")
     def is_verified_for_list_display(self, instance):
         return instance.is_verified
 
-    is_verified_for_list_display.boolean = True
-    is_verified_for_list_display.short_description = "IS VERIFIED"
-
+    @admin.display(description="AUTHENTICATION TYPE")
     def get_authentication_type_for_list_display(self, instance):
         if instance.is_local:
             return "local"
         elif instance.is_remote:
             return "remote"
-
-    get_authentication_type_for_list_display.short_description = "AUTHENTICATION TYPE"
 
 
 try:

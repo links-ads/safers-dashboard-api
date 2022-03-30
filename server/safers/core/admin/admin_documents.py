@@ -87,8 +87,6 @@ class DocumentAdmin(admin.ModelAdmin):
         queryset = super().get_queryset(request)
         return queryset.prefetch_related("users")
 
+    @admin.display(boolean=True, description="has agreements")
     def get_has_agreements_for_list_display(self, obj):
         return obj.has_agreements
-
-    get_has_agreements_for_list_display.boolean = True
-    get_has_agreements_for_list_display.short_description = "has agreements"

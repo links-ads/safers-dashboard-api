@@ -52,6 +52,11 @@ from safers.social.urls import (
     api_urlpatterns as social_api_urlpatterns,
 )
 
+from safers.chatbot.urls import (
+    urlpatterns as chatbot_urlpatterns,
+    api_urlpatterns as chatbot_api_urlpatterns,
+)
+
 from safers.core.permissions import default_admin_site_has_permission
 
 ################
@@ -111,6 +116,7 @@ api_urlpatterns += alerts_api_urlpatterns
 api_urlpatterns += events_api_urlpatterns
 api_urlpatterns += cameras_api_urlpatterns
 api_urlpatterns += social_api_urlpatterns
+api_urlpatterns += chatbot_api_urlpatterns
 
 #################
 # normal routes #
@@ -132,6 +138,7 @@ urlpatterns = [
     path("events/", include(events_urlpatterns)),
     path("cameras/", include(cameras_urlpatterns)),
     path("social/", include(social_urlpatterns)),
+    path("chatbot/", include(chatbot_urlpatterns)),
 ]
 
 # local static & media files...
