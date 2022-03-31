@@ -23,8 +23,8 @@ class RMQConfig(AppConfig):
         except ImportError:
             pass
 
-        thread = Thread(name="rmq_thread", daemon=True, target=self.start_rmq)
-        thread.start()
+        # thread = Thread(name="rmq_thread", daemon=True, target=self.start_rmq)
+        # thread.start()
 
     def start_rmq(self):
 
