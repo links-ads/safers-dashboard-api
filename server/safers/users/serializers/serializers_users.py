@@ -104,7 +104,6 @@ class UserSerializer(UserSerializerLite):
         return super().to_internal_value(data)
 
     def update(self, instance, validated_data):
-
         profile_serializer = UserProfileSerializer(
             instance.profile, context=self.context
         )
