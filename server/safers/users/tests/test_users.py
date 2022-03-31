@@ -71,3 +71,4 @@ class TestUserViews:
 
         assert test_data["first_name"] == user_data["first_name"]
         assert test_data["first_name"] == user.profile.first_name
+        assert user.profile.last_name is not None  # make sure missing profile data isn't reset on patch
