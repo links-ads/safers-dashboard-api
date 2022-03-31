@@ -99,7 +99,7 @@ class UserSerializer(UserSerializerLite):
         """
         data["profile"] = {
             k: data.get(k)
-            for k in UserProfileSerializer.Meta.fields
+            for k in UserProfileSerializer.Meta.fields if k in data
         }
         return super().to_internal_value(data)
 

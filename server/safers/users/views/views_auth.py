@@ -36,13 +36,15 @@ from safers.users.serializers import KnoxTokenSerializer, JWTSerializer, Registe
 # swagger stuff #
 #################
 
-try:
-    sample_role_id = str(Role.objects.first().id)
-except ProgrammingError:
+sample_role = Role.objects.first()
+if sample_role:
+    sample_role_id = str(sample_role.id)
+else:
     sample_role_id = "b2301aa6-a24b-4201-9a6d-a63e450acc96"
-try:
-    sample_organization_id = str(Organization.objects.first().id)
-except ProgrammingError:
+sample_organization = Organization.objects.first()
+if sample_organization:
+    sample_organization_id = str(sample_organization.id)
+else:
     sample_organization_id = "c26763ba-3595-4ecc-a63b-aaa2c21a9acc"
 
 _login_request_schema = openapi.Schema(
