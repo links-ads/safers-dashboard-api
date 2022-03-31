@@ -27,7 +27,7 @@ class TestUserViews:
         # just test some random fields match...
         assert user_data["id"] == str(user.id)
         assert user_data["email"] == user.email
-        assert user_data["profile"]["first_name"] == user.profile.first_name
+        assert user_data["first_name"] == user.profile.first_name
 
     def test_put(self, user, api_client):
         """
@@ -43,18 +43,15 @@ class TestUserViews:
         assert status.is_success(response.status_code)
 
         test_data = response.json()
-        test_data["profile"]["first_name"] = shuffle_string(
-            test_data["profile"]["first_name"]
-        )
+        test_data["first_name"] = shuffle_string(test_data["first_name"])
 
         response = client.put(url, data=test_data, format="json")
 
         user_data = response.json()
         user.profile.refresh_from_db()
 
-        assert test_data["profile"]["first_name"] == user_data["profile"][
-            "first_name"]
-        assert test_data["profile"]["first_name"] == user.profile.first_name
+        assert test_data["first_name"] == user_data["first_name"]
+        assert test_data["first_name"] == user.profile.first_name
 
     def test_patch(self, user, api_client):
         """
@@ -63,11 +60,7 @@ class TestUserViews:
 
         client = api_client(user)
 
-        test_data = {
-            "profile": {
-                "first_name": shuffle_string(user.profile.first_name)
-            }
-        }
+        test_data = {"first_name": shuffle_string(user.profile.first_name)}
 
         url = reverse("users", args=[user.id])
         response = client.patch(url, data=test_data, format="json")
@@ -76,6 +69,5 @@ class TestUserViews:
         user_data = response.json()
         user.profile.refresh_from_db()
 
-        assert test_data["profile"]["first_name"] == user_data["profile"][
-            "first_name"]
-        assert test_data["profile"]["first_name"] == user.profile.first_name
+        assert test_data["first_name"] == user_data["first_name"]
+        assert test_data["first_name"] == user.profile.first_name
