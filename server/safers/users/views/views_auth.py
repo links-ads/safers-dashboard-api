@@ -37,13 +37,13 @@ from safers.users.serializers import KnoxTokenSerializer, JWTSerializer, Registe
 #################
 
 try:
-    sample_role = Role.objects.first()
+    sample_role_id = str(Role.objects.first().id)
 except ProgrammingError:
-    sample_role = None
+    sample_role_id = "b2301aa6-a24b-4201-9a6d-a63e450acc96"
 try:
-    sample_organization = Organization.objects.first()
+    sample_organization_id = str(Organization.objects.first().id)
 except ProgrammingError:
-    sample_organization = None
+    sample_organization_id = "c26763ba-3595-4ecc-a63b-aaa2c21a9acc"
 
 _login_request_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -105,8 +105,8 @@ _register_request_schema = openapi.Schema(
         ("first_name", openapi.Schema(type=openapi.TYPE_STRING)),
         ("last_name", openapi.Schema(type=openapi.TYPE_STRING)),
         ("password", openapi.Schema(type=openapi.TYPE_STRING, example="RandomPassword123")),
-        ("role", openapi.Schema(type=openapi.TYPE_STRING, example=str(sample_role))),
-        ("organization", openapi.Schema(type=openapi.TYPE_STRING, example=str(sample_organization))),
+        ("role", openapi.Schema(type=openapi.TYPE_STRING, example=sample_role_id)),
+        ("organization", openapi.Schema(type=openapi.TYPE_STRING, example=sample_organization_id)),
         ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
     )),
 )  # yapf: disable
