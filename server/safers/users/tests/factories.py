@@ -6,7 +6,9 @@ from faker import Faker
 
 from django.db.models.signals import post_save
 
-from safers.users.models import User, UserProfile
+from safers.core.tests.utils import optional_declaration
+
+from safers.users.models import User, UserProfile, Role, Organization
 from safers.users.tests.utils import generate_password
 
 
@@ -66,3 +68,19 @@ class UserFactory(factory.django.DjangoModelFactory):
     #         )
 
     profile = factory.RelatedFactory(UserProfileFactory, "user")
+
+
+class RoleFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Role
+
+    name = FactoryFaker("word")
+    description = optional_declaration(FactoryFaker("text"), chance=50)
+
+
+class OrganizationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Organization
+
+    name = FactoryFaker("word")
+    description = optional_declaration(FactoryFaker("text"), chance=50)
