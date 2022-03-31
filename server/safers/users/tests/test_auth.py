@@ -24,8 +24,8 @@ class TestAuthRegister:
             "first_name": "test1",
             "last_name": "test2",
             "password": "RandomPassword123",
-            "role": role.name,
-            "organization": organization.name,
+            "role": str(role.id),
+            "organization": str(organization.id),
             "accepted_terms": True,
         }
 
