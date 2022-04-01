@@ -6,7 +6,7 @@
       "properties": {
         "name": "Corsica",
         "country": "France",
-        "zoomLevel": 4,
+        "zoomLevel": 6,
         "midPoint": [
           9.1130232,
           42.2400688
