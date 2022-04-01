@@ -66,8 +66,6 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'dj_rest_auth',
     'dj_rest_auth.registration',
-    'django_celery_beat',
-    'django_celery_results',
     'django_filters',
     'drf_yasg',
     'knox',
@@ -85,13 +83,13 @@ LOCAL_APPS = [
     'safers.core',
     'safers.users',
     'safers.rmq',
-    'safers.tasks',
     'safers.aois',
     'safers.alerts',
     'safers.events',
     'safers.cameras',
     'safers.social',
     'safers.chatbot',
+    # 'safers.data',
 ]  # yapf: disable
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
