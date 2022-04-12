@@ -36,3 +36,9 @@ else
     fi
 fi
 
+
+if [[ "${ENABLE_RMQ}" -eq 1 ]]; then
+    echo -e "\n### STARTING RMQ ###\n"
+    mkdir -p /etc/service/rmq
+    cp run-rmq.sh /etc/service/rmq/run
+fi

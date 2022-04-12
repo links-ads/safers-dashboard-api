@@ -78,6 +78,7 @@ services:
       SYS_ENV: development
       ENABLE_DJANGO: 1
       DJANGO_SETTINGS_MODULE: config.settings
+      DATABASE_URL: "postgis://safers_user:safers_pwd@db:5432/safers_db"
     volumes:
       - ./server:/home/app/server
     networks:
@@ -85,6 +86,17 @@ services:
     ports:
       - "8000:8000"
 
+  rmq:
+    build: .
+    environment:
+      SYS_ENV: development
+      ENABLE_RMQ: 1
+      DJANGO_SETTINGS_MODULE: config.settings
+      DATABASE_URL: "postgis://safers_user:safers_pwd@db:5432/safers_db"
+    volumes:
+      - ./server:/home/app/server
+    networks:
+      - safers
 
 networks:
   safers:

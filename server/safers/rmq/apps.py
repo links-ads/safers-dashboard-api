@@ -22,12 +22,3 @@ class RMQConfig(AppConfig):
             import safers.rmq.signals
         except ImportError:
             pass
-
-        thread = Thread(name="rmq_thread", daemon=True, target=self.start_rmq)
-        thread.start()
-
-    def start_rmq(self):
-
-        from safers.rmq import RMQ
-        rmq = RMQ()
-        rmq.subscribe()
