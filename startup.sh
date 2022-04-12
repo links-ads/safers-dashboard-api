@@ -37,8 +37,8 @@ else
 fi
 
 
-if [[ "${ENABLE_RMQ}" -eq 1 ]]; then
-    echo -e "\n### STARTING RMQ ###\n"
-    mkdir -p /etc/service/rmq
-    cp run-rmq.sh /etc/service/rmq/run
+if [[ "${ENABLE_RMQ_WORKER}" -eq 1 ]]; then
+    echo -e "\n### STARTING RMQ WORKER ###\n"
+    mkdir -p /etc/service/rmq-worker
+    cp run-rmq-worker.sh /etc/service/rmq-worker/run
 fi

@@ -25,7 +25,7 @@ ENV PIPENV_VENV_IN_PROJECT=1
 ENV ENABLE_CELERY=0
 ENV ENABLE_DJANGO=0
 ENV ENABLE_UWSGI=0
-ENV ENABLE_RMQ=0
+ENV ENABLE_RMQ_WORKER=0
 
 WORKDIR $APP_HOME
 
@@ -39,7 +39,7 @@ COPY --chown=root:root run-django.sh $APP_HOME/
 COPY --chown=root:root run-celery.sh $APP_HOME/
 COPY --chown=root:root run-gunicorn.sh $APP_HOME/
 # COPY --chown=root:root run-uwsgi.sh $APP_HOME/
-COPY --chown=root:root run-rmq.sh $APP_HOME/
+COPY --chown=root:root run-rmq-worker.sh $APP_HOME/
 
 USER root
 
