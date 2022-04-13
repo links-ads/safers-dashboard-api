@@ -32,7 +32,7 @@ class KnoxTokenSerializer(serializers.Serializer):
         expiry = self._token_instance(obj).expiry
         return expiry
 
-    # @swagger_serializer_method(knox_settings.USER_SERIALIZER)  # TODO: THIS CAUSES A CIRCULAR IMPORT
+    @swagger_serializer_method(knox_settings.USER_SERIALIZER)
     def get_user(self, obj):
         user = self._token_instance(obj).user
         serializer = knox_settings.USER_SERIALIZER(user)

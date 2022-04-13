@@ -14,16 +14,16 @@ class UserProfileAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("id", )
     search_fields = (
-        "user__name",
+        "user__username",
         "user__email",
+        "first_name",
+        "last_name",
     )
 
+    @admin.display(description="PROFILE")
     def get_name_for_list_display(self, obj):
         return str(obj)
 
-    get_name_for_list_display.short_description = "PROFILE"
-
+    @admin.display(description="USER")
     def get_user_for_list_display(self, obj):
         return get_clickable_fk_list_display(obj.user)
-
-    get_user_for_list_display.short_description = "USER"

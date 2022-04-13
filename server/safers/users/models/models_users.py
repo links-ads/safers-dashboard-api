@@ -157,15 +157,15 @@ class User(AbstractUser):
     )
 
     favorite_alerts = models.ManyToManyField(
-        "alerts.Alert", related_name="favorited_users"
+        "alerts.Alert", related_name="favorited_users", blank=True
     )
 
     favorite_events = models.ManyToManyField(
-        "events.Event", related_name="favorited_users"
+        "events.Event", related_name="favorited_users", blank=True
     )
 
     favorite_camera_medias = models.ManyToManyField(
-        "cameras.CameraMedia", related_name="favorited_users"
+        "cameras.CameraMedia", related_name="favorited_users", blank=True
     )
 
     def verify(self):

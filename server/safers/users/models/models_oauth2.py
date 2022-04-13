@@ -69,6 +69,7 @@ class Oauth2User(models.Model):
         should therefore not be updated by DRF. (This is used by `UserView.get_serializer_context` 
         &  `UserProfileField.validate`.
         """
+        # TODO: THIS FEELS LIKE BRITTLE LOGIC; MAY JUST WANT TO HARD-CODE THIS
         return [
             AUTH_PROFILE_FIELDS[k]
             for k in self.data.keys() if k in AUTH_PROFILE_FIELDS

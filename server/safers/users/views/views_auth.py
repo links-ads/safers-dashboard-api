@@ -36,20 +36,52 @@ from safers.users.serializers import KnoxTokenSerializer, JWTSerializer, Registe
 # swagger stuff #
 #################
 
-try:
-    sample_role = Role.objects.first()
-except ProgrammingError:
-    sample_role = None
-try:
-    sample_organization = Organization.objects.first()
-except ProgrammingError:
-    sample_organization = None
+sample_role = Role.objects.first()
+if sample_role:
+    sample_role_id = str(sample_role.id)
+else:
+    sample_role_id = "b2301aa6-a24b-4201-9a6d-a63e450acc96"
+sample_organization = Organization.objects.first()
+if sample_organization:
+    sample_organization_id = str(sample_organization.id)
+else:
+    sample_organization_id = "c26763ba-3595-4ecc-a63b-aaa2c21a9acc"
 
 _login_request_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties=OrderedDict((
         ("email", openapi.Schema(type=openapi.TYPE_STRING, example="admin@astrosat.net")),
         ("password", openapi.Schema(type=openapi.TYPE_STRING, example="password")),
+    )),
+)  # yapf: disable
+
+_login_response_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties=OrderedDict((
+        ("access_token", openapi.Schema(type=openapi.TYPE_STRING, example="3302a7228e258b43389ef76b561a3e73c256b1c3ed14a373d624676dfad3fe0a")),
+        ("expiry", openapi.Schema(type=openapi.TYPE_STRING, example="2022-03-31T19:20:28.391781Z")),
+        ("user", openapi.Schema(type=openapi.TYPE_OBJECT,
+            example={
+                "id": "a788996c-424b-4021-bec9-a963fd37a8f2",
+                "email": "admin@astrosat.net",
+                "accepted_terms": True,
+                "is_verified": True,
+                "last_login": "2022-03-31T08:55:16.377335Z",
+                "is_local": True,
+                "is_remote": False,
+                "organization": "7791f5fa-bb0a-42da-8fea-8c81ab614ee4",
+                "role": "a5ec15be-67bc-43d3-9c5d-049f788bf163",
+                "default_aoi": 2,
+                "first_name": "Miles",
+                "last_name": "Dyson",
+                "company": "Cyberdyne Systems",
+                "address": "123 Main Street",
+                "city": "Los Angeles",
+                "country": "USA",
+                "avatar": None,
+                "remote_profile_fields": [],
+            }
+        ))
     )),
 )  # yapf: disable
 
@@ -75,8 +107,8 @@ _register_request_schema = openapi.Schema(
         ("first_name", openapi.Schema(type=openapi.TYPE_STRING)),
         ("last_name", openapi.Schema(type=openapi.TYPE_STRING)),
         ("password", openapi.Schema(type=openapi.TYPE_STRING, example="RandomPassword123")),
-        ("role", openapi.Schema(type=openapi.TYPE_STRING, example=str(sample_role))),
-        ("organization", openapi.Schema(type=openapi.TYPE_STRING, example=str(sample_organization))),
+        ("role", openapi.Schema(type=openapi.TYPE_STRING, example=sample_role_id)),
+        ("organization", openapi.Schema(type=openapi.TYPE_STRING, example=sample_organization_id)),
         ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
     )),
 )  # yapf: disable
@@ -99,7 +131,7 @@ _detail_schema = openapi.Schema(
 @method_decorator(
     swagger_auto_schema(
         request_body=_login_request_schema,
-        responses={status.HTTP_200_OK: KnoxTokenSerializer},
+        responses={status.HTTP_200_OK: _login_response_schema},
     ),
     name="post",
 )
@@ -153,7 +185,7 @@ class PasswordResetConfirmView(DjRestAuthPasswordResetConfirmView):
 @method_decorator(
     swagger_auto_schema(
         request_body=_register_request_schema,
-        responses={status.HTTP_200_OK: KnoxTokenSerializer},
+        responses={status.HTTP_200_OK: _login_response_schema},
     ),
     name="post",
 )

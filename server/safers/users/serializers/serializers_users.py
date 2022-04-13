@@ -99,12 +99,11 @@ class UserSerializer(UserSerializerLite):
         """
         data["profile"] = {
             k: data.get(k)
-            for k in UserProfileSerializer.Meta.fields
+            for k in UserProfileSerializer.Meta.fields if k in data
         }
         return super().to_internal_value(data)
 
     def update(self, instance, validated_data):
-
         profile_serializer = UserProfileSerializer(
             instance.profile, context=self.context
         )

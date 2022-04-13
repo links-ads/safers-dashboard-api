@@ -33,7 +33,7 @@ from drf_yasg.utils import swagger_serializer_method
 
 from safers.users.forms import PasswordResetForm
 from safers.users.models import Role, Organization
-# from safers.users.serializers import UserSerializerLite
+from safers.users.serializers import UserProfileSerializer
 
 #######################################
 # redefined drf-rest-auth serializers #
@@ -144,11 +144,11 @@ class RegisterSerializer(serializers.Serializer):
     password = serializers.CharField(
         write_only=True, style={"input_type": "password"}
     )
-    role = serializers.SlugRelatedField(
-        slug_field="name", queryset=Role.objects.all()
+    role = serializers.PrimaryKeyRelatedField(
+        queryset=Role.objects.all(), required=True
     )
-    organization = serializers.SlugRelatedField(
-        slug_field="name", queryset=Organization.objects.all(), required=False
+    organization = serializers.PrimaryKeyRelatedField(
+        queryset=Organization.objects.all(), required=False, allow_null=True
     )
     accepted_terms = serializers.BooleanField()
 
@@ -172,10 +172,15 @@ class RegisterSerializer(serializers.Serializer):
         """
         add all the extra fields that are not part of standard dj-rest-auth registration
         """
+        # some extra user fields...
         user.accepted_terms = self.validated_data.get("accepted_terms")
         user.role = self.validated_data.get("role")
         user.organization = self.validated_data.get("organization")
         user.save()
+
+        # and any extra profile fields...
+        profile_serializer = UserProfileSerializer()
+        profile_serializer.update(user.profile, self.validated_data)
 
     @property
     def cleaned_data(self):
@@ -183,8 +188,9 @@ class RegisterSerializer(serializers.Serializer):
         return {
             "email": self.validated_data.get("email", ""),
             "username": None,
-            "first_name": self.validated_data.get("first_name", ""),
-            "last_name": self.validated_data.get("last_name", ""),
+            # in safers first_name & last_name part of UserProfile, not User
+            # "first_name": self.validated_data.get("first_name", ""),
+            # "last_name": self.validated_data.get("last_name", ""),
             "password1": self.validated_data.get("password", ""),
         }
 

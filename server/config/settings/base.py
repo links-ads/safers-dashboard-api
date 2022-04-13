@@ -66,8 +66,6 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'dj_rest_auth',
     'dj_rest_auth.registration',
-    'django_celery_beat',
-    'django_celery_results',
     'django_filters',
     'drf_yasg',
     'knox',
@@ -85,13 +83,13 @@ LOCAL_APPS = [
     'safers.core',
     'safers.users',
     'safers.rmq',
-    'safers.tasks',
     'safers.aois',
     'safers.alerts',
     'safers.events',
     'safers.cameras',
     'safers.social',
     'safers.chatbot',
+    'safers.data',
 ]  # yapf: disable
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -447,6 +445,20 @@ SAFERS_MAX_FAVORITE_CAMERA_MEDIA = DynamicSetting(
     "core.SafersSettings.max_favorite_camera_media", 3
 )
 
-SAFERS_API_URL = env(
-    "SAFERS_API_URL", default="https://api-test.safers-project.cloud/"
+SAFERS_GATEWAY_API_URL = env(
+    "SAFERS_GATEWAY_API_URL", default="https://api-test.safers-project.cloud/"
+)
+
+SAFERS_GEOSERVER_API_URL = env(
+    "SAFERS_GEOSERVER_API_URL",
+    default="https://geoserver-test.safers-project.cloud/"
+)
+
+SAFERS_GEODATA_API_URL = env(
+    "SAFERS_IMPORTER_API_URL",
+    default="https://geoapi-test.safers-project.cloud/"
+)
+
+SAFERS_CKAN_API_URL = env(
+    "SAFERS_CKAN_API_URL", default="https://datalake-test.safers-project.cloud"
 )
