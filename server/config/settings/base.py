@@ -89,7 +89,7 @@ LOCAL_APPS = [
     'safers.cameras',
     'safers.social',
     'safers.chatbot',
-    # 'safers.data',
+    'safers.data',
 ]  # yapf: disable
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -445,6 +445,20 @@ SAFERS_MAX_FAVORITE_CAMERA_MEDIA = DynamicSetting(
     "core.SafersSettings.max_favorite_camera_media", 3
 )
 
-SAFERS_API_URL = env(
-    "SAFERS_API_URL", default="https://api-test.safers-project.cloud/"
+SAFERS_GATEWAY_API_URL = env(
+    "SAFERS_GATEWAY_API_URL", default="https://api-test.safers-project.cloud/"
+)
+
+SAFERS_GEOSERVER_API_URL = env(
+    "SAFERS_GEOSERVER_API_URL",
+    default="https://geoserver-test.safers-project.cloud/"
+)
+
+SAFERS_GEODATA_API_URL = env(
+    "SAFERS_IMPORTER_API_URL",
+    default="https://geoapi-test.safers-project.cloud/"
+)
+
+SAFERS_CKAN_API_URL = env(
+    "SAFERS_CKAN_API_URL", default="https://datalake-test.safers-project.cloud"
 )

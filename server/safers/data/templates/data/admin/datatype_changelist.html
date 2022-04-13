@@ -1,0 +1,11 @@
+{% extends 'admin/change_list.html' %}
+
+{# custom template to add .import_csv function to admin #}
+
+{% block object-tools %}
+<h3>
+    <a href="import-csv/" class="addLink">Import CSV</a>
+</h3>
+
+{{ block.super }}
+{% endblock %}
