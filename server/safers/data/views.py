@@ -1,28 +1,17 @@
 import requests
-from collections import OrderedDict
-from copy import deepcopy
 from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
 from django.conf import settings
-from django.db import models
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 
-from rest_framework import status
-from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from django_filters import rest_framework as filters
-from django_filters.utils import translate_validation
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
-from safers.core.filters import DefaultFilterSetMixin, CharInFilter
 
 from safers.users.authentication import ProxyAuthentication
 from safers.users.exceptions import AuthenticationException
@@ -30,55 +19,6 @@ from safers.users.permissions import IsRemote
 
 from safers.data.models import DataLayer
 from safers.data.serializers import DataLayerSerializer
-
-###########
-# swagger #
-###########
-
-_data_layer_manual_params = [
-    # Bbox = CharInFilter(initial=DefaultFilterSetMixin.default_aoi_bbox)
-    openapi.Parameter(
-        "Start",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_STRING,
-        format=openapi.FORMAT_DATE,
-    ),
-    openapi.Parameter(
-        "End",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_STRING,
-        format=openapi.FORMAT_DATE,
-    ),
-    openapi.Parameter(
-        "MapRequestCode",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_STRING,
-    ),
-    openapi.Parameter(
-        "IncludeMapRequests",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_BOOLEAN,
-    ),
-    openapi.Parameter(
-        "ignore_proxy_filters",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_BOOLEAN,
-    ),
-    openapi.Parameter(
-        "order",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_STRING,
-        enum=["date", "-date"]
-    )
-]
-
-###########
-# filters #
-###########
-
-#########
-# views #
-#########
 
 
 @method_decorator(
