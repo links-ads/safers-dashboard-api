@@ -32,11 +32,6 @@ class DefaultFilterSetMixin():
         return ",".join(map(str, aoi_bbox))
 
     @staticmethod
-    def default_date_range(request):
-        before_date = timezone.now()
-        after_date = before_date - timedelta(days=3)
-
-    @staticmethod
     def default_end_date(request):
         return timezone.now()
 
