@@ -1,5 +1,8 @@
+from datetime import datetime, timedelta
+
 from django.contrib.gis.geos import Polygon
 from django.db.models import Q
+from django.utils import timezone
 
 from rest_framework.exceptions import ParseError
 
@@ -14,6 +17,47 @@ class CharInFilter(filters.BaseInFilter, filters.CharFilter):
     """
 
     pass
+
+
+class DefaultFilterSetMixin():
+    """
+    allows me to provide "initial" values as defaults
+    (might not be the best idea as per https://django-filter.readthedocs.io/en/stable/guide/tips.html#using-initial-values-as-defaults)
+    used to ensure that a user gets artefacts relative to their AOI and 72 hours, unless they specify otherwise
+    """
+    @staticmethod
+    def default_aoi_bbox(request):
+        user = request.user
+        aoi_bbox = user.default_aoi.geometry.extent
+        return ",".join(map(str, aoi_bbox))
+
+    @staticmethod
+    def default_date_range(request):
+        before_date = timezone.now()
+        after_date = before_date - timedelta(days=3)
+
+    @staticmethod
+    def default_end_date(request):
+        return timezone.now()
+
+    @staticmethod
+    def default_start_date(request):
+        return timezone.now() - timedelta(days=3)
+
+    def __init__(self, data=None, *args, **kwargs):
+        if data is not None:
+            data = data.copy()
+
+            for name, f in self.base_filters.items():
+                initial = f.extra.get('initial')
+
+                if not data.get(name) and initial:
+                    if callable(initial):
+                        data[name] = initial(kwargs["request"])
+                    else:
+                        data[name] = initial
+
+        super().__init__(data, *args, **kwargs)
 
 
 class BBoxFilterSetMixin():

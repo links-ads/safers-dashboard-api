@@ -7,6 +7,7 @@ class ProxyAuthentication(AuthBase):
         self.auth_user = user.auth_user
 
     def __call__(self, request):
-        request.headers["Authorization"] \
-            = "Bearer " + self.auth_user.access_token
+        request.headers["Authorization"] = self.auth_user.access_token
+        # request.headers["Authorization"] \
+        #     = "Bearer " + self.auth_user.access_token
         return request
