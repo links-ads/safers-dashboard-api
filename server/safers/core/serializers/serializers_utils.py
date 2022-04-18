@@ -1,5 +1,6 @@
 from rest_framework.serializers import CurrentUserDefault
 
+
 class ContextVariableDefault(object):
     """
     May be applied as a `default=...` value on a serializer field
@@ -27,7 +28,6 @@ class SwaggerCurrentUserDefault(CurrentUserDefault):
     Firstly, it doesn't pass 'serializer_field' to default().
     Secondly, it might fail if using a 'slug_field' that doesn't exist on AnonymousUser.
     """
-   
     def __call__(self, serializer_field=None):
         if serializer_field is not None:
             view = serializer_field.context.get("view")

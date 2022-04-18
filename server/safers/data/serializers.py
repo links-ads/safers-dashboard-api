@@ -1,34 +1,55 @@
 from collections import OrderedDict
+from datetime import datetime
 
 from django.db import models
+from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework import serializers
+from rest_framework import serializers, ISO_8601
 from rest_framework_gis import serializers as gis_serializers
+
+from safers.core.serializers import ContextVariableDefault
+
+DataLayerSerializerDateTimeFormats = [
+    ISO_8601, "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d"
+]
+
+
+class DataLayerTimeField(serializers.Field):
+    # TODO: COPE WITH TIME RANGES AS PER https://docs.geoserver.org/latest/en/user/services/wms/time.html#wms-time
+
+    def to_representation(self, value):
+        # python to json
+        return value
+
+    def to_internal_value(self, data):
+
+        parsed_datetime = None
+        for format in DataLayerSerializerDateTimeFormats:
+            if format == ISO_8601:
+                try:
+                    parsed_datetime = parse_datetime(data)
+                except (ValueError, TypeError):
+                    pass
+            else:
+                try:
+                    parsed_datetime = datetime.strptime(data, format)
+                except (ValueError, TypeError):
+                    pass
+
+        if not parsed_datetime:
+            raise serializers.ValidationError("invalid timestamp")
+
+        return parsed_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class DataLayerSerializer(serializers.Serializer):
-
-    # this isn't a ModelSerializer; it's just used
-    # for query_param validation in DataLayerViewSet
-
-    OrderType = models.TextChoices("OrderType", "date -date")
-    DateTimeFormats = ["iso-8601", "%Y-%m-%d"]
-    ProxyFieldMapping = {
-        # fields to pass onto proxy
-        "bbox": "Bbox",
-        "start": "Start",
-        "end": "End",
-    }
+    """
+    Note that these aren't ModelSerializers; they're just being
+    used for query_param validation in the DataLayer Views
+    """
 
     bbox = serializers.CharField(required=False)
-    start = serializers.DateTimeField(
-        input_formats=DateTimeFormats, required=False
-    )
-    end = serializers.DateTimeField(
-        input_formats=DateTimeFormats, required=False
-    )
-    order = serializers.ChoiceField(choices=OrderType.choices, required=False)
     default_bbox = serializers.BooleanField(
         default=True,
         required=False,
@@ -37,6 +58,34 @@ class DataLayerSerializer(serializers.Serializer):
             "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
         )
     )
+
+    def validate_bbox(self, value):
+        try:
+            bbox = list(map(float, value.split(",")))
+            assert len(bbox) == 4, "bbox must contain 4 values"
+        except Exception as e:
+            raise serializers.ValidationError(e)
+        return bbox
+
+
+class DataLayerListSerializer(DataLayerSerializer):
+
+    OrderType = models.TextChoices("OrderType", "date -date")
+    ProxyFieldMapping = {
+        # fields to pass onto proxy
+        "bbox": "Bbox",
+        "start": "Start",
+        "end": "End",
+    }
+
+    start = serializers.DateTimeField(
+        input_formats=DataLayerSerializerDateTimeFormats, required=False
+    )
+    end = serializers.DateTimeField(
+        input_formats=DataLayerSerializerDateTimeFormats, required=False
+    )
+    order = serializers.ChoiceField(choices=OrderType.choices, required=False)
+
     default_start = serializers.BooleanField(
         default=True,
         required=False,
@@ -54,14 +103,6 @@ class DataLayerSerializer(serializers.Serializer):
         )
     )
 
-    def validate_bbox(self, value):
-        try:
-            bbox = list(map(float, value.split(",")))
-            assert len(bbox) == 4, "bbox must contain 4 values"
-        except Exception as e:
-            raise serializers.ValidationError(e)
-        return bbox
-
     def validate(self, data):
 
         validated_data = super().validate(data)
@@ -74,8 +115,44 @@ class DataLayerSerializer(serializers.Serializer):
 
         return validated_data
 
-    # def to_representation(self, instance):
-    #     representation = super().to_representation(instance)
-    #     return OrderedDict(
-    #         (self.FieldMapping[k], v) for k, v in representation.items()
-    #     )
+
+class DataLayerRetrieveSerializer(DataLayerSerializer):
+
+    SRSType = models.TextChoices("SRSType", "EPSG:4326")
+    FormatType = models.TextChoices("FormatType", "image/png")
+
+    ProxyFieldMapping = {
+        # fields to pass onto proxy
+        "timestamp": "time",
+        "name": "layers",
+        "service": "service",
+        "request": "request",
+        "srs": "srs",
+        "bbox": "bbox",
+        "width": "width",
+        "height": "height",
+        "fmt": "format",
+    }
+
+    name = serializers.CharField(default=ContextVariableDefault("name"))
+    timestamp = DataLayerTimeField(
+        # input_formats=DataLayerSerializerDateTimeFormats,
+        default=ContextVariableDefault("timestamp")
+    )
+
+    service = serializers.CharField(default="WMS")
+    version = serializers.CharField(default="1.1.0")
+    request = serializers.CharField(default="GetMap")
+    srs = serializers.ChoiceField(choices=SRSType.choices, default="EPSG:4326")
+    width = serializers.IntegerField(default=256)
+    height = serializers.IntegerField(default=256)
+    fmt = serializers.ChoiceField(
+        # note: field can't be called "format" b/c that's a reserved kwarg for DRF
+        choices=FormatType.choices,
+        default="image/png"
+    )
+
+    # def validate_timestamp(self, value):
+    #     # return value.isoformat(sep="T", timespec="millisconds")
+    #     return value.strftime("%Y-%m-%dT%H:%M:%SZ")
+    #     return self.fields["timestamp"].to_internal_value(value)
