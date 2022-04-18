@@ -1,43 +1,31 @@
 import requests
+from copy import deepcopy
 from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
 from django.conf import settings
 from django.utils import timezone
-from django.utils.decorators import method_decorator
 
-from rest_framework import viewsets
+from rest_framework import generics, mixins, views, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.users.authentication import ProxyAuthentication
+from safers.users.authentication import ProxyAuthentication, ProxyBearerAuthentication
 from safers.users.exceptions import AuthenticationException
 from safers.users.permissions import IsRemote
 
 from safers.data.models import DataLayer
-from safers.data.serializers import DataLayerSerializer
+from safers.data.serializers import DataLayerListSerializer, DataLayerRetrieveSerializer
 
 
-@method_decorator(
-    swagger_auto_schema(query_serializer=DataLayerSerializer),
-    name="list",
-)
-class DataLayerViewSet(viewsets.ViewSet):
-    """
-    Returns the DataLayers
-    """
-
-    lookup_url_kwarg = "data_layer_name"
-    permission_classes = [IsAuthenticated, IsRemote]
-    queryset = DataLayer.objects.none()
-
+class DataLayerView(views.APIView):
     def get_serializer_context(self):
         """
         Extra context provided to the serializer class.
-        (If this were a ModelSerializer, this fn would be called by default.)
+        (If this were some type of ModelView, this fn would be built-in.)
         """
 
         return {
@@ -46,35 +34,43 @@ class DataLayerViewSet(viewsets.ViewSet):
 
     def update_default_data(self, data):
 
-        if "bbox" not in data and data["default_bbox"]:
+        if "bbox" not in data and data.get("default_bbox"):
             user = self.request.user
-            data["bbox"] = user.default_aoi.geometry.extent
+            default_bbox = user.default_aoi.geometry.extent
+            data["bbox"] = ",".join(map(str, default_bbox))
+            # data["bbox"] = user.default_aoi.geometry.extent
 
-        if "start" not in data and data["default_start"]:
+        if "start" not in data and data.get("default_start"):
             data["start"] = timezone.now() - timedelta(days=3)
 
-        if "end" not in data and data["default_end"]:
+        if "end" not in data and data.get("default_end"):
             data["end"] = timezone.now()
 
         return data
 
-    def list(self, request):
+
+class DataLayerListView(DataLayerView):
+
+    permission_classes = [IsAuthenticated, IsRemote]
+    serializer_class = DataLayerListSerializer
+
+    @swagger_auto_schema(query_serializer=DataLayerListSerializer)
+    def get(self, request, *args, **kwargs):
 
         PROXY_URL = "/api/services/app/Layers/GetLayers"
         # PROXY_URL = "/layers"
 
-        serializer = DataLayerSerializer(
+        serializer = self.serializer_class(
             data=request.query_params,
             context=self.get_serializer_context(),
         )
         serializer.is_valid(raise_exception=True)
 
         updated_data = self.update_default_data(serializer.validated_data)
-
         proxy_params = {
-            DataLayerSerializer.ProxyFieldMapping[k]: v
+            serializer.ProxyFieldMapping[k]: v
             for k, v in updated_data.items()
-            if k in DataLayerSerializer.ProxyFieldMapping
+            if k in serializer.ProxyFieldMapping
         }  # yapf: disable
 
         try:
@@ -82,14 +78,13 @@ class DataLayerViewSet(viewsets.ViewSet):
                 urljoin(settings.SAFERS_GATEWAY_API_URL, PROXY_URL),
                 # urljoin(settings.SAFERS_GEODATA_API_URL, PROXY_URL),
                 auth=ProxyAuthentication(request.user),
-                params=proxy_params
+                params=proxy_params,
             )
             response.raise_for_status()
         except Exception as e:
             raise AuthenticationException(e)
 
         data = response.json()
-
         data = [
           {
             "id": i,
@@ -105,8 +100,9 @@ class DataLayerViewSet(viewsets.ViewSet):
                     "children": [
                       {
                         "id": l,
-                        "date": detail["created_At"],
+                        "timestamp": detail["created_At"],
                         "name": detail["name"],
+                        "metadata_id": detail.get("metadata_Id"),
                       }
                       for l, detail in enumerate(layer.get("details") or [], start=1)
                     ]
@@ -121,23 +117,56 @@ class DataLayerViewSet(viewsets.ViewSet):
 
         return Response(data)
 
-    def retrieve(self, request, data_layer_name=None):
 
-        TEST_DATA_LAYER_NAME = "ermes:33101_t2m_33001_78a8a797-fb5c-4b40-9f12-88a64fffc616"
-        PROXY_URL = "/api/action/resource_show"
+class DataLayerRetrieveView(DataLayerView):
+
+    permission_classes = [IsAuthenticated, IsRemote]
+    serializer_class = DataLayerRetrieveSerializer
+
+    class _SwaggerDataLayerRetrieveSerializer(DataLayerRetrieveSerializer):
+        name = None
+        timestamp = None
+
+    @swagger_auto_schema(query_serializer=_SwaggerDataLayerRetrieveSerializer)
+    def get(self, request, *args, **kwargs):
+
+        TEST_DATA_LAYER_NAME = "ermes:33101_t2m_33001_d39141ce-d23a-4c50-b94f-3ba5074764b5"
+        TEST_DATA_LAYER_TIME = "2022-04-17T07:00:26Z"
+        PROXY_URL = "/geoserver/ermes/wms"
+
+        # TODO: IF I PASS KWARGS W/ QUERY_PARAMS THEN SERIALIZER VALIDATION WORKS
+        # TODO: BUT I'D RATHER USE ContextVariableDefault; BUT DEFAULT VALUES DON'T FORCE VALIDATION ?
+        query_params = deepcopy(request.query_params)
+        query_params.update(kwargs)
+
+        serializer = self.serializer_class(
+            data=query_params,
+            context=self.get_serializer_context(),
+        )
+        serializer.is_valid(raise_exception=True)
+
+        updated_data = self.update_default_data(serializer.validated_data)
+        proxy_params = {
+            serializer.ProxyFieldMapping[k]: v
+            for k, v in updated_data.items()
+            if k in serializer.ProxyFieldMapping
+        }  # yapf: disable
+
         try:
             response = requests.get(
-                # urljoin(settings.SAFERS_GATEWAY_API_URL, PROXY_URL),
                 urljoin(settings.SAFERS_GEOSERVER_API_URL, PROXY_URL),
-                auth=ProxyAuthentication(request.user),
+                auth=ProxyBearerAuthentication(request.user),
+                params=proxy_params,
             )
             response.raise_for_status()
         except Exception as e:
             raise AuthenticationException(e)
 
-        data = {"hello": "world"}
-
-        return Response(data)
+        # TODO: MAYBE RETURN STREAM
+        from django.http import HttpResponse
+        return HttpResponse(
+            response.content, content_type=proxy_params["format"]
+        )
 
 
 """

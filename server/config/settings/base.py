@@ -446,19 +446,21 @@ SAFERS_MAX_FAVORITE_CAMERA_MEDIA = DynamicSetting(
 )
 
 SAFERS_GATEWAY_API_URL = env(
-    "SAFERS_GATEWAY_API_URL", default="https://api-test.safers-project.cloud/"
+    "SAFERS_GATEWAY_API_URL",
+    default="https://api-test.safers-project.cloud/",
 )
 
 SAFERS_GEOSERVER_API_URL = env(
     "SAFERS_GEOSERVER_API_URL",
-    default="https://geoserver-test.safers-project.cloud/"
+    default="https://geoserver-test.safers-project.cloud/",
 )
 
 SAFERS_GEODATA_API_URL = env(
     "SAFERS_IMPORTER_API_URL",
-    default="https://geoapi-test.safers-project.cloud/"
+    default="https://geoapi-test.safers-project.cloud/",
 )
 
-SAFERS_CKAN_API_URL = env(
-    "SAFERS_CKAN_API_URL", default="https://datalake-test.safers-project.cloud"
+SAFERS_DATALAKE_API_URL = env(
+    "SAFERS_DATALAKE_API_URL",
+    default="https://datalake-test.safers-project.cloud",
 )
