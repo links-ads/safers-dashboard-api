@@ -87,21 +87,22 @@ class DataLayerListView(DataLayerView):
         data = response.json()
         data = [
           {
-            "id": i,
+            "id": f"{i}",
             "text": group["group"],
             "children": [
               {
-                "id": j,
+                "id": f"{i}.{j}",
                 "text": sub_group["subGroup"],
                 "children": [
                   {
-                    "id": k,
+                    "id": f"{i}.{j}.{k}",
                     "text": layer["name"],
                     "children": [
                       {
-                        "id": l,
-                        "timestamp": detail["created_At"],
+                        "id": f"{i}.{j}.{k}.{l}",
+                        "text": detail["created_At"],
                         "name": detail["name"],
+                        "timestamp": detail["created_At"],
                         "metadata_id": detail.get("metadata_Id"),
                       }
                       for l, detail in enumerate(layer.get("details") or [], start=1)
