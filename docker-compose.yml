@@ -57,18 +57,6 @@ services:
       - 5672:5672  # internal queue
       - 15672:15672  # management client
 
-  worker:
-    build: .
-    depends_on:
-      - broker
-    environment:
-      SYS_ENV: development
-      ENABLE_CELERY: 1
-      DJANGO_SETTINGS_MODULE: config.settings
-    volumes:
-      - ./server:/home/app/server
-    networks:
-      - safers
 
   server:
     build:
@@ -78,6 +66,7 @@ services:
       SYS_ENV: development
       ENABLE_DJANGO: 1
       DJANGO_SETTINGS_MODULE: config.settings
+      DATABASE_URL: "postgis://safers_user:safers_pwd@db:5432/safers_db"
     volumes:
       - ./server:/home/app/server
     networks:
@@ -85,6 +74,17 @@ services:
     ports:
       - "8000:8000"
 
+  rmq_worker:
+    build: .
+    environment:
+      SYS_ENV: development
+      ENABLE_RMQ_WORKER: 1
+      DJANGO_SETTINGS_MODULE: config.settings
+      DATABASE_URL: "postgis://safers_user:safers_pwd@db:5432/safers_db"
+    volumes:
+      - ./server:/home/app/server
+    networks:
+      - safers
 
 networks:
   safers:

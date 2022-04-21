@@ -1,5 +1,6 @@
 import json
 import re
+import logging
 from importlib import import_module
 from dataclasses import dataclass
 from datetime import datetime
@@ -11,6 +12,8 @@ from pika.frame import Method
 from pika import BasicProperties
 
 import ssl
+
+logger = logging.getLogger(__name__)
 
 #################
 # routing table #
@@ -96,7 +99,7 @@ class RMQ(object):
         )
 
     def subscribe(self):
-        print("\n### STARTING PIKA ###\n")
+        logger.info("\n### STARTING PIKA ###\n")
         with pika.BlockingConnection(parameters=self.params) as connection:
             # create channel to the broker
             channel = connection.channel()
@@ -153,10 +156,10 @@ class RMQ(object):
     def callback(
         channel, method: Method, properties: BasicProperties, body: str
     ):
-        print(f"[{datetime.now()}] Received {method.routing_key}:")
-        print("properties:")
-        print(properties)
-        print(body)
+        logger.info(f"[{datetime.now()}] Received {method.routing_key}:")
+        logger.info("properties:")
+        logger.info(properties)
+        logger.info(body)
 
         for key, value in BINDING_KEYS.items():
             if value is not None and re.match(
