@@ -2,7 +2,7 @@ from django.urls import include, path
 
 from rest_framework import routers
 
-from safers.data.views import DataLayerListView, DataLayerRetrieveView
+from safers.data.views import DataLayerListView
 
 api_router = routers.DefaultRouter()
 api_urlpatterns = [
@@ -11,11 +11,6 @@ api_urlpatterns = [
         "data/layers",
         DataLayerListView.as_view(),
         name="data-layers-list",
-    ),
-    path(
-        "data/layers/<str:name>/<str:timestamp>",
-        DataLayerRetrieveView.as_view(),
-        name="data-layers-retrieve",
     ),
 ]
 

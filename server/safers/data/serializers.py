@@ -45,30 +45,9 @@ class DataLayerTimeField(serializers.Field):
 
 class DataLayerSerializer(serializers.Serializer):
     """
-    Note that these aren't ModelSerializers; they're just being
+    Note that this isn't a ModelSerializer; it's just being
     used for query_param validation in the DataLayer Views
     """
-
-    bbox = serializers.CharField(required=False)
-    default_bbox = serializers.BooleanField(
-        default=True,
-        required=False,
-        help_text=_(
-            "If default_bbox is True and no bbox is provided the user's default_aoi bbox will be used; "
-            "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
-        )
-    )
-
-    def validate_bbox(self, value):
-        try:
-            bbox = list(map(float, value.split(",")))
-            assert len(bbox) == 4, "bbox must contain 4 values"
-        except Exception as e:
-            raise serializers.ValidationError(e)
-        return bbox
-
-
-class DataLayerListSerializer(DataLayerSerializer):
 
     OrderType = models.TextChoices("OrderType", "date -date")
     ProxyFieldMapping = {
@@ -77,6 +56,8 @@ class DataLayerListSerializer(DataLayerSerializer):
         "start": "Start",
         "end": "End",
     }
+
+    bbox = serializers.CharField(required=False)
 
     start = serializers.DateTimeField(
         input_formats=DataLayerSerializerDateTimeFormats, required=False
@@ -102,6 +83,22 @@ class DataLayerListSerializer(DataLayerSerializer):
             "If default_end is False and no end is provided then no end filter will be passed to the API"
         )
     )
+    default_bbox = serializers.BooleanField(
+        default=True,
+        required=False,
+        help_text=_(
+            "If default_bbox is True and no bbox is provided the user's default_aoi bbox will be used; "
+            "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
+        )
+    )
+
+    def validate_bbox(self, value):
+        try:
+            bbox = list(map(float, value.split(",")))
+            assert len(bbox) == 4, "bbox must contain 4 values"
+        except Exception as e:
+            raise serializers.ValidationError(e)
+        return bbox
 
     def validate(self, data):
 
@@ -114,45 +111,3 @@ class DataLayerListSerializer(DataLayerSerializer):
             raise serializers.ValidationError("end must occur after start")
 
         return validated_data
-
-
-class DataLayerRetrieveSerializer(DataLayerSerializer):
-
-    SRSType = models.TextChoices("SRSType", "EPSG:4326")
-    FormatType = models.TextChoices("FormatType", "image/png")
-
-    ProxyFieldMapping = {
-        # fields to pass onto proxy
-        "timestamp": "time",
-        "name": "layers",
-        "service": "service",
-        "request": "request",
-        "srs": "srs",
-        "bbox": "bbox",
-        "width": "width",
-        "height": "height",
-        "fmt": "format",
-    }
-
-    name = serializers.CharField(default=ContextVariableDefault("name"))
-    timestamp = DataLayerTimeField(
-        # input_formats=DataLayerSerializerDateTimeFormats,
-        default=ContextVariableDefault("timestamp")
-    )
-
-    service = serializers.CharField(default="WMS")
-    version = serializers.CharField(default="1.1.0")
-    request = serializers.CharField(default="GetMap")
-    srs = serializers.ChoiceField(choices=SRSType.choices, default="EPSG:4326")
-    width = serializers.IntegerField(default=256)
-    height = serializers.IntegerField(default=256)
-    fmt = serializers.ChoiceField(
-        # note: field can't be called "format" b/c that's a reserved kwarg for DRF
-        choices=FormatType.choices,
-        default="image/png"
-    )
-
-    # def validate_timestamp(self, value):
-    #     # return value.isoformat(sep="T", timespec="millisconds")
-    #     return value.strftime("%Y-%m-%dT%H:%M:%SZ")
-    #     return self.fields["timestamp"].to_internal_value(value)

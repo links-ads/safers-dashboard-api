@@ -1,7 +1,7 @@
 import requests
 from copy import deepcopy
 from datetime import datetime, timedelta
-from urllib.parse import urljoin
+from urllib.parse import quote_plus, urlencode, urljoin
 
 from django.conf import settings
 from django.utils import timezone
@@ -18,10 +18,14 @@ from safers.users.exceptions import AuthenticationException
 from safers.users.permissions import IsRemote
 
 from safers.data.models import DataLayer
-from safers.data.serializers import DataLayerListSerializer, DataLayerRetrieveSerializer
+from safers.data.serializers import DataLayerSerializer
 
 
-class DataLayerView(views.APIView):
+class DataLayerListView(views.APIView):
+
+    permission_classes = [IsAuthenticated, IsRemote]
+    serializer_class = DataLayerSerializer
+
     def get_serializer_context(self):
         """
         Extra context provided to the serializer class.
@@ -48,16 +52,12 @@ class DataLayerView(views.APIView):
 
         return data
 
-
-class DataLayerListView(DataLayerView):
-
-    permission_classes = [IsAuthenticated, IsRemote]
-    serializer_class = DataLayerListSerializer
-
-    @swagger_auto_schema(query_serializer=DataLayerListSerializer)
+    @swagger_auto_schema(query_serializer=DataLayerSerializer)
     def get(self, request, *args, **kwargs):
 
-        PROXY_URL = "/api/services/app/Layers/GetLayers"
+        GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
+        GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
+
         # PROXY_URL = "/layers"
 
         serializer = self.serializer_class(
@@ -75,14 +75,29 @@ class DataLayerListView(DataLayerView):
 
         try:
             response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, PROXY_URL),
-                # urljoin(settings.SAFERS_GEODATA_API_URL, PROXY_URL),
+                urljoin(settings.SAFERS_GATEWAY_API_URL, GATEWAY_URL_PATH),
                 auth=ProxyAuthentication(request.user),
                 params=proxy_params,
             )
             response.raise_for_status()
         except Exception as e:
             raise AuthenticationException(e)
+
+        geoserver_query_params = urlencode(
+            {
+                "time": "{time}",
+                "layers": "{name}",
+                "service": "WMS",
+                "request": "GetMap",
+                "srs": "EPSG:4326",
+                "bbox": "{bbox}",
+                "width": 256,
+                "height": 256,
+                "fmt": "image/png",
+            },
+            safe="{}",
+        )
+        geoserver_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_query_params}"
 
         data = response.json()
         data = [
@@ -101,9 +116,13 @@ class DataLayerListView(DataLayerView):
                       {
                         "id": f"{i}.{j}.{k}.{l}",
                         "text": detail["created_At"],
-                        "name": detail["name"],
-                        "timestamp": detail["created_At"],
+                        "type": "WMS",
                         "metadata_id": detail.get("metadata_Id"),
+                        "url": geoserver_url.format(
+                          name=quote_plus(detail["name"]),
+                          time=quote_plus(detail["created_At"]),
+                          bbox="{bbox}"
+                        )
                       }
                       for l, detail in enumerate(layer.get("details") or [], start=1)
                     ]
@@ -117,57 +136,6 @@ class DataLayerListView(DataLayerView):
         ]  # yapf: disable
 
         return Response(data)
-
-
-class DataLayerRetrieveView(DataLayerView):
-
-    permission_classes = [IsAuthenticated, IsRemote]
-    serializer_class = DataLayerRetrieveSerializer
-
-    class _SwaggerDataLayerRetrieveSerializer(DataLayerRetrieveSerializer):
-        name = None
-        timestamp = None
-
-    @swagger_auto_schema(query_serializer=_SwaggerDataLayerRetrieveSerializer)
-    def get(self, request, *args, **kwargs):
-
-        TEST_DATA_LAYER_NAME = "ermes:33101_t2m_33001_d39141ce-d23a-4c50-b94f-3ba5074764b5"
-        TEST_DATA_LAYER_TIME = "2022-04-17T07:00:26Z"
-        PROXY_URL = "/geoserver/ermes/wms"
-
-        # TODO: IF I PASS KWARGS W/ QUERY_PARAMS THEN SERIALIZER VALIDATION WORKS
-        # TODO: BUT I'D RATHER USE ContextVariableDefault; BUT DEFAULT VALUES DON'T FORCE VALIDATION ?
-        query_params = deepcopy(request.query_params)
-        query_params.update(kwargs)
-
-        serializer = self.serializer_class(
-            data=query_params,
-            context=self.get_serializer_context(),
-        )
-        serializer.is_valid(raise_exception=True)
-
-        updated_data = self.update_default_data(serializer.validated_data)
-        proxy_params = {
-            serializer.ProxyFieldMapping[k]: v
-            for k, v in updated_data.items()
-            if k in serializer.ProxyFieldMapping
-        }  # yapf: disable
-
-        try:
-            response = requests.get(
-                urljoin(settings.SAFERS_GEOSERVER_API_URL, PROXY_URL),
-                auth=ProxyBearerAuthentication(request.user),
-                params=proxy_params,
-            )
-            response.raise_for_status()
-        except Exception as e:
-            raise AuthenticationException(e)
-
-        # TODO: MAYBE RETURN STREAM
-        from django.http import HttpResponse
-        return HttpResponse(
-            response.content, content_type=proxy_params["format"]
-        )
 
 
 """
