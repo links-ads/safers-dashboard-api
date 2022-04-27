@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from django.conf import settings
 from django.contrib.gis.geos import Polygon
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -10,7 +11,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
-from django_filters.widgets import BooleanWidget
 
 from safers.core.filters import DefaultFilterSetMixin
 
@@ -18,8 +18,6 @@ from safers.users.permissions import IsRemote
 
 from safers.notifications.models import Notification
 from safers.notifications.serializers import NotificationSerializer
-
-# TODO: FILTERS
 
 
 class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
@@ -36,8 +34,16 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
             "certainty",
         }
 
-    bbox = filters.Filter(method="bbox_method")
-    default_bbox = filters.BooleanFilter(initial=True)
+    bbox = filters.Filter(
+        method="bbox_method", help_text=_("xmin, ymin, xmax, ymax")
+    )
+    default_bbox = filters.BooleanFilter(
+        initial=True,
+        help_text=_(
+            "If default_bbox is True and no bbox is provided the user's default_aoi bbox will be used; "
+            "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
+        )
+    )
 
     def bbox_method(self, queryset, name, value):
 
@@ -50,12 +56,15 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         return queryset.filter(geometries__geometry__intersects=bbox)
 
     def filter_queryset(self, queryset):
+        """
+        As per the documentation, I am overriding this method in order to perform
+        additional filtering to the queryset before it is cached
+        """
 
         # update filters based on default values
-
         updated_cleaned_data = deepcopy(self.form.cleaned_data)
-        if (not updated_cleaned_data.get("bbox")
-           ) and updated_cleaned_data.pop("default_bbox"):
+        if updated_cleaned_data.pop("default_bbox"
+                                   ) and not updated_cleaned_data.get("bbox"):
             user = self.request.user
             default_bbox = user.default_aoi.geometry.extent
             updated_cleaned_data["bbox"] = ",".join(map(str, default_bbox))
