@@ -26,6 +26,9 @@ BINDING_KEYS = {
     # "mm.communication.*": "safers.chatbot.models.Communication",
     # "mm.mission.*": "safers.chatbot.models.Mission",
     "mm.report.*": "safers.chatbot.models.Report",
+    "newexternaldata.*": "safers.data.models.Data",
+    "alert.sem.astro": "safers.notifications.models.Notification",
+    "event.camera.#": "safers.cameras.models.CameraMedia",
 }
 
 
@@ -99,6 +102,7 @@ class RMQ(object):
         )
 
     def subscribe(self):
+
         logger.info("\n### STARTING PIKA ###\n")
         with pika.BlockingConnection(parameters=self.params) as connection:
             # create channel to the broker
@@ -165,7 +169,12 @@ class RMQ(object):
             if value is not None and re.match(
                 binding_key_to_regex(key), method.routing_key
             ):
-                callable = import_callable(value)
-                callable.process_message(
-                    json.loads(body), properties=properties
-                )
+                try:
+                    callable = import_callable(value)
+                    result = callable.process_message(
+                        json.loads(body), properties=properties
+                    )
+                    if result:
+                        logger.info(result)
+                except Exception as e:
+                    logger.error(e)

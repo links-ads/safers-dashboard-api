@@ -90,6 +90,7 @@ LOCAL_APPS = [
     'safers.social',
     'safers.chatbot',
     'safers.data',
+    'safers.notifications',
 ]  # yapf: disable
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
