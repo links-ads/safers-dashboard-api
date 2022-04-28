@@ -33,8 +33,12 @@ BINDING_KEYS = {
 
 
 def binding_key_to_regex(binding_key):
-    # TODO: IMPROVE AS PER https://github.com/astrosat/safers-gateway/issues/28
-    return binding_key.replace(".", "\.").replace("*", ".*").replace("#", "\d*")
+
+    # "#" maps to any characters
+    # "*" maps to any characters in a single section
+
+    regex = binding_key.replace(".", "\.").replace("*", "[^\.]+").replace("#", ".*")  # yapf: disable
+    return "^" + regex + "$"
 
 
 def import_callable(path_or_callable):
