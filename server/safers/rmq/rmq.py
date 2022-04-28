@@ -20,19 +20,20 @@ logger = logging.getLogger(__name__)
 #################
 
 BINDING_KEYS = {
-    # a map of routing_key patterns to classes to run process_message w/ messages
-    "status.test.*": None,
-    "event.social.wildfire": "safers.social.models.SocialEvent",
-    # "mm.communication.*": "safers.chatbot.models.Communication",
-    # "mm.mission.*": "safers.chatbot.models.Mission",
-    "mm.report.*": "safers.chatbot.models.Report",
-    "newexternaldata.*": "safers.data.models.Data",
-    "alert.sem.astro": "safers.notifications.models.Notification",
-    "event.camera.#": "safers.cameras.models.CameraMedia",
+    # a map of routing_key patterns to models
+    "status.test.*": (),
+    "event.social.wildfire": ("safers.social.models.SocialEvent", ),
+    # "mm.communication.*": ("safers.chatbot.models.Communication",),
+    # "mm.mission.*": ("safers.chatbot.models.Mission",),
+    "mm.report.*": ("safers.chatbot.models.Report", ),
+    "newexternaldata.*": ("safers.data.models.Data", ),
+    "alert.sem.astro": ("safers.notifications.models.Notification", ),
+    "event.camera.#": ("safers.cameras.models.CameraMedia", ),
 }
 
 
 def binding_key_to_regex(binding_key):
+    # TODO: IMPROVE AS PER https://github.com/astrosat/safers-gateway/issues/28
     return binding_key.replace(".", "\.").replace("*", ".*").replace("#", "\d*")
 
 
@@ -165,16 +166,17 @@ class RMQ(object):
         logger.info(properties)
         logger.info(body)
 
-        for key, value in BINDING_KEYS.items():
-            if value is not None and re.match(
-                binding_key_to_regex(key), method.routing_key
-            ):
-                try:
-                    callable = import_callable(value)
-                    result = callable.process_message(
-                        json.loads(body), properties=properties
-                    )
-                    if result:
-                        logger.info(result)
-                except Exception as e:
-                    logger.error(e)
+        for pattern, models in BINDING_KEYS.items():
+            for model in models:
+                if model is not None and re.match(
+                    binding_key_to_regex(pattern), method.routing_key
+                ):
+                    try:
+                        callable = import_callable(model)
+                        result = callable.process_message(
+                            json.loads(body), properties=properties
+                        )
+                        if result:
+                            logger.info(result)
+                    except Exception as e:
+                        logger.error(e)
