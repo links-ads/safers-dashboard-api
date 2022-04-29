@@ -16,7 +16,7 @@ class NotificationGeometryAdminInline(
     gis_admin.GeoModelAdmin, admin.TabularInline
 ):
     model = NotificationGeometry
-    extra = 0
+    extra = 1
     fields = ("geometry", "description")
     verbose_name_plural = mark_safe(
         "<b>Geometries:</b> <i>the individual geometries corresponding to this notification</i>"
@@ -24,7 +24,7 @@ class NotificationGeometryAdminInline(
 
     default_lat = NAMED_AOIS["rome"].latitude
     default_lon = NAMED_AOIS["rome"].longitude
-    default_zoom = 4
+    default_zoom = point_zoom = 5
 
     def __init__(self, parent_model, admin_site):
 
@@ -68,6 +68,7 @@ class NotificationAdmin(admin.ModelAdmin):
         "id",
         "created",
     )
+    ordering = ("-created", )
     readonly_fields = (
         "id",
         "created",
