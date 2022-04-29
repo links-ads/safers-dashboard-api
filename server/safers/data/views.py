@@ -1,24 +1,57 @@
 import requests
-from copy import deepcopy
 from datetime import datetime, timedelta
 from urllib.parse import quote_plus, urlencode, urljoin
 
 from django.conf import settings
 from django.utils import timezone
 
-from rest_framework import generics, mixins, views, viewsets
+from rest_framework import status, views
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.users.authentication import ProxyAuthentication, ProxyBearerAuthentication
+from safers.users.authentication import ProxyAuthentication
 from safers.users.exceptions import AuthenticationException
 from safers.users.permissions import IsRemote
 
 from safers.data.models import DataLayer
 from safers.data.serializers import DataLayerSerializer
+
+_data_layer_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    example={
+        "id": "1",
+        "text": "Weather forecast",
+        "children": [
+          {
+            "id": "1.1",
+            "text": "Short term",
+            "children": [
+              {
+                "id": "1.1.1",
+                "text": "Temperature at 2m",
+                "children": [
+                  {
+                    "id": "1.1.1.1",
+                    "text": "2022-04-28T12:15:20Z",
+                    "type": "WMS",
+                    "metadata_id": "02bae14e-c24a-4264-92c0-2cfbf7aa65f5",
+                    "url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+)  # yapf: disable
+
+
+_data_layer_list_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=_data_layer_schema
+)  # yapf: disable
 
 
 class DataLayerListView(views.APIView):
@@ -38,27 +71,31 @@ class DataLayerListView(views.APIView):
 
     def update_default_data(self, data):
 
-        if "bbox" not in data and data.get("default_bbox"):
+        if data.pop("default_bbox") and "bbox" not in data:
             user = self.request.user
             default_bbox = user.default_aoi.geometry.extent
             data["bbox"] = ",".join(map(str, default_bbox))
-            # data["bbox"] = user.default_aoi.geometry.extent
 
-        if "start" not in data and data.get("default_start"):
+        if data.pop("default_start") and "start" not in data:
             data["start"] = timezone.now() - timedelta(days=3)
 
-        if "end" not in data and data.get("default_end"):
+        if data.pop("default_end") and "end" not in data:
             data["end"] = timezone.now()
 
         return data
 
-    @swagger_auto_schema(query_serializer=DataLayerSerializer)
+    @swagger_auto_schema(
+        query_serializer=DataLayerSerializer,
+        responses={status.HTTP_200_OK: _data_layer_list_schema}
+    )
     def get(self, request, *args, **kwargs):
+        """
+        Returns a hierarchy of available DataLayers. 
+        Each leaf-node provides a URL paramter to retrieve the actual layer.
+        """
 
         GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
         GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
-
-        # PROXY_URL = "/layers"
 
         serializer = self.serializer_class(
             data=request.query_params,
