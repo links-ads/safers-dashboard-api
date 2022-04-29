@@ -66,6 +66,7 @@ class NotificationAdmin(admin.ModelAdmin):
     inlines = (NotificationGeometryAdminInline, )
     list_display = (
         "id",
+        "timestamp",
         "created",
     )
     ordering = ("-created", )
