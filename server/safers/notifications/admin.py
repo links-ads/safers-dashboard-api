@@ -68,6 +68,7 @@ class NotificationAdmin(admin.ModelAdmin):
         "id",
         "created",
     )
+    ordering = ("-created", )
     readonly_fields = (
         "id",
         "created",

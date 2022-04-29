@@ -154,17 +154,15 @@ def cap_area_to_geojson(cap_area):
                 "type": "Polygon", "coordinates": area[area_keys["Polygon"]]
             }
         elif "Point" in area_keys:
+            lat, lon = list(map(float, area[area_keys["Point"]].split()))
             feature["geometry"] = {
-                "type":
-                    "Point",
-                "coordinates":
-                    list(map(float, area[area_keys["Point"]].split()))
+                "type": "Point", "coordinates": geos.Point(lon, lat).coords
             }
         elif "Circle" in area_keys:
-            x, y, radius = list(map(float, area[area_keys["Circle"]].split()))
+            lat, lon, radius = list(map(float, area[area_keys["Circle"]].split()))
             feature["geometry"] = {
                 "type": "Polygon",
-                "coordinates": geos.Point(x, y).buffer(radius).coords
+                "coordinates": geos.Point(lon, lat).buffer(radius).coords
             }
         elif "Geocode" in area_keys:
             raise ValueError("don't know how to cope w/ geocode yet")
