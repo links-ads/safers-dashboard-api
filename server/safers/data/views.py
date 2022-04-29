@@ -93,7 +93,7 @@ class DataLayerListView(views.APIView):
                 "bbox": "{bbox}",
                 "width": 256,
                 "height": 256,
-                "fmt": "image/png",
+                "format": "image/png",
             },
             safe="{}",
         )
