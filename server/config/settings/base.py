@@ -359,6 +359,11 @@ SWAGGER_SETTINGS = {
     "TAGS_SORTER": "alpha",
 }   # yapf: disable
 
+# DEFAULT_FILTER_INSPECTORS = [
+#     "safers.core.filters.SwaggerFilterInspector",
+#     "drf_yasg.inspectors.CoreAPICompatInspector",
+# ]
+
 #######
 # RMQ #
 #######
