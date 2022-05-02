@@ -10,12 +10,25 @@ from .factories import *
 
 @pytest.mark.django_db
 class TestAlertViews:
-    def test_bbox_filter(self, user, api_client):
+    def test_favorite_alert(self, remote_user, api_client):
+        alert = AlertFactory()
+
+        assert alert not in remote_user.favorite_alerts.all()
+
+        client = api_client(remote_user)
+        url = reverse("alerts-favorite", kwargs={"alert_id": alert.id})
+
+        response = client.post(url, format="json")
+        assert status.is_success(response.status_code)
+
+        assert alert in remote_user.favorite_alerts.all()
+
+    def test_bbox_filter(self, remote_user, api_client):
 
         alert = AlertFactory()
-        (xmin, ymin, xmax, ymax) = alert.geometry.extent
+        (xmin, ymin, xmax, ymax) = alert.geometries.first().geometry.extent
 
-        client = api_client(user)
+        client = api_client(remote_user)
 
         in_bounding_box = [xmin, ymin, xmax, ymax]
         out_bounding_box = [
@@ -26,7 +39,7 @@ class TestAlertViews:
         ]
 
         url_params = urllib.parse.urlencode({
-            "geometry__bboverlaps": ",".join(map(str, in_bounding_box))
+            "bbox": ",".join(map(str, in_bounding_box))
         })
         url = f"{reverse('alerts-list')}?{url_params}"
         response = client.get(url, format="json")
@@ -36,7 +49,7 @@ class TestAlertViews:
         assert len(content) == 1
 
         url_params = urllib.parse.urlencode({
-            "geometry__bboverlaps": ",".join(map(str, out_bounding_box))
+            "bbox": ",".join(map(str, out_bounding_box))
         })
         url = f"{reverse('alerts-list')}?{url_params}"
         response = client.get(url, format="json")

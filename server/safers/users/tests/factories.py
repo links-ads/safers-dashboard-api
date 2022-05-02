@@ -8,6 +8,8 @@ from django.db.models.signals import post_save
 
 from safers.core.tests.utils import optional_declaration
 
+from safers.aois.tests.factories import AoiFactory
+
 from safers.users.models import User, UserProfile, Role, Organization
 from safers.users.tests.utils import generate_password
 
@@ -37,6 +39,8 @@ class UserFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ["email"]
 
     email = FactoryFaker("email")
+
+    default_aoi = factory.SubFactory("safers.aois.tests.factories.AoiFactory")
 
     @factory.lazy_attribute
     def username(self):

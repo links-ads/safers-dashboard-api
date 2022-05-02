@@ -1,4 +1,5 @@
 import pytest
+import uuid
 
 from django.contrib.auth import get_user_model
 
@@ -22,6 +23,21 @@ def admin():
 @pytest.fixture
 def user():
     user = UserFactory()
+    return user
+
+
+@pytest.fixture
+def local_user():
+    user = UserFactory()
+    return user
+
+
+@pytest.fixture
+def remote_user():
+    user = UserFactory()
+    # pretend there is an associated auth_id for the Oauth2User
+    user.auth_id = str(uuid.uuid4())
+    user.save()
     return user
 
 

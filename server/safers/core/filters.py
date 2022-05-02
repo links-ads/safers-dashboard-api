@@ -10,6 +10,36 @@ from rest_framework_gis.filterset import GeoFilterSet
 
 from django_filters import rest_framework as filters
 
+from drf_yasg import openapi
+from drf_yasg.inspectors import CoreAPICompatInspector
+
+
+class SwaggerFilterInspector(CoreAPICompatInspector):
+    """
+    Make sure that filter widgets are rendered nicely in swagger
+    idea came from https://github.com/axnsan12/drf-yasg/issues/514
+    """
+    def get_filter_parameters(self, filter_backend):
+
+        parameters = []
+
+        for parameter, (field_name, filter_field) in zip(
+            super().get_filter_parameters(filter_backend),
+            filter_backend.get_filterset_class(self.view).base_filters.items()
+        ):
+            assert parameter.name == field_name, "Error mapping filter fields to swagger"
+            filter_field_type = type(filter_field)
+            if filter_field_type == filters.BooleanFilter:
+                parameter.type = openapi.TYPE_BOOLEAN
+            elif filter_field_type == filters.ChoiceFilter:
+                parameter.enum = [
+                    choice[0] for choice in filter_field.extra.get("choices")
+                ]
+
+            parameters.append(parameter)
+
+        return parameters
+
 
 class CharInFilter(filters.BaseInFilter, filters.CharFilter):
     """
