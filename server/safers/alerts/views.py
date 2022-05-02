@@ -85,17 +85,7 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 
 
 @method_decorator(
-    swagger_auto_schema(
-        # manual_parameters=[
-        #     openapi.Parameter(
-        #         name="type",
-        #         type=openapi.TYPE_STRING,
-        #         in_=openapi.IN_QUERY,
-        #         enum=AlertType.values
-        #     ),
-        # ],
-        filter_inspectors=[SwaggerFilterInspector],
-    ),
+    swagger_auto_schema(filter_inspectors=[SwaggerFilterInspector]),
     name="list",
 )
 class AlertViewSet(CannotDeleteViewSet):
@@ -105,7 +95,7 @@ class AlertViewSet(CannotDeleteViewSet):
 
     lookup_field = "id"
     lookup_url_kwarg = "alert_id"
-    # permission_classes = [IsAuthenticated, IsRemote]
+    permission_classes = [IsAuthenticated, IsRemote]
     serializer_class = AlertSerializer
 
     def get_queryset(self):
