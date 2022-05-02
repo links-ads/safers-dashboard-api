@@ -5,7 +5,7 @@ from django.contrib.gis.geos import Polygon
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework import status
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -17,12 +17,49 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
-from safers.core.views import CannotDeleteViewSet
 
 from safers.users.permissions import IsRemote
 
 from safers.alerts.models import Alert, AlertGeometry, AlertType
 from safers.alerts.serializers import AlertSerializer
+
+_alert_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    example={
+        "id": "3a851a61-7f8a-4aa1-ad63-31e61b051a36",
+        "type": "UNVALIDATED",
+        "timestamp": "2022-04-12T14:29:34Z",
+        "status": "string",
+        "source": "string",
+        "scope": "string",
+        "category": "string",
+        "event": "string",
+        "urgency": "string",
+        "severity": "string",
+        "certainty": "string",
+        "description": "",
+        "geometry": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [1, 2],
+                            [3, 4],
+                        ]
+                    },
+                    "properties": {}
+                }
+            ]
+        }
+    }
+)  # yapf: disable
+
+_alert_list_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=_alert_schema
+)
 
 
 class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
@@ -85,10 +122,34 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 
 
 @method_decorator(
-    swagger_auto_schema(filter_inspectors=[SwaggerFilterInspector]),
+    swagger_auto_schema(
+        responses={status.HTTP_200_OK: _alert_list_schema},
+        filter_inspectors=[SwaggerFilterInspector]
+    ),
     name="list",
 )
-class AlertViewSet(CannotDeleteViewSet):
+@method_decorator(
+    swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
+    name="retrieve",
+)
+@method_decorator(
+    swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
+    name="update",
+)
+@method_decorator(
+    swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
+    name="partial_update",
+)
+@method_decorator(
+    swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
+    name="favorite",
+)
+class AlertViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
 
     filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = AlertFilterSet
