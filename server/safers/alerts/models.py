@@ -3,6 +3,7 @@ import uuid
 from django.contrib.gis import geos
 from django.db import models, transaction
 from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import GeometryCollection
 from django.contrib.postgres.fields import ArrayField
 from django.utils.translation import gettext_lazy as _
 
@@ -35,7 +36,10 @@ class AlertQuerySet(models.QuerySet):
 # TODO: MORE INFO: https://astrosat.atlassian.net/browse/SA-154?atlOrigin=eyJpIjoiMDkxMDNmOTU4ZTFlNDNjMzg2Nzk3MzkzMTEyZTk0NWQiLCJwIjoiaiJ9
 
 
-class AlertGeometry(gis_models.Model):
+class AlertGeometry(HashableMixin, gis_models.Model):
+    class Meta:
+        verbose_name = "Alert Geometry"
+        verbose_name_plural = "Alert Geometries"
 
     PRECISION = 12
 
@@ -55,18 +59,35 @@ class AlertGeometry(gis_models.Model):
 
     description = models.TextField(blank=True, null=True)
     geometry = gis_models.GeometryField(blank=False, null=False)
+
     bounding_box = gis_models.PolygonField(blank=True, null=True)
+    center = gis_models.PointField(blank=True, null=True)
+
+    @property
+    def hash_source(self):
+        if self.geometry:
+            return self.geometry.hexewkb
 
     def save(self, *args, **kwargs):
-        if self.geometry and self.geometry.geom_type != "Point":
-            self.bounding_box = self.geometry.envelope
-        return super().save(*args, **kwargs)
+        geometry_updated = False
+        if self.hash_source and self.has_hash_source_changed(self.hash_source):
+            geometry_updated = True
+            self.bounding_box = self.geometry.envelope if self.geometry.geom_type != "Point" else None
+            self.center = self.geometry.centroid
+        super().save(*args, **kwargs)
+        if geometry_updated:
+            from safers.alerts.signals import geometry_updated as geometry_updated_signal
+            geometry_updated_signal.send(
+                sender=AlertGeometry, geometry=self, parent=self.alert
+            )
 
 
 class Alert(models.Model):
     class Meta:
         verbose_name = "Alert"
         verbose_name_plural = "Alerts"
+
+    PRECISION = 12
 
     objects = AlertManager.from_queryset(AlertQuerySet)()
 
@@ -103,6 +124,25 @@ class Alert(models.Model):
     message = models.JSONField(
         blank=True, null=True, help_text=_("raw message content")
     )
+
+    bounding_box = gis_models.PolygonField(blank=True, null=True)
+    center = gis_models.PointField(blank=True, null=True)
+
+    def recalculate_geometries(self, force_save=True):
+        """
+        called by signal hander in response to one of the AlertGeometries having their geometry updated
+        """
+        geometries_geometries = self.geometries.values(
+            "geometry", "bounding_box", "center"
+        )
+        self.center = GeometryCollection(
+            *geometries_geometries.values_list("center", flat=True)
+        ).centroid
+        self.bounding_box = GeometryCollection(
+            *geometries_geometries.values_list("geometry", flat=True)
+        ).envelope
+        if force_save:
+            self.save()
 
     def validate(self):
         import pdb

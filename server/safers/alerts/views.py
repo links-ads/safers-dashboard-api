@@ -53,7 +53,9 @@ _alert_schema = openapi.Schema(
                     "properties": {}
                 }
             ]
-        }
+        },
+        "center": [1, 2],
+        "bounding_box": [1, 2, 3, 4]
     }
 )  # yapf: disable
 
@@ -77,6 +79,11 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         }
 
     type = filters.ChoiceFilter(choices=AlertType.choices)
+    # timestamp = filters.IsoDateTimeFromToRangeFilter()
+    # start = filters.DateTimeFilter()
+    # end = filters.DateTimeFilter()
+    # timestamp = filters.DateTimeFilter()
+
     bbox = filters.Filter(
         method="bbox_method", help_text=_("xmin, ymin, xmax, ymax")
     )
