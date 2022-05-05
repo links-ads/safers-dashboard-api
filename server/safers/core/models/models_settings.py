@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -44,6 +45,13 @@ class SafersSettings(SingletonMixin, models.Model):
         help_text=_(
             "Number of camera_medias that a user can mark as 'favorite'."
         ),
+    )
+
+    default_timerange = models.DurationField(
+        default=timedelta(days=3),
+        help_text=_(
+            "Time range to use in date/datetime filters when no explicit filter is provided."
+        )
     )
 
     possible_event_distance = models.FloatField(

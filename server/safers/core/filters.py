@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime, timedelta
 
 from django.contrib.gis.geos import Polygon
@@ -28,13 +29,28 @@ class SwaggerFilterInspector(CoreAPICompatInspector):
             filter_backend.get_filterset_class(self.view).base_filters.items()
         ):
             assert parameter.name == field_name, "Error mapping filter fields to swagger"
+
             filter_field_type = type(filter_field)
-            if filter_field_type == filters.BooleanFilter:
+
+            if issubclass(filter_field_type, filters.BooleanFilter):
                 parameter.type = openapi.TYPE_BOOLEAN
-            elif filter_field_type == filters.ChoiceFilter:
+            elif issubclass(filter_field_type, filters.ChoiceFilter):
                 parameter.enum = [
                     choice[0] for choice in filter_field.extra.get("choices")
                 ]
+            elif issubclass(filter_field_type, filters.DateFilter):
+                parameter.format = openapi.FORMAT_DATE
+            elif issubclass(filter_field_type, filters.DateTimeFilter):
+                parameter.format = openapi.FORMAT_DATETIME
+            # elif issubclass(
+            #     filter_field_type, filters.IsoDateTimeFromToRangeFilter
+            # ):
+            #     after_parameter = deepcopy(parameter)
+            #     after_parameter.name = f"{field_name}_after"
+            #     parameters.append(after_parameter)
+            #     before_parameter = deepcopy(parameter)
+            #     before_parameter.name = f"{field_name}_before"
+            #     parameters.append(before_parameter)
 
             parameters.append(parameter)
 

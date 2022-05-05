@@ -435,6 +435,9 @@ SAFERS_REQUIRE_VERIFICATION = DynamicSetting(
 SAFERS_REQUIRE_TERMS_ACCEPTANCE = DynamicSetting(
     "core.SafersSettings.require_terms_acceptance", True
 )
+SAFERS_DEFAULT_TIMERANGE = DynamicSetting(
+    "core.SafersSettings.default_timerange", timedelta(days=3)
+)
 SAFERS_POSSIBLE_EVENT_DISTANCE = DynamicSetting(
     "core.SafersSettings.possible_event_distance", 10
 )
