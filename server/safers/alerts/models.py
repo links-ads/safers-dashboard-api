@@ -42,6 +42,7 @@ class AlertGeometry(HashableMixin, gis_models.Model):
         verbose_name_plural = "Alert Geometries"
 
     PRECISION = 12
+    MIN_BOUNDING_BOX_SIZE = 0.00001  # TODO: NOT SURE WHAT THIS SHOULD BE
 
     id = models.UUIDField(
         primary_key=True,
@@ -72,11 +73,13 @@ class AlertGeometry(HashableMixin, gis_models.Model):
         geometry_updated = False
         if self.hash_source and self.has_hash_source_changed(self.hash_source):
             geometry_updated = True
-            self.bounding_box = self.geometry.envelope if self.geometry.geom_type != "Point" else None
+            self.bounding_box = self.geometry.buffer(
+                self.MIN_BOUNDING_BOX_SIZE
+            ).envelope if self.geometry.geom_type == "Point" else self.geometry.envelope
             self.center = self.geometry.centroid
         super().save(*args, **kwargs)
         if geometry_updated:
-            from safers.alerts.signals import geometry_updated as geometry_updated_signal
+            from safers.core.signals import geometry_updated as geometry_updated_signal
             geometry_updated_signal.send(
                 sender=AlertGeometry, geometry=self, parent=self.alert
             )
@@ -132,14 +135,12 @@ class Alert(models.Model):
         """
         called by signal hander in response to one of the AlertGeometries having their geometry updated
         """
-        geometries_geometries = self.geometries.values(
-            "geometry", "bounding_box", "center"
-        )
+        geometries_geometries = self.geometries.values("bounding_box", "center")
         self.center = GeometryCollection(
             *geometries_geometries.values_list("center", flat=True)
         ).centroid
         self.bounding_box = GeometryCollection(
-            *geometries_geometries.values_list("geometry", flat=True)
+            *geometries_geometries.values_list("bounding_box", flat=True)
         ).envelope
         if force_save:
             self.save()

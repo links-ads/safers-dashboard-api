@@ -3,6 +3,7 @@ import uuid
 from django.contrib.gis import geos
 from django.db import models, transaction
 from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import GeometryCollection
 from django.utils.translation import gettext_lazy as _
 
 from safers.core.mixins import HashableMixin
@@ -20,9 +21,10 @@ class NotificationQuerySet(models.QuerySet):
     pass
 
 
-class NotificationGeometry(gis_models.Model):
+class NotificationGeometry(HashableMixin, gis_models.Model):
 
     PRECISION = 12
+    MIN_BOUNDING_BOX_SIZE = 0.00001  # TODO: NOT SURE WHAT THIS SHOULD BE
 
     id = models.UUIDField(
         primary_key=True,
@@ -40,18 +42,39 @@ class NotificationGeometry(gis_models.Model):
 
     description = models.TextField(blank=True, null=True)
     geometry = gis_models.GeometryField(blank=False, null=False)
+
     bounding_box = gis_models.PolygonField(blank=True, null=True)
+    center = gis_models.PointField(blank=True, null=True)
+
+    @property
+    def hash_source(self):
+        if self.geometry:
+            return self.geometry.hexewkb
 
     def save(self, *args, **kwargs):
-        if self.geometry and self.geometry.geom_type != "Point":
-            self.bounding_box = self.geometry.envelope
-        return super().save(*args, **kwargs)
+        geometry_updated = False
+        if self.hash_source and self.has_hash_source_changed(self.hash_source):
+            geometry_updated = True
+            self.bounding_box = self.geometry.buffer(
+                self.MIN_BOUNDING_BOX_SIZE
+            ).envelope if self.geometry.geom_type == "Point" else self.geometry.envelope
+            self.center = self.geometry.centroid
+        super().save(*args, **kwargs)
+        if geometry_updated:
+            from safers.core.signals import geometry_updated as geometry_updated_signal
+            geometry_updated_signal.send(
+                sender=NotificationGeometry,
+                geometry=self,
+                parent=self.notification
+            )
 
 
 class Notification(models.Model):
     class Meta:
         verbose_name = "Notification"
         verbose_name_plural = "Notification"
+
+    PRECISION = 12
 
     objects = NotificationManager.from_queryset(NotificationQuerySet)()
 
@@ -62,6 +85,7 @@ class Notification(models.Model):
     )
 
     created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
 
     timestamp = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=128, blank=True, null=True)
@@ -78,6 +102,24 @@ class Notification(models.Model):
     message = models.JSONField(
         blank=True, null=True, help_text=_("raw message content")
     )
+
+    bounding_box = gis_models.PolygonField(blank=True, null=True)
+    center = gis_models.PointField(blank=True, null=True)
+
+    def recalculate_geometries(self, force_save=True):
+        """
+        called by signal hander in response to one of the NotificationGeometries having their geometry updated
+        """
+
+        geometries_geometries = self.geometries.values("bounding_box", "center")
+        self.center = GeometryCollection(
+            *geometries_geometries.values_list("center", flat=True)
+        ).centroid
+        self.bounding_box = GeometryCollection(
+            *geometries_geometries.values_list("bounding_box", flat=True)
+        ).envelope
+        if force_save:
+            self.save()
 
     @classmethod
     def process_message(cls, message_body, **kwargs):

@@ -2,6 +2,8 @@ from copy import deepcopy
 
 from django.conf import settings
 from django.contrib.gis.geos import Polygon
+from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status, viewsets
@@ -12,11 +14,14 @@ from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
-from safers.core.filters import DefaultFilterSetMixin
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
+from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
 
 from safers.users.permissions import IsRemote
 
-from safers.notifications.models import Notification
+from safers.notifications.models import Notification, NotificationGeometry
 from safers.notifications.serializers import NotificationSerializer
 
 
@@ -34,6 +39,19 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
             "certainty",
         }
 
+    start_date = filters.DateTimeFilter(
+        field_name="timestamp", lookup_expr="date__gte"
+    )
+    end_date = filters.DateTimeFilter(
+        field_name="timestamp", lookup_expr="date__lte"
+    )
+    default_date = filters.BooleanFilter(
+        initial=True,
+        help_text=_(
+            "If default_date is True and no end_date is provided then the current date will be used and if no start_date is provided then 3 days previous will be used; "
+            "If default_date is False and no end_date or start_date is used then no date filters will be passed to the API."
+        )
+    )
     bbox = filters.Filter(
         method="bbox_method", help_text=_("xmin, ymin, xmax, ymax")
     )
@@ -62,18 +80,31 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         """
 
         # update filters based on default values
+
         updated_cleaned_data = deepcopy(self.form.cleaned_data)
-        if updated_cleaned_data.pop("default_bbox"
-                                   ) and not updated_cleaned_data.get("bbox"):
+
+        default_bbox = updated_cleaned_data.pop("default_bbox")
+        if default_bbox and not updated_cleaned_data.get("bbox"):
             user = self.request.user
-            default_bbox = user.default_aoi.geometry.extent
-            updated_cleaned_data["bbox"] = ",".join(map(str, default_bbox))
+            bbox = user.default_aoi.geometry.extent
+            updated_cleaned_data["bbox"] = ",".join(map(str, bbox))
+
+        default_date = updated_cleaned_data.pop("default_date")
+        if default_date and not updated_cleaned_data.get("end_date"):
+            updated_cleaned_data["end_date"] = timezone.now()
+        if default_date and not updated_cleaned_data.get("start_date"):
+            updated_cleaned_data["start_date"] = timezone.now(
+            ) - settings.SAFERS_DEFAULT_TIMERANGE
 
         self.form.cleaned_data = updated_cleaned_data
 
         return super().filter_queryset(queryset)
 
 
+@method_decorator(
+    swagger_auto_schema(filter_inspectors=[SwaggerFilterInspector]),
+    name="list",
+)
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
     filter_backends = (filters.DjangoFilterBackend, )
