@@ -17,7 +17,11 @@ class NotificationGeometryAdminInline(
 ):
     model = NotificationGeometry
     extra = 1
-    fields = ("geometry", "description")
+    fields = (
+        "geometry",
+        "description",
+    )
+    verbose_name = "Notification Geometry"
     verbose_name_plural = mark_safe(
         "<b>Geometries:</b> <i>the individual geometries corresponding to this notification</i>"
     )
@@ -42,10 +46,11 @@ class NotificationGeometryAdminInline(
 
 
 @admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
+class NotificationAdmin(gis_admin.GeoModelAdmin):
     fields = (
         "id",
         "created",
+        "modified",
         "timestamp",
         "status",
         "source",
@@ -57,6 +62,8 @@ class NotificationAdmin(admin.ModelAdmin):
         "certainty",
         "description",
         "message",
+        "center",
+        "bounding_box"
     )
     formfield_overrides = {
         JSONField: {
@@ -73,4 +80,10 @@ class NotificationAdmin(admin.ModelAdmin):
     readonly_fields = (
         "id",
         "created",
+        "modified",
     )
+
+    default_lat = NAMED_AOIS["rome"].latitude
+    default_lon = NAMED_AOIS["rome"].longitude
+    default_zoom = point_zoom = 5
+    modifiable = False

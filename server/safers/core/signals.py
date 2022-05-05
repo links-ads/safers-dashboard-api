@@ -1,4 +1,7 @@
-from django.dispatch import receiver, Signal
+from django.dispatch import Signal, receiver
+
+# signal that geometries send to parents when their geometry updates
+# in order to allow parents to update their center & bounding_box
 
 geometry_updated = Signal(providing_args=["geometry", "parent"])
 
@@ -12,10 +15,3 @@ def geometry_updated_handler(sender, *args, **kwargs):
     geometery = kwargs["geometry"]
     parent = kwargs["parent"]
     parent.recalculate_geometries(force_save=True)
-
-
-# geometry_updated.connect(
-#     alerts_geometry_updated_handler,
-#     sender=AlertGeometry,
-#     dispatch_uid="safers_alerts_geometry_updated_handler"
-# )

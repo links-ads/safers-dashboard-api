@@ -2,6 +2,8 @@ from copy import deepcopy
 
 from django.conf import settings
 from django.contrib.gis.geos import Polygon
+from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status, viewsets
@@ -12,12 +14,58 @@ from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
-from safers.core.filters import DefaultFilterSetMixin
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
+from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
 
 from safers.users.permissions import IsRemote
 
-from safers.notifications.models import Notification
+from safers.notifications.models import Notification, NotificationGeometry
 from safers.notifications.serializers import NotificationSerializer
+
+
+_notification_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    example={
+        "id": "db9634fc-ae64-44bf-ba31-7abf4f68daa9",
+        "timestamp": "2022-04-28T11:38:28Z",
+        "status": "Actual",
+        "source": "EFFIS_FWI",
+        "scope": "Public",
+        "category": "Met",
+        "event": "Probability of fire",
+        "urgency": "Immediate",
+        "severity": "Extreme",
+        "certainty": "Likely",
+        "description": "Do not light open-air barbecues in forest.",
+        "geometry": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [1, 2],
+                            [3, 4]
+                        ]
+                    },
+                    "properties": {
+                        "description": "areaDesc"
+                    }
+                }
+            ]
+        },
+        "center": [1, 2],
+        "bounding_box": [1, 2, 3, 4]
+    }
+)  # yapf: disable
+
+
+_notification_list_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=_notification_schema
+)
 
 
 class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
@@ -34,6 +82,19 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
             "certainty",
         }
 
+    start_date = filters.DateTimeFilter(
+        field_name="timestamp", lookup_expr="date__gte"
+    )
+    end_date = filters.DateTimeFilter(
+        field_name="timestamp", lookup_expr="date__lte"
+    )
+    default_date = filters.BooleanFilter(
+        initial=True,
+        help_text=_(
+            "If default_date is True and no end_date is provided then the current date will be used and if no start_date is provided then 3 days previous will be used; "
+            "If default_date is False and no end_date or start_date is used then no date filters will be passed to the API."
+        )
+    )
     bbox = filters.Filter(
         method="bbox_method", help_text=_("xmin, ymin, xmax, ymax")
     )
@@ -62,18 +123,40 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         """
 
         # update filters based on default values
+
         updated_cleaned_data = deepcopy(self.form.cleaned_data)
-        if updated_cleaned_data.pop("default_bbox"
-                                   ) and not updated_cleaned_data.get("bbox"):
+
+        default_bbox = updated_cleaned_data.pop("default_bbox")
+        if default_bbox and not updated_cleaned_data.get("bbox"):
             user = self.request.user
-            default_bbox = user.default_aoi.geometry.extent
-            updated_cleaned_data["bbox"] = ",".join(map(str, default_bbox))
+            bbox = user.default_aoi.geometry.extent
+            updated_cleaned_data["bbox"] = ",".join(map(str, bbox))
+
+        default_date = updated_cleaned_data.pop("default_date")
+        if default_date and not updated_cleaned_data.get("end_date"):
+            updated_cleaned_data["end_date"] = timezone.now()
+        if default_date and not updated_cleaned_data.get("start_date"):
+            updated_cleaned_data["start_date"] = timezone.now(
+            ) - settings.SAFERS_DEFAULT_TIMERANGE
 
         self.form.cleaned_data = updated_cleaned_data
 
         return super().filter_queryset(queryset)
 
 
+@method_decorator(
+    swagger_auto_schema(
+        responses={status.HTTP_200_OK: _notification_list_schema},
+        filter_inspectors=[SwaggerFilterInspector]
+    ),
+    name="list",
+)
+@method_decorator(
+    swagger_auto_schema(
+        responses={status.HTTP_200_OK: _notification_list_schema},
+    ),
+    name="retrieve",
+)
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
     filter_backends = (filters.DjangoFilterBackend, )

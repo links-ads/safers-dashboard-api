@@ -1,5 +1,4 @@
 from copy import deepcopy
-from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.gis.geos import Polygon
