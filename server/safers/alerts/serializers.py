@@ -32,11 +32,23 @@ class AlertSerializer(serializers.ModelSerializer):
             "certainty",
             "description",
             "geometry",
+            "center",
+            "bounding_box",
             "message",
         )
 
     geometry = AlertGeometrySerializer(many=True, source="geometries")
+    center = serializers.SerializerMethodField()
+    bounding_box = serializers.SerializerMethodField()
     message = serializers.JSONField(write_only=True)
+
+    def get_center(self, obj):
+        coords = obj.center.coords
+        return map(lambda x: round(x, Alert.PRECISION), coords)
+
+    def get_bounding_box(self, obj):
+        coords = obj.bounding_box.extent
+        return map(lambda x: round(x, Alert.PRECISION), coords)
 
     def create(self, validated_data):
         geometries_data = validated_data.pop("geometries", {})
