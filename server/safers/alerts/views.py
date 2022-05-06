@@ -81,6 +81,8 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 
     type = filters.ChoiceFilter(choices=AlertType.choices)
 
+    order = filters.OrderingFilter(fields=(("timestamp", "date"), ))
+
     start_date = filters.DateTimeFilter(
         field_name="timestamp", lookup_expr="date__gte"
     )
