@@ -30,6 +30,14 @@ class SafersSettings(SingletonMixin, models.Model):
         ),
     )
 
+    polling_frequency = models.FloatField(
+        default=60,
+        validators=[MinValueValidator(0)],
+        help_text=_(
+            "The frequency (in seconds) that the frontend should poll the backend for new data."
+        ),
+    )
+
     max_favorite_alerts = models.PositiveBigIntegerField(
         default=3,
         help_text=_("Number of alerts that a user can mark as 'favorite'."),
