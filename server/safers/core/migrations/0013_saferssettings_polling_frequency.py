@@ -14,6 +14,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='saferssettings',
             name='polling_frequency',
-            field=models.FloatField(default=60, help_text='The frequency (in seconds) that the frontend should poll the backend for new data.', validators=[django.core.validators.MinValueValidator(0)]),
+            field=models.FloatField(
+                default=10,
+                help_text=
+                'The frequency (in seconds) that the frontend should poll the backend for new data.',
+                validators=[django.core.validators.MinValueValidator(0)]
+            ),
         ),
     ]
