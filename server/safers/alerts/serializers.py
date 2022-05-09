@@ -37,7 +37,9 @@ class AlertSerializer(serializers.ModelSerializer):
             "message",
         )
 
-    geometry = AlertGeometrySerializer(many=True, source="geometries")
+    geometry = AlertGeometrySerializer(
+        many=True, source="geometries", required=False
+    )
     center = serializers.SerializerMethodField()
     bounding_box = serializers.SerializerMethodField()
     message = serializers.JSONField(write_only=True)
@@ -69,3 +71,42 @@ class AlertSerializer(serializers.ModelSerializer):
             instance.unvalidate()
         alert = super().update(instance, validated_data)
         return alert
+
+
+class AlertViewSetSerializer(AlertSerializer):
+    """
+    The serializer used by the AlertViewSet.  This is different from the default serializer which is used by
+    RMQ.  The latter allows all fields to be updated.  The former only allows "information" & "type"
+    """
+    class Meta:
+        model = Alert
+        fields = (
+            "id",
+            "type",
+            "timestamp",
+            "status",
+            "source",
+            "scope",
+            "category",
+            "event",
+            "urgency",
+            "severity",
+            "certainty",
+            "description",
+            "geometry",
+            "center",
+            "bounding_box",
+        )
+        extra_kwargs = {
+            "timestamp": {"read_only": True},
+            "status": {"read_only": True},
+            "source": {"read_only": True},
+            "scope": {"read_only": True},
+            "category": {"read_only": True},
+            "event": {"read_only": True},
+            "urgency": {"read_only": True},
+            "severity": {"read_only": True},
+            "certainty": {"read_only": True},
+            "description": {"read_only": True},
+            "geometry": {"read_only": True},
+        }  # yapf: disable

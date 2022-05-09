@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.generics import get_object_or_404 as drf_get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -22,7 +23,7 @@ from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
 from safers.users.permissions import IsRemote
 
 from safers.alerts.models import Alert, AlertGeometry, AlertType
-from safers.alerts.serializers import AlertSerializer
+from safers.alerts.serializers import AlertViewSetSerializer
 
 _alert_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -181,11 +182,29 @@ class AlertViewSet(
     lookup_field = "id"
     lookup_url_kwarg = "alert_id"
     permission_classes = [IsAuthenticated, IsRemote]
-    serializer_class = AlertSerializer
+    serializer_class = AlertViewSetSerializer
 
     def get_queryset(self):
         queryset = Alert.objects.all()
         return queryset.prefetch_related("geometries")
+
+    def get_object(self):
+        queryset = self.get_queryset()
+
+        # disable filtering for detail views
+        # (the rest of this fn is just like the parent class)
+        # TODO: https://github.com/astrosat/safers-gateway/issues/45
+        if self.action in ["list"]:
+            queryset = self.filter_queryset(queryset)
+
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj = drf_get_object_or_404(queryset, **filter_kwargs)
+
+        self.check_object_permissions(self.request, obj)
+
+        return obj
 
     @action(detail=True, methods=["post"])
     def favorite(self, request, **kwargs):

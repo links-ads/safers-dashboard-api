@@ -65,6 +65,27 @@ class CharInFilter(filters.BaseInFilter, filters.CharFilter):
     pass
 
 
+class DefaultFilterBackend(filters.DjangoFilterBackend):
+    """
+    alternative way of providing default values to filters
+    as per https://github.com/astrosat/safers-gateway/issues/45
+    (since DefaultFilterSetMixin might not be the best idea)
+    """
+    @property
+    def default_filterset_kwargs(self):
+        raise NotImplementedError(
+            "default_filterset_kwargs must be implemented"
+        )
+
+    def get_filterset_kwargs(self, request, queryset, view):
+        self.view = view
+        kwargs = super().get_filterset_kwargs(request, queryset, view)
+        data = kwargs["data"].copy()
+        data.update(self.default_filterset_kwargs)
+        kwargs["data"] = data
+        return kwargs
+
+
 class DefaultFilterSetMixin():
     """
     allows me to provide "initial" values as defaults
