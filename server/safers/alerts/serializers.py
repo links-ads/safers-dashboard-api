@@ -35,6 +35,7 @@ class AlertSerializer(serializers.ModelSerializer):
             "center",
             "bounding_box",
             "message",
+            "information",
         )
 
     geometry = AlertGeometrySerializer(
@@ -96,6 +97,7 @@ class AlertViewSetSerializer(AlertSerializer):
             "geometry",
             "center",
             "bounding_box",
+            "information",
         )
         extra_kwargs = {
             "timestamp": {"read_only": True},

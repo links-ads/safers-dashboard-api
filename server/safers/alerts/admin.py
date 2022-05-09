@@ -163,6 +163,7 @@ class AlertAdmin(gis_admin.GeoModelAdmin):
         "certainty",
         "description",
         "message",
+        "information",
         "center",
         "bounding_box",
     )
