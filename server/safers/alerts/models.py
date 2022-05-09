@@ -124,6 +124,12 @@ class Alert(models.Model):
     certainty = models.CharField(max_length=128, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
+    information = models.TextField(
+        blank=True,
+        null=True,
+        help_text=_("additional information added by dashboard user"),
+    )
+
     message = models.JSONField(
         blank=True, null=True, help_text=_("raw message content")
     )
