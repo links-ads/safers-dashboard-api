@@ -57,7 +57,8 @@ _alert_schema = openapi.Schema(
             ]
         },
         "center": [1, 2],
-        "bounding_box": [1, 2, 3, 4]
+        "bounding_box": [1, 2, 3, 4],
+        "information": "Lorem ipsum dolor sit amet"
     }
 )  # yapf: disable
 
