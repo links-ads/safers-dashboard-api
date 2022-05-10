@@ -218,11 +218,14 @@ class AlertViewSet(
             raise ValidationError(f"{obj} is already validated")
 
         event, created = obj.validate()
-        data = {
-            "detail":
-                f"added {obj} to {'new' if created else 'existing'} event: {event}"
-        }
-        return Response(data, status=status.HTTP_200_OK)
+        if created:
+            response_status = status.HTTP_201_CREATED
+            response_data = f"added {obj.title} to new event: {event}"
+        else:
+            response_status = status.HTTP_200_OK
+            response_data = f"added {obj.title} to existing event: {event}"
+
+        return Response({"detail": response_data}, status=response_status)
 
     @action(detail=True, methods=["post"])
     def favorite(self, request, **kwargs):
