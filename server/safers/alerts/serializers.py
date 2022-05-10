@@ -54,25 +54,19 @@ class AlertSerializer(serializers.ModelSerializer):
         coords = obj.bounding_box.extent
         return map(lambda x: round(x, Alert.PRECISION), coords)
 
+    def validate_type(self, value):
+        if self.instance and self.instance.type != value:
+            raise serializers.ValidationError(
+                "alert.type can only be changed using the 'validate' endpoint."
+            )
+        return value
+
     def create(self, validated_data):
         geometries_data = validated_data.pop("geometries", {})
         alert = super().create(validated_data)
         for geometry_data in geometries_data:
             alert_geometry = AlertGeometry(**geometry_data, alert=alert)
             alert_geometry.save()
-        return alert
-
-    def update(self, instance, validated_data):
-
-        if instance.type == AlertType.UNVALIDATED and validated_data.get(
-            "type"
-        ) == AlertType.VALIDATED:
-            instance.validate()
-        elif instance.type == AlertType.VALIDATED and validated_data.get(
-            "type"
-        ) == AlertType.UNVALIDATED:
-            instance.unvalidate()
-        alert = super().update(instance, validated_data)
         return alert
 
 
