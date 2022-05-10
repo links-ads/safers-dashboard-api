@@ -169,14 +169,22 @@ class Alert(models.Model):
 
     def validate(self):
         from safers.events.models import Event
+
+        self.type = AlertType.VALIDATED
+        self.save()
+
         existing_events = Event.objects.filter_by_alert(self)
         if existing_events.exists():
             # TODO: CAN THERE BE MULTIPLE existing_events ?
+            created = False
             event = existing_events.first()
         else:
+            created = True
             event = Event()
             event.save()
         event.alerts.add(self)
+
+        return (event, created)
 
     def unvalidate(self):
         raise NotImplementedError()

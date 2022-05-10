@@ -208,6 +208,23 @@ class AlertViewSet(
         return obj
 
     @action(detail=True, methods=["post"])
+    def validate(self, request, **kwargs):
+        """
+        Toggles the type of the specified object (VALIDATED OR UNVALIDATED)
+        """
+        obj = self.get_object()
+
+        if obj.type == AlertType.VALIDATED:
+            raise ValidationError(f"{obj} is already validated")
+
+        event, created = obj.validate()
+        data = {
+            "detail":
+                f"added {obj} to {'new' if created else 'existing'} event: {event}"
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"])
     def favorite(self, request, **kwargs):
         """
         Toggles the favorite status of the specified object
