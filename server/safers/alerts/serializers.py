@@ -99,6 +99,7 @@ class AlertViewSetSerializer(AlertSerializer):
             "center",
             "bounding_box",
             "information",
+            "favorite",
         )
         extra_kwargs = {
             "timestamp": {"read_only": True},
@@ -113,3 +114,9 @@ class AlertViewSetSerializer(AlertSerializer):
             "description": {"read_only": True},
             "geometry": {"read_only": True},
         }  # yapf: disable
+
+    favorite = serializers.SerializerMethodField(method_name="is_favorite")
+
+    def is_favorite(self, obj):
+        user = self.context["request"].user
+        return obj in user.favorite_alerts.all()
