@@ -26,12 +26,7 @@ class EventSerializer(serializers.ModelSerializer):
             "alerts",
         )
 
-    geometry = gis_serializers.GeometryField(
-        precision=Event.PRECISION,
-        read_only=True,
-        remove_duplicates=True,
-        source="geometry_collection",
-    )
+    geometry = serializers.SerializerMethodField()
     center = serializers.SerializerMethodField()
     bounding_box = serializers.SerializerMethodField()
 
@@ -42,6 +37,24 @@ class EventSerializer(serializers.ModelSerializer):
     alerts = serializers.SlugRelatedField(
         many=True, slug_field="id", queryset=Alert.objects.all()
     )
+
+    def get_geometry(self, obj):
+        geometry_serializer = gis_serializers.GeometryField(
+            # context=self.context
+        )
+        return {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": feature
+                }
+                for feature in map(
+                    lambda x: geometry_serializer.to_representation(x),
+                    obj.geometry_collection,
+                )
+            ]
+        }  # yapf: disable
 
     def get_center(self, obj):
         coords = obj.center.coords
