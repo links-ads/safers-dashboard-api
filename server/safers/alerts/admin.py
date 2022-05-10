@@ -164,8 +164,10 @@ class AlertAdmin(gis_admin.GeoModelAdmin):
         "description",
         "message",
         "information",
+        # "geometry_collection",
         "center",
         "bounding_box",
+
     )
     formfield_overrides = {
         JSONField: {

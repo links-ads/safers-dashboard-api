@@ -1,11 +1,18 @@
 import pytest
 import urllib
 
+from datetime import timedelta
+
+from django.conf import settings
 from django.urls import resolve, reverse
+from django.utils import timezone
 
 from rest_framework import status
 
 from .factories import *
+
+from safers.alerts.models import Alert
+from safers.events.models import Event
 
 
 @pytest.mark.django_db
@@ -57,3 +64,50 @@ class TestAlertViews:
 
         content = response.json()
         assert len(content) == 0
+
+    def test_validate_overlapping(self):
+
+        timestamp = timezone.now()
+        alert1 = AlertFactory(timestamp=timestamp, geometries=2)
+        alert2 = AlertFactory(timestamp=timestamp, geometries=2)
+        for alert1_geometry, alert2_geometry in zip(alert1.geometries.all(), alert2.geometries.all()):
+            alert1_geometry.geometry = alert2_geometry.geometry
+            alert1_geometry.save()
+
+        assert Event.objects.count() == 0
+
+        alert1.validate()
+        assert Event.objects.count() == 1
+        event = Event.objects.first()
+        assert alert1 in event.alerts.all()
+        assert alert2 not in event.alerts.all()
+
+        alert2.validate()
+        assert Event.objects.count() == 1
+        event = Event.objects.first()
+        assert alert1 in event.alerts.all()
+        assert alert2 in event.alerts.all()
+
+    def test_validate_non_overlapping(self):
+
+        timestamp = timezone.now()
+        alert1 = AlertFactory(timestamp=timestamp, geometries=2)
+        alert2 = AlertFactory(
+            timestamp=timestamp +
+            timedelta(hours=settings.SAFERS_POSSIBLE_EVENT_TIMERANGE * 2),
+            geometries=2
+        )
+
+        assert Event.objects.count() == 0
+
+        alert1.validate()
+        assert Event.objects.count() == 1
+        event = Event.objects.first()
+        assert alert1 in event.alerts.all()
+        assert alert2 not in event.alerts.all()
+
+        alert2.validate()
+        assert Event.objects.count() == 2
+        event = Event.objects.first()
+        assert alert1 not in event.alerts.all()
+        assert alert2 in event.alerts.all()

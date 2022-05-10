@@ -1,9 +1,16 @@
-from django.conf import settings
-from django.utils.decorators import method_decorator
+from copy import deepcopy
 
-from rest_framework import status
+from django.conf import settings
+from django.contrib.gis.geos import Polygon
+from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.utils.translation import gettext_lazy as _
+
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.generics import get_object_or_404 as drf_get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
@@ -11,9 +18,9 @@ from django_filters import rest_framework as filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.core.decorators import swagger_fake
-from safers.core.filters import BBoxFilterSetMixin
-from safers.core.views import CannotDeleteViewSet
+from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
+
+from safers.users.permissions import IsRemote
 
 from safers.events.models import Event, EventStatus
 from safers.events.serializers import EventSerializer
@@ -25,23 +32,34 @@ from safers.events.serializers import EventSerializer
 _event_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     example={
-        "id": "9953b183-5f18-41b1-ac96-23121ac33de7",
-        "timestamp": "2022-03-19T10:01:04Z",
-        "description": "string",
-        "source": "string",
-        "status": "UNVALIDATED",
-        "media": [
-            "http://some.image.com",
-            "http://another.image.com"
+        "id": "31d34fbf-570e-4b6d-8bdd-fad72a9a41cc",
+        "description": "whatever",
+        "start_date": "2022-05-06T15:28:42Z",
+        "end_date": None,
+        "people_affected": 123,
+        "causalties": 456,
+        "estimated_damage": 789,
+        "alerts": [
+            "1d4102bb-eebd-4ad6-8132-a0e206f26ffe"
         ],
+        "status": "OPEN",
         "geometry": {
-            "type": "Polygon",
-            "coordinates": [[1,2],[3,4]]
+            "type": "GeometryCollection",
+            "geometries": [
+                {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                    [1, 2],
+                    [3, 4],
+                    ]
+                ]
+                }
+            ]
         },
-        "bounding_box": {
-            "type": "Polygon",
-            "coordinates": [[1,2],[3,4]]
-        }
+        "center": [1, 2],
+        "bounding_box": [1, 2, 3, 4],
+        "favorite": True
     }
 )  # yapf: disable
 
@@ -54,13 +72,73 @@ _event_list_schema = openapi.Schema(
 ###########
 
 
-class EventFilterSet(BBoxFilterSetMixin, filters.FilterSet):
+class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
     class Meta:
         model = Event
         fields = {}
 
-    geometry__bboverlaps = filters.Filter(method="filter_geometry")
-    geometry__bbcontains = filters.Filter(method="filter_geometry")
+    order = filters.OrderingFilter(fields=(("start_date", "date"), ))
+
+    start_date = filters.DateTimeFilter(
+        field_name="start_date", lookup_expr="date__gte"
+    )
+    end_date = filters.DateTimeFilter(
+        field_name="start_date", lookup_expr="date__lte"
+    )
+    default_date = filters.BooleanFilter(
+        initial=True,
+        help_text=_(
+            "If default_date is True and no end_date is provided then the current date will be used and if no start_date is provided then 3 days previous will be used; "
+            "If default_date is False and no end_date or start_date is used then no date filters will be passed to the API."
+        )
+    )
+    bbox = filters.Filter(
+        method="bbox_method", help_text=_("xmin, ymin, xmax, ymax")
+    )
+    default_bbox = filters.BooleanFilter(
+        initial=True,
+        help_text=_(
+            "If default_bbox is True and no bbox is provided the user's default_aoi bbox will be used; "
+            "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
+        )
+    )
+
+    def bbox_method(self, queryset, name, value):
+
+        try:
+            xmin, ymin, xmax, ymax = list(map(float, value.split(",")))
+        except ValueError:
+            raise ParseError("invalid bbox string supplied")
+        bbox = Polygon.from_bbox((xmin, ymin, xmax, ymax))
+
+        return queryset.filter(geometry_collection__intersects=bbox)
+
+    def filter_queryset(self, queryset):
+        """
+        As per the documentation, I am overriding this method in order to perform
+        additional filtering to the queryset before it is cached
+        """
+
+        # update filters based on default fields
+
+        updated_cleaned_data = deepcopy(self.form.cleaned_data)
+
+        default_bbox = updated_cleaned_data.pop("default_bbox")
+        if default_bbox and not updated_cleaned_data.get("bbox"):
+            user = self.request.user
+            bbox = user.default_aoi.geometry.extent
+            updated_cleaned_data["bbox"] = ",".join(map(str, bbox))
+
+        default_date = updated_cleaned_data.pop("default_date")
+        if default_date and not updated_cleaned_data.get("end_date"):
+            updated_cleaned_data["end_date"] = timezone.now()
+        if default_date and not updated_cleaned_data.get("start_date"):
+            updated_cleaned_data["start_date"] = timezone.now(
+            ) - settings.SAFERS_DEFAULT_TIMERANGE
+
+        self.form.cleaned_data = updated_cleaned_data
+
+        return super().filter_queryset(queryset)
 
 
 #########
@@ -68,36 +146,61 @@ class EventFilterSet(BBoxFilterSetMixin, filters.FilterSet):
 #########
 
 
-# @method_decorator(
-#     swagger_auto_schema(responses={status.HTTP_200_OK: _alert_list_schema}),
-#     name="list",
-# )
-# @method_decorator(
-#     swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
-#     name="create",
-# )
-# @method_decorator(
-#     swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
-#     name="retrieve",
-# )
-# @method_decorator(
-#     swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
-#     name="update",
-# )
-class EventViewSet(CannotDeleteViewSet):
-    # permission_classes = [TODO: SOME KIND OF FACTORY FUNCTION HERE]
-    serializer_class = EventSerializer
-    lookup_field = "id"
-    lookup_url_kwarg = "event_id"
-
+@method_decorator(
+    swagger_auto_schema(
+        responses={status.HTTP_200_OK: _event_list_schema},
+        filter_inspectors=[SwaggerFilterInspector]
+    ),
+    name="list",
+)
+@method_decorator(
+    swagger_auto_schema(responses={status.HTTP_200_OK: _event_schema}),
+    name="retrieve",
+)
+@method_decorator(
+    swagger_auto_schema(responses={status.HTTP_200_OK: _event_schema}),
+    name="update",
+)
+@method_decorator(
+    swagger_auto_schema(responses={status.HTTP_200_OK: _event_schema}),
+    name="partial_update",
+)
+@method_decorator(
+    swagger_auto_schema(responses={status.HTTP_200_OK: _event_schema}),
+    name="favorite",
+)
+class EventViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = EventFilterSet
 
-    @swagger_fake(Event.objects.none())
-    def get_queryset(self):
-        user = self.request.user
-        # TODO: GET ALL THE ALERTS THIS USER CAN ACCESS
-        return Event.objects.all()
+    lookup_field = "id"
+    lookup_url_kwarg = "event_id"
+    permission_classes = [IsAuthenticated, IsRemote]
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+
+    def get_object(self):
+        queryset = self.get_queryset()
+
+        # disable filtering for detail views
+        # (the rest of this fn is just like the parent class)
+        # TODO: https://github.com/astrosat/safers-gateway/issues/45
+        if self.action in ["list"]:
+            queryset = self.filter_queryset(queryset)
+
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj = drf_get_object_or_404(queryset, **filter_kwargs)
+
+        self.check_object_permissions(self.request, obj)
+
+        return obj
 
     @action(detail=True, methods=["post"])
     def favorite(self, request, **kwargs):

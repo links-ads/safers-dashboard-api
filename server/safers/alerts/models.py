@@ -83,6 +83,7 @@ class AlertGeometry(HashableMixin, gis_models.Model):
             geometry_updated_signal.send(
                 sender=AlertGeometry, geometry=self, parent=self.alert
             )
+            # TODO: UPDATE GEOMETRIES OF ANY ASSOCIATED EVENTS ?
 
 
 class Alert(models.Model):
@@ -134,6 +135,9 @@ class Alert(models.Model):
         blank=True, null=True, help_text=_("raw message content")
     )
 
+    geometry_collection = gis_models.GeometryCollectionField(
+        blank=True, null=True
+    )
     bounding_box = gis_models.PolygonField(blank=True, null=True)
     center = gis_models.PointField(blank=True, null=True)
 
@@ -141,7 +145,12 @@ class Alert(models.Model):
         """
         called by signal hander in response to one of the AlertGeometries having their geometry updated
         """
-        geometries_geometries = self.geometries.values("bounding_box", "center")
+        geometries_geometries = self.geometries.values(
+            "geometry", "bounding_box", "center"
+        )
+        self.geometry_collection = GeometryCollection(
+            *geometries_geometries.values_list("geometry", flat=True)
+        )
         self.center = GeometryCollection(
             *geometries_geometries.values_list("center", flat=True)
         ).centroid
@@ -152,14 +161,18 @@ class Alert(models.Model):
             self.save()
 
     def validate(self):
-        import pdb
-        pdb.set_trace()
-        pass
+        from safers.events.models import Event
+        existing_events = Event.objects.filter_by_alert(self)
+        if existing_events.exists():
+            # TODO: CAN THERE BE MULTIPLE existing_events ?
+            event = existing_events.first()
+        else:
+            event = Event()
+            event.save()
+        event.alerts.add(self)
 
     def unvalidate(self):
-        import pdb
-        pdb.set_trace()
-        pass
+        raise NotImplementedError()
 
     @classmethod
     def process_message(cls, message_body, **kwargs):

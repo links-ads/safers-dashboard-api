@@ -1,7 +1,14 @@
 import uuid
 
+from datetime import timedelta
+from itertools import chain
+
+from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import GeometryCollection
+from django.contrib.gis.measure import Distance as D
 from django.utils.translation import gettext_lazy as _
 
 from safers.core.mixins import HashableMixin
@@ -17,14 +24,46 @@ class EventManager(models.Manager):
 
 
 class EventQuerySet(models.QuerySet):
-    def filter_by_distance(self, target, distance=None):
-        return self.filter()
+    """
+    contains several filters to determine if possible events overlap in time & space
+    """
+    def filter_by_geometry(self, target_geometry):
+        distance = D(km=settings.SAFERS_POSSIBLE_EVENT_DISTANCE)
+        return self.filter(
+            geometry_collection__distance_lte=(target_geometry, distance)
+        )
 
-    def filter_by_time(self, target, time=None):
-        return self.filter()
+    def filter_by_timestamp(self, target_timestamp):
+        delta = timedelta(hours=settings.SAFERS_POSSIBLE_EVENT_TIMERANGE)
+        return self.filter(
+            start_date__range=(
+                target_timestamp - delta,
+                target_timestamp + delta,
+            )
+        )
+
+    def filter_by_alert(self, target_alert):
+        distance = D(km=settings.SAFERS_POSSIBLE_EVENT_DISTANCE)
+        delta = timedelta(hours=settings.SAFERS_POSSIBLE_EVENT_TIMERANGE)
+        return self.filter(
+            Q(
+                geometry_collection__distance_lte=(
+                    target_alert.geometry_collection, distance
+                )
+            ) & Q(
+                start_date__range=(
+                    target_alert.timestamp - delta,
+                    target_alert.timestamp + delta
+                )
+            )
+        )
 
 
-class Event(HashableMixin, gis_models.Model):
+class Event(gis_models.Model):
+    """
+    This is the one model that is dashboard-specific
+    (ie: it isn't stored anywhere else)
+    """
     class Meta:
         verbose_name = "Event"
         verbose_name_plural = "Events"
@@ -45,14 +84,14 @@ class Event(HashableMixin, gis_models.Model):
     people_affected = models.IntegerField(blank=True, null=True)
     causalties = models.IntegerField(blank=True, null=True)
     estimated_damage = models.FloatField(blank=True, null=True)
-    geometry = gis_models.GeometryField(blank=False, null=False)
-    bounding_box = gis_models.PolygonField(blank=True, null=True)
-    alerts = models.ManyToManyField("alerts.Alert", related_name="events")
 
-    @property
-    def hash_source(self):
-        # TODO: INCORPORATE ALERTS ID INTO HASH_SOURCE
-        return self.geometry.hexewkb
+    geometry_collection = gis_models.GeometryCollectionField(
+        blank=True, null=True
+    )
+    bounding_box = gis_models.PolygonField(blank=True, null=True)
+    center = gis_models.PointField(blank=True, null=True)
+
+    alerts = models.ManyToManyField("alerts.Alert", related_name="events")
 
     @property
     def open(self):
@@ -67,7 +106,29 @@ class Event(HashableMixin, gis_models.Model):
         if self.closed:
             return self.end_date - self.start_date
 
-    def save(self, *args, **kwargs):
-        if self.has_hash_source_changed(self.hash_source):
-            self.bounding_box = self.geometry.envelope
-        return super().save(*args, **kwargs)
+    def recalculate_geometries(self, force_save=True):
+        """
+        called by signal hander in response to self.alerts being modified
+        """
+
+        geometry_collection = GeometryCollection(
+            *chain.from_iterable(
+                self.alerts.values_list("geometry_collection", flat=True)
+            )
+        )
+        self.geometry_collection = geometry_collection
+        self.bounding_box = geometry_collection.envelope
+        self.center = geometry_collection.centroid
+        if force_save:
+            self.save()
+
+    def recalculate_dates(self, force_save=True):
+        """
+        called by signal hander in response to self.alerts being modified
+        """
+        earliest_date = self.alerts.all().order_by("timestamp").values_list(
+            "timestamp", flat=True
+        ).first()
+        self.start_date = earliest_date
+        if force_save:
+            self.save()
