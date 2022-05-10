@@ -85,6 +85,7 @@ class AlertViewSetSerializer(AlertSerializer):
         model = Alert
         fields = (
             "id",
+            "title",
             "type",
             "timestamp",
             "status",

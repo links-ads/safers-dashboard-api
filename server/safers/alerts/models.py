@@ -141,6 +141,13 @@ class Alert(models.Model):
     bounding_box = gis_models.PolygonField(blank=True, null=True)
     center = gis_models.PointField(blank=True, null=True)
 
+    @property
+    def title(self):
+        title = f"Alert {self.id.hex[:7]}"
+        if self.category:
+            title += f" [{self.category}]"
+        return title
+
     def recalculate_geometries(self, force_save=True):
         """
         called by signal hander in response to one of the AlertGeometries having their geometry updated

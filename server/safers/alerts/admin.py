@@ -177,7 +177,7 @@ class AlertAdmin(gis_admin.GeoModelAdmin):
     }
     inlines = (AlertGeometryAdminInline, )
     list_display = (
-        "id",
+        "title",
         "type",
         "timestamp",
         "created",
