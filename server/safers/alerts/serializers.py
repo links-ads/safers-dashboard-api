@@ -62,6 +62,7 @@ class AlertSerializer(serializers.ModelSerializer):
         return alert
 
     def update(self, instance, validated_data):
+
         if instance.type == AlertType.UNVALIDATED and validated_data.get(
             "type"
         ) == AlertType.VALIDATED:

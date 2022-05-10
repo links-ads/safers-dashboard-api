@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
+from safers.alerts.models import Alert
+
 from safers.events.models import Event, EventStatus
 
 
@@ -19,17 +21,35 @@ class EventSerializer(serializers.ModelSerializer):
             "status",
             "geometry",
             "bounding_box",
+            "center",
             "favorite",
+            "alerts",
         )
 
     geometry = gis_serializers.GeometryField(
-        precision=Event.PRECISION, remove_duplicates=True
+        precision=Event.PRECISION,
+        read_only=True,
+        remove_duplicates=True,
+        source="geometry_collection",
     )
-    bounding_box = gis_serializers.GeometryField(precision=Event.PRECISION)
+    center = serializers.SerializerMethodField()
+    bounding_box = serializers.SerializerMethodField()
 
     status = serializers.SerializerMethodField()
 
     favorite = serializers.SerializerMethodField(method_name="is_favorite")
+
+    alerts = serializers.SlugRelatedField(
+        many=True, slug_field="id", queryset=Alert.objects.all()
+    )
+
+    def get_center(self, obj):
+        coords = obj.center.coords
+        return map(lambda x: round(x, Event.PRECISION), coords)
+
+    def get_bounding_box(self, obj):
+        coords = obj.bounding_box.extent
+        return map(lambda x: round(x, Event.PRECISION), coords)
 
     def get_status(self, obj):
         if obj.closed:
