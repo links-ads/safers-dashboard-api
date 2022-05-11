@@ -7,16 +7,16 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.generics import get_object_or_404 as drf_get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
 from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.utils import swagger_auto_schema, no_body
 
 from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
 
@@ -64,6 +64,11 @@ _alert_schema = openapi.Schema(
 
 _alert_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=_alert_schema
+)
+
+_alert_validation_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    example={"detail": "added Alert 123 to new event: 456"}
 )
 
 _alert_sources_schema = openapi.Schema(
@@ -173,7 +178,17 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
     name="partial_update",
 )
 @method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
+    swagger_auto_schema(
+        responses={status.HTTP_200_OK: _alert_validation_schema},
+        request_body=no_body,
+    ),
+    name="validate",
+)
+@method_decorator(
+    swagger_auto_schema(
+        responses={status.HTTP_200_OK: _alert_schema},
+        request_body=no_body,
+    ),
     name="favorite",
 )
 class AlertViewSet(
@@ -216,12 +231,12 @@ class AlertViewSet(
     @action(detail=True, methods=["post"])
     def validate(self, request, **kwargs):
         """
-        Toggles the type of the specified object (VALIDATED OR UNVALIDATED)
+        Sets an alert's type from 'unvalidated' to 'validated' and updates the set of events accordingly.
         """
         obj = self.get_object()
 
         if obj.type == AlertType.VALIDATED:
-            raise ValidationError(f"{obj} is already validated")
+            raise ValidationError(f"{obj.title} is already validated")
 
         event, created = obj.validate()
         if created:
@@ -261,6 +276,7 @@ class AlertViewSet(
     responses={status.HTTP_200_OK: _alert_sources_schema}, method="get"
 )
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def alert_sources_view(request):
     """
     Returns the list of possible alert sources.
