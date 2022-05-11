@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
@@ -37,6 +39,17 @@ class EventSerializer(serializers.ModelSerializer):
     alerts = serializers.SlugRelatedField(
         many=True, slug_field="id", queryset=Alert.objects.all()
     )
+
+    def validate(self, data):
+        validated_data = super().validate(data)
+
+        end_date = validated_data.get("end_date")
+        if end_date and end_date > timezone.now():
+            raise serializers.ValidationError(
+                "end_date must not be in the future"
+            )
+
+        return validated_data
 
     def get_geometry(self, obj):
         geometry_serializer = gis_serializers.GeometryField(
