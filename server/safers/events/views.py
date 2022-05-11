@@ -79,6 +79,10 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 
     order = filters.OrderingFilter(fields=(("start_date", "date"), ))
 
+    status = filters.ChoiceFilter(
+        method="status_method", choices=EventStatus.choices
+    )
+
     start_date = filters.DateTimeFilter(
         field_name="start_date", lookup_expr="date__gte"
     )
@@ -102,6 +106,14 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
             "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
         )
     )
+
+    def status_method(self, queryset, name, value):
+        filter_kwargs = {
+            # if end_date is None then the status must be OPEN
+            # if end_date is not None then the status must be CLOSED
+            "end_date__isnull": value == EventStatus.OPEN,
+        }
+        return queryset.filter(**filter_kwargs)
 
     def bbox_method(self, queryset, name, value):
 
