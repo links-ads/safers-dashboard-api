@@ -198,6 +198,9 @@ class Alert(models.Model):
 
         message_properties = kwargs.get("properties", {})
 
+        message_type = message_body["msgType"]
+        assert message_type.lower() == "alert", f"attempting to process {message_type} as an Alert"
+
         alerts = []
 
         try:

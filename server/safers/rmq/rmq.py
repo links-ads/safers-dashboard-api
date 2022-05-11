@@ -20,17 +20,15 @@ logger = logging.getLogger(__name__)
 #################
 
 BINDING_KEYS = {
-    # a map of routing_key patterns to models
+    # a map of routing_key patterns to handlers
     "status.test.*": (),
     "event.social.wildfire": ("safers.social.models.SocialEvent", ),
     # "mm.communication.*": ("safers.chatbot.models.Communication",),
     # "mm.mission.*": ("safers.chatbot.models.Mission",),
     "mm.report.*": ("safers.chatbot.models.Report", ),
     "newexternaldata.*": ("safers.data.models.Data", ),
-    "alert.sem.astro": (
-        "safers.notifications.models.Notification",
-        "safers.alerts.models.Alerts",
-    ),
+    "alert.sem.astro": ("safers.alerts.models.Alerts", ),
+    "notification.sem.astro": ("safers.notifications.models.Notification", ),
     "event.camera.#": ("safers.cameras.models.CameraMedia", ),
 }
 
@@ -173,13 +171,11 @@ class RMQ(object):
         logger.info(properties)
         logger.info(body)
 
-        for pattern, models in BINDING_KEYS.items():
-            for model in models:
-                if model is not None and re.match(
-                    binding_key_to_regex(pattern), method.routing_key
-                ):
+        for pattern, handlers in BINDING_KEYS.items():
+            if re.match(binding_key_to_regex(pattern), method.routing_key):
+                for handler in handlers:
                     try:
-                        callable = import_callable(model)
+                        callable = import_callable(handler)
                         result = callable.process_message(
                             json.loads(body), properties=properties
                         )

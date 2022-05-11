@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.generics import get_object_or_404 as drf_get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -21,7 +22,7 @@ from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
 
 from safers.users.permissions import IsRemote
 
-from safers.notifications.models import Notification, NotificationGeometry
+from safers.notifications.models import Notification, NotificationSource
 from safers.notifications.serializers import NotificationSerializer
 
 
@@ -29,15 +30,13 @@ _notification_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     example={
         "id": "db9634fc-ae64-44bf-ba31-7abf4f68daa9",
+        "title": "Notification db9634c [Met]",
         "timestamp": "2022-04-28T11:38:28Z",
         "status": "Actual",
         "source": "EFFIS_FWI",
         "scope": "Public",
         "category": "Met",
         "event": "Probability of fire",
-        "urgency": "Immediate",
-        "severity": "Extreme",
-        "certainty": "Likely",
         "description": "Do not light open-air barbecues in forest.",
         "geometry": {
             "type": "FeatureCollection",
@@ -77,12 +76,11 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
             "scope",
             "category",
             "event",
-            "urgency",
-            "severity",
-            "certainty",
         }
 
     order = filters.OrderingFilter(fields=(("timestamp", "date"), ))
+
+    source = filters.ChoiceFilter(choices=NotificationSource.choices)
 
     start_date = filters.DateTimeFilter(
         field_name="timestamp", lookup_expr="date__gte"
@@ -172,6 +170,24 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = Notification.objects.all()
         return queryset.prefetch_related("geometries")
+
+    def get_object(self):
+        queryset = self.get_queryset()
+
+        # disable filtering for detail views
+        # (the rest of this fn is just like the parent class)
+        # TODO: https://github.com/astrosat/safers-gateway/issues/45
+        if self.action in ["list"]:
+            queryset = self.filter_queryset(queryset)
+
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj = drf_get_object_or_404(queryset, **filter_kwargs)
+
+        self.check_object_permissions(self.request, obj)
+
+        return obj
 
     # @action(detail=True, methods=["post"])
     # def favorite(self, request, **kwargs):
