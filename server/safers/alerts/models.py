@@ -193,9 +193,6 @@ class Alert(models.Model):
 
         return (event, created)
 
-    def unvalidate(self):
-        raise NotImplementedError()
-
     @classmethod
     def process_message(cls, message_body, **kwargs):
 
@@ -289,9 +286,9 @@ def cap_area_to_geojson(cap_area):
     }
 
 
-###############
-# CAP MESSAGE #
-###############
+#################
+# ALERT MESSAGE #
+#################
 
 {
     "identifier": "identifier",
@@ -309,7 +306,7 @@ def cap_area_to_geojson(cap_area):
             "urgency": "Immediate",
             "severity": "Severe",
             "certainty": "Likely",
-            "description": "description",
+            "description": "There's a fire in this location",
             "area": [
                 {
                     "areaDesc": "areaDesc",
