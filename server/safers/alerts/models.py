@@ -17,6 +17,11 @@ class AlertType(models.TextChoices):
     POSSIBLE_EVENT = "POSSIBLE_EVENT", _("Possible Event")
 
 
+class AlertSource(models.TextChoices):
+    REPORT = "REPORT", _("Report (from chatbot)")
+    EFFIS_FWI = "EFFIS_FWI", _("FWI (from netCDF)")
+
+
 class AlertManager(models.Manager):
     pass
 
@@ -113,7 +118,9 @@ class Alert(models.Model):
 
     timestamp = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=128, blank=True, null=True)
-    source = models.CharField(max_length=128, blank=True, null=True)
+    source = models.CharField(
+        max_length=128, choices=AlertSource.choices, blank=True, null=True
+    )
     scope = models.CharField(max_length=128, blank=True, null=True)
 
     media = ArrayField(models.URLField(), blank=True, default=list)

@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.generics import get_object_or_404 as drf_get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -22,7 +22,7 @@ from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
 
 from safers.users.permissions import IsRemote
 
-from safers.alerts.models import Alert, AlertGeometry, AlertType
+from safers.alerts.models import Alert, AlertType, AlertSource
 from safers.alerts.serializers import AlertViewSetSerializer
 
 _alert_schema = openapi.Schema(
@@ -66,6 +66,10 @@ _alert_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=_alert_schema
 )
 
+_alert_sources_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
+)
+
 
 class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
     class Meta:
@@ -82,6 +86,8 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         }
 
     type = filters.ChoiceFilter(choices=AlertType.choices)
+
+    source = filters.ChoiceFilter(choices=AlertSource.choices)
 
     order = filters.OrderingFilter(fields=(("timestamp", "date"), ))
 
@@ -249,3 +255,14 @@ class AlertViewSet(
         serializer = SerializerClass(obj, context=self.get_serializer_context())
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    responses={status.HTTP_200_OK: _alert_sources_schema}, method="get"
+)
+@api_view(["GET"])
+def alert_sources_view(request):
+    """
+    Returns the list of possible alert sources.
+    """
+    return Response(AlertSource.values, status=status.HTTP_200_OK)
