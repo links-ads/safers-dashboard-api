@@ -107,9 +107,6 @@ class Notification(models.Model):
 
     category = models.CharField(max_length=128, blank=True, null=True)
     event = models.CharField(max_length=128, blank=True, null=True)
-    # urgency = models.CharField(max_length=128, blank=True, null=True)
-    # severity = models.CharField(max_length=128, blank=True, null=True)
-    # certainty = models.CharField(max_length=128, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
     message = models.JSONField(
@@ -177,12 +174,6 @@ class Notification(models.Model):
                                 info.get("category"),
                             "event":
                                 info.get("event"),
-                            # "urgency":
-                            #     info.get("urgency"),
-                            # "severity":
-                            #     info.get("severity"),
-                            # "certainty":
-                            #     info.get("certainty"),
                             "description":
                                 info.get("description"),
                             "geometry":
@@ -267,9 +258,6 @@ def cap_area_to_geojson(cap_area):
         {
             "category": "Fire ",
             "event": "Fire detection in area",
-            # "urgency": "Immediate",
-            # "severity": "Severe",
-            # "certainty": "Likely",
             "description": "Pay attention to the wind direction. Fires spread with the wind.",
             "area": [
                 {
