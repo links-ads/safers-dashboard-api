@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             field=models.FloatField(
                 default=10,
                 help_text=
-                'The frequency (in seconds) that the frontend should poll the backend for new data.',
+                'The frequency (in seconds) that the frontend should poll the backend for new data. Set to 0 to disable polling.',
                 validators=[django.core.validators.MinValueValidator(0)]
             ),
         ),
