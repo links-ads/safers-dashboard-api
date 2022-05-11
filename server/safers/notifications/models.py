@@ -13,6 +13,11 @@ from safers.rmq.exceptions import RMQException
 # THEY ARE READ FROM RMQ AND DO NOT PERSIST OUTSIDE THE DASHBOARD
 
 
+class NotificationSource(models.TextChoices):
+    REPORT = "REPORT", _("Report (from chatbot)")
+    EFFIS_FWI = "EFFIS_FWI", _("FWI (from netCDF)")
+
+
 class NotificationManager(models.Manager):
     pass
 
@@ -22,6 +27,9 @@ class NotificationQuerySet(models.QuerySet):
 
 
 class NotificationGeometry(HashableMixin, gis_models.Model):
+    class Meta:
+        verbose_name = "Notification Geometry"
+        verbose_name_plural = "Notification Geometries"
 
     PRECISION = 12
     MIN_BOUNDING_BOX_SIZE = 0.00001  # TODO: NOT SURE WHAT THIS SHOULD BE
@@ -89,29 +97,46 @@ class Notification(models.Model):
 
     timestamp = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=128, blank=True, null=True)
-    source = models.CharField(max_length=128, blank=True, null=True)
+    source = models.CharField(
+        max_length=128,
+        choices=NotificationSource.choices,
+        blank=True,
+        null=True
+    )
     scope = models.CharField(max_length=128, blank=True, null=True)
 
     category = models.CharField(max_length=128, blank=True, null=True)
     event = models.CharField(max_length=128, blank=True, null=True)
-    urgency = models.CharField(max_length=128, blank=True, null=True)
-    severity = models.CharField(max_length=128, blank=True, null=True)
-    certainty = models.CharField(max_length=128, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
     message = models.JSONField(
         blank=True, null=True, help_text=_("raw message content")
     )
 
+    geometry_collection = gis_models.GeometryCollectionField(
+        blank=True, null=True
+    )
     bounding_box = gis_models.PolygonField(blank=True, null=True)
     center = gis_models.PointField(blank=True, null=True)
+
+    @property
+    def title(self):
+        title = f"Notification {self.id.hex[:7]}"
+        if self.category:
+            title += f" [{self.category}]"
+        return title
 
     def recalculate_geometries(self, force_save=True):
         """
         called by signal hander in response to one of the NotificationGeometries having their geometry updated
         """
 
-        geometries_geometries = self.geometries.values("bounding_box", "center")
+        geometries_geometries = self.geometries.values(
+            "geometry", "bounding_box", "center"
+        )
+        self.geometry_collection = GeometryCollection * geometries_geometries.values_list(
+            "geometry", flat=True
+        )
         self.center = GeometryCollection(
             *geometries_geometries.values_list("center", flat=True)
         ).centroid
@@ -125,6 +150,9 @@ class Notification(models.Model):
     def process_message(cls, message_body, **kwargs):
 
         message_properties = kwargs.get("properties", {})
+
+        message_type = message_body["msgType"]
+        assert message_type.lower() == "alert", f"attempting to process {message_type} as a Notification"
 
         notifications = []
 
@@ -146,12 +174,6 @@ class Notification(models.Model):
                                 info.get("category"),
                             "event":
                                 info.get("event"),
-                            "urgency":
-                                info.get("urgency"),
-                            "severity":
-                                info.get("severity"),
-                            "certainty":
-                                info.get("certainty"),
                             "description":
                                 info.get("description"),
                             "geometry":
@@ -219,16 +241,16 @@ def cap_area_to_geojson(cap_area):
     }
 
 
-###############
-# CAP MESSAGE #
-###############
+########################
+# NOTIFICATION MESSAGE #
+########################
 
 {
     "identifier": "identifier",
     "sender": "sem",
     "sent": "2022-04-13T14:28:25+03:00",
     "status": "Actual",
-    "msgType": "Alert",
+    "msgType": "Notification",
     "source": "Report",
     "scope": "Public",
     "code": [],
@@ -236,10 +258,7 @@ def cap_area_to_geojson(cap_area):
         {
             "category": "Fire ",
             "event": "Fire detection in area",
-            "urgency": "Immediate",
-            "severity": "Severe",
-            "certainty": "Likely",
-            "description": "description",
+            "description": "Pay attention to the wind direction. Fires spread with the wind.",
             "area": [
                 {
                     "areaDesc": "areaDesc",

@@ -20,15 +20,13 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = (
             "id",
+            "title",
             "timestamp",
             "status",
             "source",
             "scope",
             "category",
             "event",
-            "urgency",
-            "severity",
-            "certainty",
             "description",
             "geometry",
             "center",

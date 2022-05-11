@@ -29,6 +29,7 @@ _alert_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     example={
         "id": "3a851a61-7f8a-4aa1-ad63-31e61b051a36",
+        "title": "Notification 3a851a61 [Fire]",
         "type": "UNVALIDATED",
         "timestamp": "2022-04-12T14:29:34Z",
         "status": "string",

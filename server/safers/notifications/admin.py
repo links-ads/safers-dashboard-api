@@ -57,14 +57,12 @@ class NotificationAdmin(gis_admin.GeoModelAdmin):
         "scope",
         "category",
         "event",
-        "urgency",
-        "severity",
-        "certainty",
         "description",
         "message",
+        # "geometry_collection",
         "center",
         "bounding_box"
-    )
+    )  # yapf: disable
     formfield_overrides = {
         JSONField: {
             "widget": JSONAdminWidget
@@ -72,7 +70,7 @@ class NotificationAdmin(gis_admin.GeoModelAdmin):
     }
     inlines = (NotificationGeometryAdminInline, )
     list_display = (
-        "id",
+        "title",
         "timestamp",
         "created",
     )
