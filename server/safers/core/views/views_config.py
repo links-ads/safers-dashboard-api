@@ -21,6 +21,7 @@ _config_schema = openapi.Schema(
         ("require_verification", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
         ("require_terms_acceptance", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
         ("polling_frequency", openapi.Schema(type=openapi.TYPE_NUMBER)),
+        ("request_timeout", openapi.Schema(type=openapi.TYPE_NUMBER)),
         ("max_favorite_alerts", openapi.Schema(type=openapi.TYPE_INTEGER)),
         ("max_favorite_events", openapi.Schema(type=openapi.TYPE_INTEGER)),
     ))
