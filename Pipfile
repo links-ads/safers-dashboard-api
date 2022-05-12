@@ -30,16 +30,19 @@ pandas = "*"
 pika = "*"
 pillow = "*"
 psycopg2-binary = "*"
-
-[dev-packages]
+# even though these are used for development
+# they are referenced in code and so must be installed in deployment 
 django-cprofile-middleware = "*"
 django-silk = "*"
+snakeviz = "*"
+
+
+[dev-packages]
 factory-boy = "*"
 pytest = "*"
 pytest-django = "*"
 pytest-html = "*"
 pytest-sugar = "*"
-snakeviz = "*"
 yapf = "*"
 
 [requires]
