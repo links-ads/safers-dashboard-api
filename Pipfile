@@ -32,11 +32,14 @@ pillow = "*"
 psycopg2-binary = "*"
 
 [dev-packages]
+django-cprofile-middleware = "*"
+django-silk = "*"
 factory-boy = "*"
 pytest = "*"
 pytest-django = "*"
 pytest-html = "*"
 pytest-sugar = "*"
+snakeviz = "*"
 yapf = "*"
 
 [requires]

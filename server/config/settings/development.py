@@ -35,3 +35,14 @@ PUBLIC_MEDIA_LOCATION = ""
 PUBLIC_MEDIA_DEFAULT_ACL = ""
 PRIVATE_MEDIA_LOCATION = ""
 PRIVATE_MEDIA_DEFAULT_ACL = ""
+
+#############
+# profiling #
+#############
+
+MIDDLEWARE += [
+    "silk.middleware.SilkyMiddleware",
+    "django_cprofile_middleware.middleware.ProfilerMiddleware",
+]
+
+DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False

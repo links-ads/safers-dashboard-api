@@ -168,7 +168,14 @@ if settings.ENVIRONMENT == "development":
 
 if settings.DEBUG:
 
-    # enable django-debug-toolbar during development...
+    # enable profiling during development...
+
+    if "silk" in settings.INSTALLED_APPS:
+        import silk
+        urlpatterns += [
+            path("silk/", include('silk.urls', namespace="silk")),
+        ]
+
     if "debug_toolbar" in settings.INSTALLED_APPS:
         import debug_toolbar
         urlpatterns = [

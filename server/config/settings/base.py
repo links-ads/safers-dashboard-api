@@ -76,6 +76,7 @@ THIRD_PARTY_APPS = [
 # 'drf_social_oauth2',
 # 'rest_framework_simplejwt',
 # 'rest_framework.authtoken',
+    'silk',
     'storages',
 ]  # yapf: disable
 

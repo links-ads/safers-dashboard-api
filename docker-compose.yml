@@ -71,7 +71,8 @@ services:
     networks:
       - safers
     ports:
-      - "8000:8000"
+      - "8000:8000"  # API
+      - "8080:8080"  # profiling
 
   worker:
     build: .
