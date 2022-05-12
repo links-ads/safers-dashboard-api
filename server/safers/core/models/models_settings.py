@@ -39,6 +39,15 @@ class SafersSettings(SingletonMixin, models.Model):
         ),
     )
 
+    request_timeout = models.FloatField(
+        default=6000,
+        validators=[MinValueValidator(0)],
+        help_text=_(
+            "The time (in milliseconds) for the frontend to wait for a response from the backend. "
+            "Set to 0 to have no timeout."
+        )
+    )
+
     max_favorite_alerts = models.PositiveBigIntegerField(
         default=3,
         help_text=_("Number of alerts that a user can mark as 'favorite'."),
