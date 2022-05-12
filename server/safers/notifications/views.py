@@ -18,7 +18,7 @@ from django_filters import rest_framework as filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
+from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector, CaseInsensitiveChoiceFilter
 
 from safers.users.permissions import IsRemote
 
@@ -80,7 +80,7 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 
     order = filters.OrderingFilter(fields=(("timestamp", "date"), ))
 
-    source = filters.ChoiceFilter(choices=NotificationSource.choices)
+    source = CaseInsensitiveChoiceFilter(choices=NotificationSource.choices)
 
     start_date = filters.DateTimeFilter(
         field_name="timestamp", lookup_expr="date__gte"

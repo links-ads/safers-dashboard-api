@@ -10,6 +10,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework_gis.filterset import GeoFilterSet
 
 from django_filters import rest_framework as filters
+from django_filters import fields as filters_fields
 
 from drf_yasg import openapi
 from drf_yasg.inspectors import CoreAPICompatInspector
@@ -63,6 +64,26 @@ class CharInFilter(filters.BaseInFilter, filters.CharFilter):
     """
 
     pass
+
+
+class CaseInsensitiveChoiceFilter(filters.ChoiceFilter):
+    class _CaseInsensitiveChoiceField(filters_fields.ChoiceField):
+        def valid_value(self, value):
+            case_insensitive_value = str(value).lower()
+            return super().valid_value(case_insensitive_value)
+
+        def _set_choices(self, value):
+            return super()._set_choices(value)
+
+        def _get_case_insensitive_choices(self):
+            choices = map(
+                lambda x: (x[0].lower(), x[1]), super()._get_choices()
+            )
+            return choices
+
+        choices = property(_get_case_insensitive_choices, _set_choices)
+
+    field_class = _CaseInsensitiveChoiceField
 
 
 class DefaultFilterBackend(filters.DjangoFilterBackend):
