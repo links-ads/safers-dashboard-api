@@ -29,4 +29,12 @@ AWS S3
 
 Users can authenticate locally or remotely (via FusionAuth).  Note that only remote users can interact w/ the SAFERS API - so there's really not much point in using the Dashboard as a local user.
 
-The RMQ app uses `pika` to monitor the SAFERS Message Queue.  Upon receipt of a message a local record of a corresponding artefact may be created in the Dashboard DB.  Those records can be queried/filtered by Dashboard Users to determine which artefacts to retrieve from the SAFERS API.
+The RMQ app uses `pika` to monitor the SAFERS Message Queue.  Upon receipt of a message with a registered routing_key the handlers defined in `rmq.py#BINDING_KEYS` are called.  This typically creates one or more model instances in the Dashboard DB.
+
+## profiling
+
+Profiling is handled using cProfile & django-cprofile-middleware & snakeviz & silk.
+
+- appending `prof` to a URL will give a profile summary (in development only)
+- appending `prof&download` to a URL will create a file called "view.prof" which can be inspected by running `snakeviz ./path/to/view.prof` outside of docker
+- db queries can be monitored by going to "http://localhost:8000/silk"
