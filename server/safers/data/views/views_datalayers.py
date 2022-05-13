@@ -39,8 +39,7 @@ _data_layer_schema = openapi.Schema(
                   {
                     "id": "1.1.1.1",
                     "text": "2022-04-28T12:15:20Z",
-                    "type": "WMS",
-                    "metadata_id": "02bae14e-c24a-4264-92c0-2cfbf7aa65f5",
+                    "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5",
                     "urls": [
                       "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
                       "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T13%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
@@ -61,7 +60,7 @@ _data_layer_list_schema = openapi.Schema(
 )  # yapf: disable
 
 
-class DataLayerListView(views.APIView):
+class DataLayerView(views.APIView):
 
     permission_classes = [IsAuthenticated, IsRemote]
     serializer_class = DataLayerSerializer
@@ -103,6 +102,7 @@ class DataLayerListView(views.APIView):
 
         GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
         GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
+        METADATA_URL_PATH = "/api/data/layers/metadata"
 
         serializer = self.serializer_class(
             data=request.query_params,
@@ -143,6 +143,8 @@ class DataLayerListView(views.APIView):
         )
         geoserver_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_query_params}"
 
+        metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}"
+
         data_type_info = {"None": None}
         data_type_info.update({
             data_type.datatype_id: data_type.description
@@ -170,8 +172,7 @@ class DataLayerListView(views.APIView):
                       {
                         "id": f"{i}.{j}.{k}.{l}",
                         "text": detail["created_At"],
-                        "type": "WMS",
-                        "metadata_id": detail.get("metadata_Id"),
+                        "info_url": metadata_url.format(metadata_id=detail.get("metadata_Id")),
                         "urls": [
                           geoserver_url.format(
                             name=quote_plus(detail["name"]),
