@@ -21,6 +21,7 @@ class NotificationSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "title",
+            "type",
             "timestamp",
             "status",
             "source",

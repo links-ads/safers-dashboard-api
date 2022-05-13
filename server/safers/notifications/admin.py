@@ -51,6 +51,7 @@ class NotificationAdmin(gis_admin.GeoModelAdmin):
         "id",
         "created",
         "modified",
+        "type",
         "timestamp",
         "status",
         "source",
@@ -73,6 +74,10 @@ class NotificationAdmin(gis_admin.GeoModelAdmin):
         "title",
         "timestamp",
         "created",
+    )
+    list_filter = (
+        "source",
+        "type",
     )
     ordering = ("-created", )
     readonly_fields = (
