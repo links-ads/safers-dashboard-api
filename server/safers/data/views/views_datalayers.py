@@ -172,7 +172,6 @@ class DataLayerView(views.APIView):
                       {
                         "id": f"{i}.{j}.{k}.{l}",
                         "text": detail["created_At"],
-                        # "metadata_id": detail.get("metadata_Id"),
                         "info_url": metadata_url.format(metadata_id=detail.get("metadata_Id")),
                         "urls": [
                           geoserver_url.format(
