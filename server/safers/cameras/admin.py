@@ -3,6 +3,8 @@ from django.contrib.gis import admin as gis_admin
 
 from safers.core.admin import get_clickable_fk_list_display, get_clickable_m2m_list_display
 
+from safers.aois.constants import NAMED_AOIS
+
 from safers.cameras.models import Camera, CameraMedia, CameraMediaTag
 
 
@@ -10,16 +12,27 @@ from safers.cameras.models import Camera, CameraMedia, CameraMediaTag
 class CameraAdmin(gis_admin.GeoModelAdmin):
     fields = (
         "id",
+        "is_active",
         "name",
         "last_update",
         "description",
+        "direction",
         "geometry",
     )
     list_display = (
         "name",
         "get_n_camera_media_for_list_display",
+        "last_update",
+        "is_active",
     )
+    list_filter = ("is_active", )
+    ordering = ("name", )
     readonly_fields = ("id", )
+    search_fields = ("name", )
+
+    default_lat = NAMED_AOIS["rome"].latitude
+    default_lon = NAMED_AOIS["rome"].longitude
+    default_zoom = point_zoom = 5
 
     @admin.display(description="N MEDIA")
     def get_n_camera_media_for_list_display(self, obj):

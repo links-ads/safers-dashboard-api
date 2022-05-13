@@ -12,6 +12,7 @@ class CameraSerializer(gis_serializers.GeoFeatureModelSerializer):
             "name",
             "description",
             "last_update",
+            "direction",
             "geometry",
         )
         id_field = "id"

@@ -1,9 +1,13 @@
+from datetime import datetime, timedelta
+
 from django.conf import settings
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
@@ -12,36 +16,42 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from safers.core.decorators import swagger_fake
-from safers.core.filters import BBoxFilterSetMixin
+from safers.core.filters import BBoxFilterSetMixin, DefaultFilterSetMixin
 from safers.core.views import CannotDeleteViewSet
+
+from safers.users.permissions import IsLocal, IsRemote
 
 from safers.cameras.models import Camera, CameraMedia
 from safers.cameras.serializers import CameraSerializer, CameraMediaSerializer
 
 
-class CameraMediaFilterSet(BBoxFilterSetMixin, filters.FilterSet):
+class CameraMediaFilterSet(
+    DefaultFilterSetMixin, BBoxFilterSetMixin, filters.FilterSet
+):
     class Meta:
         model = CameraMedia
         fields = {}
 
-    geometry__bboverlaps = filters.Filter(method="filter_geometry")
-    geometry__bbcontains = filters.Filter(method="filter_geometry")
+    geometry__bboverlaps = filters.Filter(
+        method="filter_geometry",
+        # initial=DefaultFilterSetMixin.filter_on_default_aoi_bbox
+    )
+    date_range = filters.DateFromToRangeFilter(
+        field_name="timestamp",
+        # initial=DefaultFilterSetMixin.filter_on_default_date_range
+    )
 
 
 class CameraViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Returns a GeoJSON FeatureCollection of all cameras
     """
-    # permission_classes = [TODO: SOME KIND OF FACTORY FUNCTION HERE]
-    serializer_class = CameraSerializer
+
     lookup_field = "id"
     lookup_url_kwarg = "camera_id"
-
-    @swagger_fake(Camera.objects.none())
-    def get_queryset(self):
-        user = self.request.user
-        # TODO: GET ALL THE CAMERAS THIS USER CAN ACCESS
-        return Camera.objects.all()
+    permission_classes = [AllowAny]
+    queryset = Camera.objects.active()
+    serializer_class = CameraSerializer
 
 
 # TODO: FILTERS BY TYPE & TAG ETC.
@@ -52,6 +62,7 @@ class CameraMediaViewSet(
     viewsets.GenericViewSet
 ):
     # permission_classes = [TODO: SOME KIND OF FACTORY FUNCTION HERE]
+    permission_classes = [IsAuthenticated]
     serializer_class = CameraMediaSerializer
     lookup_field = "id"
     lookup_url_kwarg = "camera_media_id"
@@ -62,8 +73,19 @@ class CameraMediaViewSet(
     @swagger_fake(CameraMedia.objects.none())
     def get_queryset(self):
         user = self.request.user
-        # TODO: GET ALL THE CAMERA MEDIAS THIS USER CAN ACCESS
-        return CameraMedia.objects.all()
+        queryset = CameraMedia.objects.all()
+
+        if self.action != "favorite":
+            # allow favoriting an object event if it's not w/in the default bbox / date_range
+            query_params = self.request.query_params
+            if "geometry__bboverlaps" not in query_params:
+                queryset = queryset.overlaps(user.default_aoi.geometry)
+            if "date_range" not in query_params:
+                before_date = timezone.now()
+                after_date = before_date - timedelta(days=3)
+                queryset = queryset.date_range(before_date, after_date)
+
+        return queryset
 
     @action(detail=True, methods=["post"])
     def favorite(self, request, **kwargs):
