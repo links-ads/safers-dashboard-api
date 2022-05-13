@@ -78,6 +78,9 @@ class Event(gis_models.Model):
         editable=False,
     )
 
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)

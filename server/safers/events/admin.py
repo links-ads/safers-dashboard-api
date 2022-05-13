@@ -8,6 +8,8 @@ from safers.events.models import Event
 class EventAdmin(gis_admin.GeoModelAdmin):
     fields = (
         "id",
+        "created",
+        "modified",
         "start_date",
         "end_date",
         "description",
@@ -21,4 +23,8 @@ class EventAdmin(gis_admin.GeoModelAdmin):
     )
     filter_horizontal = ("alerts", )
     list_filter = ("favorited_users", )
-    readonly_fields = ("id", )
+    readonly_fields = (
+        "id",
+        "created",
+        "modified",
+    )
