@@ -67,10 +67,6 @@ _notification_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=_notification_schema
 )
 
-_notification_sources_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-)
-
 
 class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
     class Meta:
@@ -198,7 +194,14 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 @swagger_auto_schema(
-    responses={status.HTTP_200_OK: _notification_sources_schema}, method="get"
+    responses={
+        status.HTTP_200_OK:
+            openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_STRING)
+            )
+    },
+    method="get"
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -207,3 +210,22 @@ def notification_sources_view(request):
     Returns the list of possible notification sources.
     """
     return Response(NotificationSource.values, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    responses={
+        status.HTTP_200_OK:
+            openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_STRING)
+            )
+    },
+    method="get"
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def notification_types_view(request):
+    """
+    Returns the list of possible notification types.
+    """
+    return Response(NotificationType.values, status=status.HTTP_200_OK)
