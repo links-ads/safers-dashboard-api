@@ -5,6 +5,7 @@ from rest_framework import routers
 from safers.notifications.views import (
     NotificationViewSet,
     notification_sources_view,
+    notification_types_view,
 )
 
 api_router = routers.DefaultRouter()
@@ -17,6 +18,11 @@ api_urlpatterns = [
         "notifications/sources",
         notification_sources_view,
         name="notification-sources-list"
+    ),
+    path(
+        "notifications/types",
+        notification_types_view,
+        name="notification-types-list"
     ),
 ]
 
