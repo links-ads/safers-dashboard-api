@@ -18,6 +18,11 @@ class NotificationSource(models.TextChoices):
     EFFIS_FWI = "EFFIS_FWI", _("FWI (from netCDF)")
 
 
+class NotificationType(models.TextChoices):
+    RECOMENDATION = "RECOMMENDATION", _("Recommendation (from CERTH)")
+    SYSTEM = "SYSTEM NOTIFICATION", _("System Update")
+
+
 class NotificationManager(models.Manager):
     pass
 
@@ -95,6 +100,10 @@ class Notification(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
+    type = models.CharField(
+        max_length=128, choices=NotificationType.choices, blank=True, null=True
+    )
+
     timestamp = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=128, blank=True, null=True)
     source = models.CharField(
@@ -154,6 +163,12 @@ class Notification(models.Model):
         message_type = message_body["msgType"]
         assert message_type.lower() == "alert", f"attempting to process {message_type} as a Notification"
 
+        message_sender = message_body["sender"]
+        if message_sender == "sem":
+            notifications_type = NotificationType.RECOMENDATION
+        else:
+            notifications_type = None
+
         notifications = []
 
         try:
@@ -162,6 +177,8 @@ class Notification(models.Model):
                     from safers.notifications.serializers import NotificationSerializer
                     serializer = NotificationSerializer(
                         data={
+                            "type":
+                                notifications_type,
                             "timestamp":
                                 message_body.get("sent"),
                             "status":

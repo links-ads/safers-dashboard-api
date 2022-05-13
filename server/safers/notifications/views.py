@@ -22,7 +22,7 @@ from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector, C
 
 from safers.users.permissions import IsRemote
 
-from safers.notifications.models import Notification, NotificationSource
+from safers.notifications.models import Notification, NotificationSource, NotificationType
 from safers.notifications.serializers import NotificationSerializer
 
 
@@ -31,6 +31,7 @@ _notification_schema = openapi.Schema(
     example={
         "id": "db9634fc-ae64-44bf-ba31-7abf4f68daa9",
         "title": "Notification db9634c [Met]",
+        "type": "RECOMMENDATION",
         "timestamp": "2022-04-28T11:38:28Z",
         "status": "Actual",
         "source": "EFFIS_FWI",
@@ -85,6 +86,8 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
     order = filters.OrderingFilter(fields=(("timestamp", "date"), ))
 
     source = CaseInsensitiveChoiceFilter(choices=NotificationSource.choices)
+
+    type = CaseInsensitiveChoiceFilter(choices=NotificationType.choices)
 
     start_date = filters.DateTimeFilter(
         field_name="timestamp", lookup_expr="date__gte"
