@@ -13,6 +13,18 @@ class CameraMediaType(models.TextChoices):
     VIDEO = "VIDEO", _("Video")
 
 
+class CameraManager(models.Manager):
+    pass
+
+
+class CameraQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_active=True)
+
+    def inactive(self):
+        return self.filter(is_active=False)
+
+
 class CameraMediaManager(models.Manager):
     pass
 
@@ -30,6 +42,18 @@ class CameraMediaQuerySet(models.QuerySet):
     def filter_by_time(self, target, time=None):
         return self.filter()
 
+    def date_range(self, before, after):
+        """
+        returns all those objects that fall w/in the date range
+        """
+        return self.filter(timestamp__lte=before, timestamp__gte=after)
+
+    def overlaps(self, target):
+        """
+        returns all those objects that overlap the target geometry
+        """
+        return self.filter(geometry__overlaps=target)
+
 
 class Camera(gis_models.Model):
     class Meta:
@@ -38,16 +62,30 @@ class Camera(gis_models.Model):
 
     PRECISION = 12
 
+    objects = CameraManager.from_queryset(CameraQuerySet)()
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
         editable=False,
     )
 
-    name = models.CharField(max_length=128, blank=True, null=True, unique=True)
+    is_active = models.BooleanField(default=True)
+
+    name = models.CharField(
+        max_length=128, blank=False, null=False, unique=True
+    )
     description = models.TextField(blank=True, null=True)
     last_update = models.DateTimeField(blank=True, null=True)
     geometry = gis_models.PointField(blank=False, null=False)
+    direction = models.FloatField(
+        blank=False,
+        null=False,
+        validators=[MinValueValidator(0), MaxValueValidator(360)],
+        help_text=_(
+            "The angle of camera orientation, where 0 means North, 90 East, 180 South and 270 West"
+        )
+    )
 
     def __str__(self) -> str:
         return self.name

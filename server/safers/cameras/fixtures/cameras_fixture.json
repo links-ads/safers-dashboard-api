@@ -1,0 +1,90 @@
+[
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "name": "PCF_El_Perellò_129",
+      "description": null,
+      "last_update": null,
+      "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
+      "direction": 129.0
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "name": "CSI_San_Michele_000",
+      "description": null,
+      "last_update": null,
+      "geometry": "SRID=4326;POINT (7.342011 45.098897)",
+      "direction": 0.0
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "name": "PCF_El_Perellò_186",
+      "description": null,
+      "last_update": null,
+      "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
+      "direction": 186.0
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "name": "PCF_El_Perellò_297",
+      "description": null,
+      "last_update": null,
+      "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
+      "direction": 297.0
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "name": "PCF_El_Perellò_250",
+      "description": null,
+      "last_update": null,
+      "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
+      "direction": 250.0
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "name": "HRT_Mt_Chortiatis_000",
+      "description": null,
+      "last_update": null,
+      "geometry": "SRID=4326;POINT (23.068407 40.620997)",
+      "direction": 0.0
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "name": "PCF_El_Perellò_083",
+      "description": null,
+      "last_update": null,
+      "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
+      "direction": 83.0
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "name": "PCF_El_Perellò_007",
+      "description": null,
+      "last_update": null,
+      "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
+      "direction": 7.0
+    }
+  }
+]
