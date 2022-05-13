@@ -57,6 +57,15 @@ class DataLayerSerializer(serializers.Serializer):
         "end": "End",
     }
 
+    n_layers = serializers.IntegerField(
+        default=1,
+        required=False,
+        help_text=_(
+            "The number of recent layers to return for each data type. "
+            "It is very unlikely you want to change this value."
+        ),
+    )
+
     bbox = serializers.CharField(required=False)
 
     start = serializers.DateTimeField(
@@ -91,6 +100,13 @@ class DataLayerSerializer(serializers.Serializer):
             "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
         )
     )
+
+    def validate_n_layers(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(
+                "n_layers must be greater thann 0."
+            )
+        return value
 
     def validate_bbox(self, value):
         try:
