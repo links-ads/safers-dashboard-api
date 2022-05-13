@@ -136,9 +136,6 @@ class DataLayerListView(views.APIView):
         )
         geoserver_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_query_params}"
 
-        # TODO: SHOULD THIS BE CONFIGURABLE/FILTERABLE?
-        N_DETAILS = 1  # number of details to return (hard-coded to 1 to always use the latest layer)
-
         data = response.json()
         data = [
           {
@@ -168,7 +165,7 @@ class DataLayerListView(views.APIView):
                         sorted(layer.get("details"), key=lambda x: x.get("created_At"), reverse=True) or [],
                         start=1
                       )
-                      if l <= N_DETAILS
+                      if l <= serializer.validated_data["n_layers"]
                     ]
                   }
                   for k, layer in enumerate(sub_group.get("layers") or [], start=1)
