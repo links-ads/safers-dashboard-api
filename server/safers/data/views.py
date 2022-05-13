@@ -172,11 +172,14 @@ class DataLayerListView(views.APIView):
                         "text": detail["created_At"],
                         "type": "WMS",
                         "metadata_id": detail.get("metadata_Id"),
-                        "url": geoserver_url.format(
-                          name=quote_plus(detail["name"]),
-                          time=quote_plus(detail["created_At"]),
-                          bbox="{bbox}"
-                        )
+                        "urls": [
+                          geoserver_url.format(
+                            name=quote_plus(detail["name"]),
+                            time=quote_plus(timestamp),
+                            bbox="{bbox}",
+                          )
+                          for timestamp in detail.get("timestamps", [])
+                        ]
                       }
                       for l, detail in enumerate(
                         sorted(layer.get("details"), key=lambda x: x.get("created_At"), reverse=True) or [],
