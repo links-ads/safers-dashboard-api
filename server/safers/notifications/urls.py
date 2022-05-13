@@ -2,7 +2,10 @@ from django.urls import include, path, re_path
 
 from rest_framework import routers
 
-from safers.notifications.views import (NotificationViewSet)
+from safers.notifications.views import (
+    NotificationViewSet,
+    notification_sources_view,
+)
 
 api_router = routers.DefaultRouter()
 api_router.register(
@@ -10,6 +13,11 @@ api_router.register(
 )
 api_urlpatterns = [
     path("", include(api_router.urls)),
+    path(
+        "notifications/sources",
+        notification_sources_view,
+        name="notification-sources-list"
+    ),
 ]
 
 urlpatterns = []

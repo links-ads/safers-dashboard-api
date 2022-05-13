@@ -7,10 +7,10 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ParseError
 from rest_framework.generics import get_object_or_404 as drf_get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
@@ -64,6 +64,10 @@ _notification_schema = openapi.Schema(
 
 _notification_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=_notification_schema
+)
+
+_notification_sources_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
 )
 
 
@@ -189,25 +193,14 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
         return obj
 
-    # @action(detail=True, methods=["post"])
-    # def favorite(self, request, **kwargs):
-    #     """
-    #     Toggles the favorite status of the specified object
-    #     """
-    #     user = request.user
-    #     obj = self.get_object()
 
-    #     if obj not in user.favorite_notifications.all():
-    #         max_favorites = settings.SAFERS_MAX_NOTIFICATIONS
-    #         if user.favorite_notifications.count() >= max_favorites:
-    #             raise ValidationError(
-    #                 f"cannot have more than {max_favorites} notifications."
-    #             )
-    #         user.favorite_notifications.add(obj)
-    #     else:
-    #         user.favorite_notifications.remove(obj)
-
-    #     SerializerClass = self.get_serializer_class()
-    #     serializer = SerializerClass(obj, context=self.get_serializer_context())
-
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
+@swagger_auto_schema(
+    responses={status.HTTP_200_OK: _notification_sources_schema}, method="get"
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def notification_sources_view(request):
+    """
+    Returns the list of possible notification sources.
+    """
+    return Response(NotificationSource.values, status=status.HTTP_200_OK)
