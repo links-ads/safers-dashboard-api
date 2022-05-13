@@ -16,7 +16,7 @@ from safers.users.authentication import ProxyAuthentication
 from safers.users.exceptions import AuthenticationException
 from safers.users.permissions import IsRemote
 
-from safers.data.models import DataLayer
+from safers.data.models import DataType
 from safers.data.serializers import DataLayerSerializer
 
 _data_layer_schema = openapi.Schema(
@@ -24,21 +24,28 @@ _data_layer_schema = openapi.Schema(
     example={
         "id": "1",
         "text": "Weather forecast",
+        "info": "whatever",
         "children": [
           {
             "id": "1.1",
             "text": "Short term",
+            "info": "whatever",
             "children": [
               {
                 "id": "1.1.1",
                 "text": "Temperature at 2m",
+                "info": "whatever",
                 "children": [
                   {
                     "id": "1.1.1.1",
                     "text": "2022-04-28T12:15:20Z",
                     "type": "WMS",
                     "metadata_id": "02bae14e-c24a-4264-92c0-2cfbf7aa65f5",
-                    "url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng"
+                    "urls": [
+                      "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
+                      "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T13%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
+                      "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T14%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
+                    ]
                 }
               ]
             }
@@ -136,19 +143,29 @@ class DataLayerListView(views.APIView):
         )
         geoserver_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_query_params}"
 
-        data = response.json()
+        data_type_info = {"None": None}
+        data_type_info.update({
+            data_type.datatype_id: data_type.description
+            for data_type in DataType.objects.all()
+        })
+
+        content = response.json()
+
         data = [
           {
             "id": f"{i}",
             "text": group["group"],
+            "info": None,
             "children": [
               {
                 "id": f"{i}.{j}",
                 "text": sub_group["subGroup"],
+                "info": None,
                 "children": [
                   {
                     "id": f"{i}.{j}.{k}",
                     "text": layer["name"],
+                    "info": data_type_info.get(str(layer.get("dataTypeId"))),
                     "children": [
                       {
                         "id": f"{i}.{j}.{k}.{l}",
@@ -173,7 +190,7 @@ class DataLayerListView(views.APIView):
               }
               for j, sub_group in enumerate(group.get("subGroups") or [], start=1)
             ]
-          } for i, group in enumerate(data.get("layerGroups") or [], start=1)
+          } for i, group in enumerate(content.get("layerGroups") or [], start=1)
         ]  # yapf: disable
 
         return Response(data)
