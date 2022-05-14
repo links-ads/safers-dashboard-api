@@ -1,1 +1,1 @@
-from .serializers_reports import ReportSerializer
+from .serializers_reports import ReportSerializer, ReportViewSerializer
