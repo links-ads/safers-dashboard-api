@@ -13,6 +13,7 @@ ReportSerializerDateTimeFormats = [ISO_8601, "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d"]
 #         fields = (
 #             "type",
 #             "url",
+#             "thumbnail",
 #         )
 
 
