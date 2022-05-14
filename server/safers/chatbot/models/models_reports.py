@@ -1,7 +1,5 @@
 import uuid
 
-from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.utils.translation import gettext_lazy as _
@@ -50,7 +48,8 @@ class ReportVisabilityTypes(models.TextChoices):
 #     )
 
 #     type = models.CharField(max_length=128, blank=True, null=True)
-#     url = models.URLField(blank=False, null=False)
+#     url = models.URLField(blank=True, null=True)
+#     thumbnail = models.URLField(blank=True, null=True)
 
 #     report = models.ForeignKey(
 #         "report",
@@ -104,7 +103,6 @@ class Report(gis_models.Model):
 
     # TODO: THESE FIELDS SHOULD BE A REVERSE FK, BUT AS I DON'T SAVE THESE MODELS
     # TODO: THOSE RELATIONSHIPS CAN BE SET - IS THERE ANY WAY AROUND THAT?
-    # media = ArrayField(models.URLField(), blank=True, default=list)
     media = models.JSONField(default=list)
     reporter = models.JSONField(default=dict)
 
