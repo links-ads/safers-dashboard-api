@@ -1,114 +1,208 @@
 import requests
+from urllib.parse import urljoin
 
 from django.conf import settings
+from django.contrib.gis import geos
+from django.utils import timezone
 
-from rest_framework import generics
-from rest_framework import mixins
-from rest_framework import viewsets
+from rest_framework import status, views
+from rest_framework.exceptions import APIException
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from django_filters import rest_framework as filters
-
-from safers.core.decorators import swagger_fake
-from safers.core.filters import BBoxFilterSetMixin, CharInFilter
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 from safers.users.authentication import ProxyAuthentication
 from safers.users.permissions import IsRemote
 
 from safers.chatbot.models import Report
-from safers.chatbot.serializers import ReportSerializer
+from safers.chatbot.serializers import ReportSerializer, ReportViewSerializer
 
-###########
-# filters #
-###########
-
-
-class ReportFilterSet(BBoxFilterSetMixin, filters.FilterSet):
-    class Meta:
-        model = Report
-        fields = {}
-
-    geometry__bboverlaps = filters.Filter(method="filter_geometry")
-    geometry__bbcontains = filters.Filter(method="filter_geometry")
-
-
-##########
-# mixins #
-##########
-
-
-class ReportViewMixin():
-
-    filter_backends = (filters.DjangoFilterBackend, )
-    filterset_class = ReportFilterSet
-
-    lookup_field = "external_id"
-    lookup_url_kwarg = "external_id"
-
-    @swagger_fake(Report.objects.none())
-    def get_queryset(self):
-        user = self.request.user
-        # TODO: GET ALL THE EVENTS _THIS_ USER CAN ACCESS
-        return Report.objects.all()
-
-
-#########
-# views #
-#########
+_report_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    example={
+        "name": "Report 123",
+        "report_id": "123",
+        "mission_id": "456",
+        "timestamp": "2022-05-04T13:19:15.004Z",
+        "source": "Chatbot",
+        "hazard": "Fire",
+        "status": "Notified",
+        "content": "Submitted",
+        "visibility": "Private",
+        "description": "report fire on the hills",
+        "reporter": {
+            "name": "first.responder.test.2",
+            "organization": "Test Organization"
+        },
+        "media": [
+            {
+                "url": "https://safersblobstoragetest.blob.core.windows.net/reports/000019/113b8271-30b1-4987-a5d0-6ebac839bae2.jpeg",
+                "thumbnail": "https://safersblobstoragetest.blob.core.windows.net/thumbnails/000019/113b8271-30b1-4987-a5d0-6ebac839bae2.jpeg",
+                "type": "Image",
+            },
+        ],
+        "geometry": {
+            "type": "Point",
+            "coordinates": [1, 2]
+        },
+        "location": [1, 2],
+  }
+)  # yapf: disable
 
 
-class ReportViewSet(
-    ReportViewMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
-):
-    """
-    ViewSet for Reports
-    """
-    # permission_classes = [TODO: SOME KIND OF FACTORY FUNCTION HERE]
-    serializer_class = ReportSerializer
+_report_list_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=_report_schema
+)  # yapf: disable
 
 
-# class SocialEventDetailListView(SocialEventMixin, generics.ListAPIView):
-#     """
-#     ListView for the actual posts referenced by SocialEvents
-#     """
-#     permission_classes = SocialEventViewSet.permission_classes + [IsRemote]
-#     serializer_class = SocialEventSerializer
+class ReportView(views.APIView):
 
-#     def list(self, request, *args, **kwargs):
-#         data = []
+    permission_classes = [IsAuthenticated, IsRemote]
 
-#         queryset = self.filter_queryset(self.get_queryset())
+    def get_serializer_context(self):
+        return {
+            'request': self.request, 'format': self.format_kwarg, 'view': self
+        }
 
-#         for external_id in queryset.values_list("external_id", flat=True):
-#             response = requests.get(
-#                 f"{settings.SAFERS_API_URL}/api/services/app/Social/GetEventByID",
-#                 auth=ProxyAuthentication(request.user),
-#                 params={"Id": external_id},
-#             )
-#             response.raise_for_status()
-#             data.append(response.json())
+    def update_default_data(self, data):
 
-#         return Response(data)
+        if data.pop("default_start") and "start" not in data:
+            data["start"] = timezone.now() - settings.SAFERS_DEFAULT_TIMERANGE
 
-# class SocialEventDetailRetrieveView(SocialEventMixin, generics.RetrieveAPIView):
-#     """
-#     RetrieveView for the actual posts referenced by SocialEvents
-#     """
-#     permission_classes = SocialEventViewSet.permission_classes + [IsRemote]
-#     serializer_class = SocialEventSerializer
+        if data.pop("default_end") and "end" not in data:
+            data["end"] = timezone.now()
 
-#     def retrieve(self, request, *args, **kwargs):
+        if data.pop("default_bbox") and "bbox" not in data:
+            user = self.request.user
+            data["bbox"] = user.default_aoi.geometry.extent
 
-#         obj = self.get_object()
+        return data
 
-#         response = requests.get(
-#             f"{settings.SAFERS_API_URL}/api/services/app/Social/GetEventByID",
-#             auth=ProxyAuthentication(request.user),
-#             params={"Id": obj.external_id},
-#         )
-#         response.raise_for_status()
+    @swagger_auto_schema(
+        query_serializer=ReportViewSerializer,
+        responses={status.HTTP_200_OK: _report_list_schema},
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        Return all reports
+        """
 
-#         return Response(response.json())
+        GATEWAY_URL_PATH = "/api/services/app/Reports/GetReports"
+
+        view_serializer = ReportViewSerializer(
+            data=request.query_params,
+            context=self.get_serializer_context(),
+        )
+        view_serializer.is_valid(raise_exception=True)
+
+        updated_data = self.update_default_data(view_serializer.validated_data)
+        proxy_params = {
+            view_serializer.ProxyFieldMapping[k]: v
+            for k, v in updated_data.items()
+            if k in view_serializer.ProxyFieldMapping
+        }  # yapf: disable
+        if "bbox" in proxy_params:
+            min_x, min_y, max_x, max_y = proxy_params.pop("bbox")
+            proxy_params["NorthEastBoundary.Latitude"] = max_x
+            proxy_params["NorthEastBoundary.Longitude"] = max_y
+            proxy_params["SouthWestBoundary.Latitude"] = min_x
+            proxy_params["SouthWestBoundary.Longitude"] = min_y
+
+        try:
+            response = requests.get(
+                urljoin(settings.SAFERS_GATEWAY_API_URL, GATEWAY_URL_PATH),
+                auth=ProxyAuthentication(request.user),
+                params=proxy_params,
+            )
+            response.raise_for_status()
+        except Exception as e:
+            raise APIException(e)
+
+        reports = [
+            Report(
+                report_id=data.get("id"),
+                mission_id=data.get("relativeMissionId"),
+                timestamp=data.get("timestamp"),
+                source=data.get("source"),
+                hazard=data.get("hazard"),
+                status=data.get("status"),
+                content=data.get("content"),
+                is_public=data.get("isPublic"),
+                description=data.get("description"),
+                geometry=geos.Point(
+                    data["location"]["longitude"], data["location"]["latitude"]
+                ) if data.get("location") else None,
+                media=[{
+                    "url": media_uri.get("mediaURI"),
+                    "type": media_uri.get("mediaType"),
+                    "thumbnail": media_uri.get("thumbnailURI"),
+                } for media_uri in data.get("mediaURIs", [])],
+                reporter={
+                    "name": data.get("username"),
+                    "organization": data.get("organizationName"),
+                },
+            ) for data in response.json()["data"]
+        ]
+        model_serializer = ReportSerializer(
+            reports, context=self.get_serializer_context(), many=True
+        )
+
+        return Response(data=model_serializer.data, status=status.HTTP_200_OK)
+
+
+"""
+SAMPLE PROXY DATA SHAPE:
+[
+  {
+    'id': 19,
+    'hazard': 'Fire',
+    'status': 'Notified',
+    'content': 'Submitted',
+    'location': {
+      'latitude': 45.065549,
+      'longitude': 7.65952
+    },
+    'timestamp': '2022-05-04T13:19:15.004Z',
+    'mediaURIs': [
+      {
+        'mediaURI': 'https://safersblobstoragetest.blob.core.windows.net/reports/000019/113b8271-30b1-4987-a5d0-6ebac839bae2.jpeg',
+        'mediaType': 'Image'
+      }
+    ],
+    'extensionData': [
+      {
+        'categoryId': 6,
+        'value': '5',
+        'status': 'Unknown'
+      }
+    ],
+    'description': 'report fire on the hills',
+    'username': 'first.responder.test.2',
+    'organizationName': 'Test Organization',
+    'source': 'Chatbot',
+    'isEditable': False,
+    'relativeMissionId': 2,
+    'tags': [
+      {
+        'mediaURI': '113b8271-30b1-4987-a5d0-6ebac839bae2.jpeg',
+        'confidence': 0.9999961853027344,
+        'name': 'tree'
+      }
+    ],
+    'adultInfo': [
+      {
+        'mediaURI': '113b8271-30b1-4987-a5d0-6ebac839bae2.jpeg',
+        'isAdultContent': False,
+        'isRacyContent': False,
+        'isGoryContent': False,
+        'adultScore': 0.001597181661054492,
+        'racyScore': 0.0030028189066797495,
+        'goreScore': 0.0031083079520612955
+      }
+    ],
+    'isPublic': False
+  }
+]
+"""

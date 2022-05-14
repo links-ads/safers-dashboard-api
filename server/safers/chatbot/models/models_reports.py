@@ -1,6 +1,5 @@
 import uuid
 
-from django.conf import settings
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.utils.translation import gettext_lazy as _
@@ -9,26 +8,62 @@ from safers.core.mixins import HashableMixin
 from safers.rmq.exceptions import RMQException
 
 
-class ReportManager(models.Manager):
-    pass
+class ReportHazardTypes(models.TextChoices):
+    AVALANCHE = "Avalanche", _("Avalanche"),
+    EARTHQUAKE = "Earthquake", _("Earthquake"),
+    FIRE = "Fire", _("Fire"),
+    FLOOD = "Flood", _("Flood"),
+    LANDSLIDE = "Landslide", _("Landslide"),
+    STORM = "Storm", _("Storm"),
+    WEATHER = "Weather", _("Weather"),
+    SUBSIDENCE = "Subsidence", _("Subsidence"),
 
 
-class ReportQuerySet(models.QuerySet):
-    def filter_by_distance(self, target, distance=None):
-        return self.filter()
+class ReportStatusTypes(models.TextChoices):
+    UNKNOWN = "Unknown", _("Unknown"),
+    NOTIFIED = "Notified", _("Notified"),
+    MANAGED = "Managed", _("Managed"),
+    CLOSED = "Closed", _("Closed"),
 
-    def filter_by_time(self, target, time=None):
-        return self.filter()
+
+class ReportContentTypes(models.TextChoices):
+    SUBMITTED = "Submitted", _("Submitted"),
+    INAPPROPRIATE = "Inappropriate", _("Inappropriate"),
+    INACCURRATE = "Inaccurate", _("Inaccurate"),
+    VALIDATED = "Validated", _("Validated"),
 
 
-class Report(HashableMixin, gis_models.Model):
+class ReportVisabilityTypes(models.TextChoices):
+    PRIVATE = "Private", _("Private"),
+    PUBLIC = "Public", _("Pubic"),
+    ALL = "All", _("All"),
+
+
+# class ReportMedia(models.Model):
+
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False,
+#     )
+
+#     type = models.CharField(max_length=128, blank=True, null=True)
+#     url = models.URLField(blank=True, null=True)
+#     thumbnail = models.URLField(blank=True, null=True)
+
+#     report = models.ForeignKey(
+#         "report",
+#         on_delete=models.CASCADE,
+#         related_name="media",
+#     )
+
+
+class Report(gis_models.Model):
     class Meta:
         verbose_name = "Report"
         verbose_name_plural = "Reports"
 
     PRECISION = 12
-
-    objects = ReportManager.from_queryset(ReportQuerySet)()
 
     id = models.UUIDField(
         primary_key=True,
@@ -36,72 +71,87 @@ class Report(HashableMixin, gis_models.Model):
         editable=False,
     )
 
-    external_id = models.CharField(
-        max_length=128,
-        unique=True,
-        blank=False,
-        null=False,
+    report_id = models.CharField(
+        max_length=128, unique=True, blank=False, null=False
     )
 
-    data = models.JSONField(default=dict)
+    mission_id = models.CharField(max_length=128, blank=True, null=True)
+
+    timestamp = models.DateTimeField(blank=True, null=True)
+
+    source = models.CharField(max_length=128, blank=True, null=True)
+    hazard = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        choices=ReportHazardTypes.choices
+    )
+    status = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        choices=ReportStatusTypes.choices
+    )
+    content = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        choices=ReportContentTypes.choices
+    )
+    is_public = models.BooleanField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
+    # TODO: THESE FIELDS SHOULD BE A REVERSE FK, BUT AS I DON'T SAVE THESE MODELS
+    # TODO: THOSE RELATIONSHIPS CAN BE SET - IS THERE ANY WAY AROUND THAT?
+    media = models.JSONField(default=list)
+    reporter = models.JSONField(default=dict)
 
     geometry = gis_models.GeometryField(blank=False, null=False)
-    bounding_box = gis_models.PolygonField(blank=True, null=True)
 
     def __str__(self):
-        return self.external_id
+        return f"{self.report_id}"
 
     @property
-    def hash_source(self):
-        if self.geometry:
-            return self.geometry.hexewkb
+    def name(self):
+        return f"Report {self.report_id}"
 
-    def save(self, *args, **kwargs):
-        if self.hash_source and self.has_hash_source_changed(self.hash_source):
-            if self.geometry.geom_type != "Point":
-                self.bounding_box = self.geometry.envelope
-        return super().save(*args, **kwargs)
-
-    @classmethod
-    def process_message(cls, message_body, **kwargs):
-        message_properties = kwargs.get("properties", {})
-        try:
-            print("I AM HERE", fluh=True)
-        except Exception as e:
-            msg = f"unable to process_message: {e}"
-            raise RMQException(msg)
+    @property
+    def visibility(self):
+        if self.is_public:
+            return ReportVisabilityTypes.PUBLIC
+        return ReportVisabilityTypes.PRIVATE
 
 
 ##########################
 # sample message payload #
 ##########################
-"""
-{
-    "EntityType": "report",
-    "EntityWriteAction": "create",
-    "Content": {
-        "Id": 10,
-        "Hazard": "fire",
-        "Status": "notified",
-        "Location": {
-            "Latitude": 45.057, "Longitude": 7.583
-        },
-        "Timestamp": "2021-11-11T13:21:31.082Z",
-        "Address": null,
-        "MediaURIs": [
-            "https://safersblobstoragedev.blob.core.windows.net/reports/000010/65920fa0-7014-41a9-88e8-8a160186c6b0.jpeg"
-        ],
-        "ExtensionData": [{
-            "CategoryId": 6, "Value": "5", "Status": "unknown"
-        }],
-        "Description": "Fire report",
-        "Notes": null,
-        "Targets": null,
-        "Username": "organization.manager.test.1",
-        "OrganizationName": "Organization1",
-        "OrganizationId": 1,
-        "Source": "chatbot",
-        "IsEditable": false
-    }
-}
-"""
+# """
+# {
+#     "EntityType": "report",
+#     "EntityWriteAction": "create",
+#     "Content": {
+#         "Id": 10,
+#         "Hazard": "fire",
+#         "Status": "notified",
+#         "Location": {
+#             "Latitude": 45.057, "Longitude": 7.583
+#         },
+#         "Timestamp": "2021-11-11T13:21:31.082Z",
+#         "Address": null,
+#         "MediaURIs": [
+#             "https://safersblobstoragedev.blob.core.windows.net/reports/000010/65920fa0-7014-41a9-88e8-8a160186c6b0.jpeg"
+#         ],
+#         "ExtensionData": [{
+#             "CategoryId": 6, "Value": "5", "Status": "unknown"
+#         }],
+#         "Description": "Fire report",
+#         "Notes": null,
+#         "Targets": null,
+#         "Username": "organization.manager.test.1",
+#         "OrganizationName": "Organization1",
+#         "OrganizationId": 1,
+#         "Source": "chatbot",
+#         "IsEditable": false
+#     }
+# }
+# """
