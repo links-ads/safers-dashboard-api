@@ -121,15 +121,6 @@ class Report(gis_models.Model):
             return ReportVisabilityTypes.PUBLIC
         return ReportVisabilityTypes.PRIVATE
 
-    # @classmethod
-    # def process_message(cls, message_body, **kwargs):
-    #     message_properties = kwargs.get("properties", {})
-    #     try:
-    #         print("I AM HERE", fluh=True)
-    #     except Exception as e:
-    #         msg = f"unable to process_message: {e}"
-    #         raise RMQException(msg)
-
 
 ##########################
 # sample message payload #

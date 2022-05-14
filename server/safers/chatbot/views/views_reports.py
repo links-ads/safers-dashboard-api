@@ -1,5 +1,4 @@
 import requests
-from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
 from django.conf import settings
