@@ -108,7 +108,6 @@ class RMQ(object):
         )
 
     def subscribe(self):
-
         logger.info("\n### STARTING PIKA ###\n")
         with pika.BlockingConnection(parameters=self.params) as connection:
             # create channel to the broker
@@ -167,12 +166,15 @@ class RMQ(object):
         channel, method: Method, properties: BasicProperties, body: str
     ):
         logger.info(f"[{datetime.now()}] Received {method.routing_key}:")
-        logger.info("properties:")
+        logger.info("properties: ")
         logger.info(properties)
+        logger.info("body: ")
         logger.info(body)
 
+        unhandled_method = True
         for pattern, handlers in BINDING_KEYS.items():
             if re.match(binding_key_to_regex(pattern), method.routing_key):
+                unhandled_method = False
                 for handler in handlers:
                     try:
                         callable = import_callable(handler)
@@ -183,3 +185,8 @@ class RMQ(object):
                             logger.info(result)
                     except Exception as e:
                         logger.error(e)
+
+        if unhandled_method:
+            logger.error(
+                f"'{method.routing_key}' does not match any BINDING_KEYS"
+            )
