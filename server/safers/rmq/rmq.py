@@ -43,12 +43,23 @@ def binding_key_to_regex(binding_key):
 
 
 def import_callable(path_or_callable):
+    """
+    Takes a callable (class or function) or a path to callable
+    and return the appropriate method to process a message with;
+    In the case of a function this will be itself, in the case of a
+    class this will be the "process_message" method.
+    """
+
     if hasattr(path_or_callable, '__call__'):
-        return path_or_callable
+        callable = path_or_callable
     else:
         assert isinstance(path_or_callable, str)
         package, attr = path_or_callable.rsplit('.', 1)
-        return getattr(import_module(package), attr)
+        callable = getattr(import_module(package), attr)
+
+    if not isinstance(callable, type):
+        return callable
+    return getattr(callable, "process_message")
 
 
 ##########
@@ -178,7 +189,7 @@ class RMQ(object):
                 for handler in handlers:
                     try:
                         callable = import_callable(handler)
-                        result = callable.process_message(
+                        result = callable(
                             json.loads(body), properties=properties
                         )
                         if result:
