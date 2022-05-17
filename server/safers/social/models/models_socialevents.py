@@ -8,10 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from safers.core.mixins import HashableMixin
 from safers.rmq.exceptions import RMQException
 
-# TODO: THIS IS ACTUALLY STORING A PROCESSED EVENT FROM THE SOCIAL MEDIA MODULE
-# TODO: NOT AN INDIVIDUAL TWEET; IT INCLUDES AN ID THAT I CAN USE TO QUERY THE
-# TODO: SOCIAL MEDIA API TO GET THE ACTUAL TWEETS THEMSELVES; THAT MUST BE DONE
-# TODO: AT RUN-TIME B/C IT REQUIRES AUTHENCTICATION W/ THE API
+# TODO: THIS IS DEPRECATED !!!!
 
 
 class SocialEventManager(models.Manager):
