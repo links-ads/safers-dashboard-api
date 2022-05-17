@@ -12,7 +12,7 @@ class TweetLanguageType(models.TextChoices):
     HR = "hr", _("Croatian")
     TR = "tr", _("Turkish")
     FI = "fi", _("Finnish")
-    el = "el", _("Greek")
+    EL = "el", _("Greek")
     FR = "fr", _("French")
     NL = "nl", _("Dutch")
 

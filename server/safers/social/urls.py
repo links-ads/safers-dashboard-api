@@ -3,9 +3,6 @@ from django.urls import include, path, re_path
 from rest_framework import routers
 
 from safers.social.views import (
-    # SocialEventViewSet,
-    # SocialEventDetailListView,
-    # SocialEventDetailRetrieveView,
     TweetView,
 )
 
