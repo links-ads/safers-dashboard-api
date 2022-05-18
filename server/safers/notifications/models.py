@@ -139,12 +139,12 @@ class Notification(models.Model):
         """
         called by signal hander in response to one of the NotificationGeometries having their geometry updated
         """
-
         geometries_geometries = self.geometries.values(
             "geometry", "bounding_box", "center"
         )
-        self.geometry_collection = GeometryCollection * geometries_geometries.values_list(
-            "geometry", flat=True
+
+        self.geometry_collection = GeometryCollection(
+            *geometries_geometries.values_list("geometry", flat=True)
         )
         self.center = GeometryCollection(
             *geometries_geometries.values_list("center", flat=True)
@@ -161,7 +161,7 @@ class Notification(models.Model):
         message_properties = kwargs.get("properties", {})
 
         message_type = message_body["msgType"]
-        assert message_type.lower() == "alert", f"attempting to process {message_type} as a Notification"
+        assert message_type.lower() == "notification", f"attempting to process {message_type} as a Notification"
 
         message_sender = message_body["sender"]
         if message_sender == "sem":
