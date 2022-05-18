@@ -25,8 +25,8 @@ class EventSerializer(serializers.ModelSerializer):
             "geometry",
             "bounding_box",
             "center",
-            "favorite",
             "alerts",
+            "favorite",
         )
 
     geometry = serializers.SerializerMethodField()
@@ -35,11 +35,9 @@ class EventSerializer(serializers.ModelSerializer):
 
     status = serializers.SerializerMethodField()
 
-    favorite = serializers.SerializerMethodField(method_name="is_favorite")
+    alerts = serializers.SerializerMethodField()
 
-    alerts = serializers.SlugRelatedField(
-        many=True, slug_field="id", queryset=Alert.objects.all()
-    )
+    favorite = serializers.SerializerMethodField(method_name="is_favorite")
 
     def validate(self, data):
         validated_data = super().validate(data)
@@ -83,6 +81,15 @@ class EventSerializer(serializers.ModelSerializer):
             return EventStatus.CLOSED
         elif obj.open:
             return EventStatus.OPEN
+
+    def get_alerts(self, obj):
+        """
+        returns some high-level details of the alerts comprising this event
+        """
+        return [{
+            "id": alert.id,
+            "title": alert.title,
+        } for alert in obj.alerts.only("id", "category")]
 
     def is_favorite(self, obj):
         user = self.context["request"].user

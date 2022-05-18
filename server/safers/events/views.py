@@ -40,7 +40,10 @@ _event_schema = openapi.Schema(
         "causalties": 456,
         "estimated_damage": 789,
         "alerts": [
-            "1d4102bb-eebd-4ad6-8132-a0e206f26ffe"
+            {
+                "id": "739a052b-bbc5-4fe6-8b67-dd981f4eb4c0",
+                "title": "Alert 739a052 [Fire]"
+            }
         ],
         "status": "OPEN",
         "geometry": {
