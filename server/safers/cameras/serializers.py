@@ -19,8 +19,6 @@ class CameraDetailSerializer(serializers.ModelSerializer):
             "geometry",
             "location",
         )
-        id_field = "id"
-        geo_field = "geometry"
 
     geometry = gis_serializers.GeometryField(
         precision=Camera.PRECISION, remove_duplicates=True
