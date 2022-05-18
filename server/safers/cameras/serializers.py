@@ -4,7 +4,10 @@ from rest_framework_gis import serializers as gis_serializers
 from safers.cameras.models import Camera, CameraMedia, CameraMediaTag
 
 
-class CameraSerializer(gis_serializers.GeoFeatureModelSerializer):
+class CameraDetailSerializer(serializers.ModelSerializer):
+    """
+    return JSON
+    """
     class Meta:
         model = Camera
         fields = (
@@ -14,13 +17,43 @@ class CameraSerializer(gis_serializers.GeoFeatureModelSerializer):
             "last_update",
             "direction",
             "geometry",
+            "location",
         )
-        id_field = "id"
-        geo_field = "geometry"
 
     geometry = gis_serializers.GeometryField(
         precision=Camera.PRECISION, remove_duplicates=True
     )
+
+    location = serializers.SerializerMethodField()
+
+    def get_location(self, obj):
+        if obj.geometry:
+            longitude, latitude = obj.geometry.coords
+            return {
+                "longitude": longitude,
+                "latitude": latitude,
+            }
+
+
+class CameraListSerializer(
+    gis_serializers.GeoFeatureModelSerializer, CameraDetailSerializer
+):
+    """
+    returns GeoJSON 
+    """
+    class Meta:
+        model = Camera
+        fields = (
+            "id",
+            "name",
+            "description",
+            "last_update",
+            "direction",
+            "geometry",
+            "location",
+        )
+        id_field = None
+        geo_field = "geometry"
 
 
 class CameraMediaTagSerializer(serializers.ModelSerializer):
