@@ -27,7 +27,7 @@ BINDING_KEYS = {
     # "mm.mission.*": ("safers.chatbot.models.Mission",),
     # "mm.report.*": ("safers.chatbot.models.Report", ),
     "newexternaldata.*": ("safers.data.models.Data", ),
-    "alert.sem.astro": ("safers.alerts.models.Alerts", ),
+    "alert.sem.astro": ("safers.alerts.models.Alert", ),
     "notification.sem.astro": ("safers.notifications.models.Notification", ),
     "event.camera.#": ("safers.cameras.models.CameraMedia", ),
 }

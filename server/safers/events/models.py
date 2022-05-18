@@ -69,6 +69,7 @@ class Event(gis_models.Model):
         verbose_name_plural = "Events"
 
     PRECISION = 12
+    MIN_BOUNDING_BOX_SIZE = 0.00001  # TODO: NOT SURE WHAT THIS SHOULD BE
 
     objects = EventManager.from_queryset(EventQuerySet)()
 
@@ -120,7 +121,9 @@ class Event(gis_models.Model):
             )
         )
         self.geometry_collection = geometry_collection
-        self.bounding_box = geometry_collection.envelope
+        self.bounding_box = geometry_collection.envelope.buffer(
+            self.MIN_BOUNDING_BOX_SIZE
+        ).envelope if geometry_collection.envelope.geom_type == "Point" else geometry_collection.envelope
         self.center = geometry_collection.centroid
         if force_save:
             self.save()
