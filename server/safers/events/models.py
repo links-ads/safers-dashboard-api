@@ -98,6 +98,14 @@ class Event(gis_models.Model):
     alerts = models.ManyToManyField("alerts.Alert", related_name="events")
 
     @property
+    def title(self):
+        title = f"Event {self.id.hex[:7]}"
+        alert_titles = [alert.title for alert in self.alerts.all()]
+        if alert_titles:
+            title += f" [{', '.join(alert_titles)}]"
+        return title
+
+    @property
     def open(self):
         return self.end_date is None
 
