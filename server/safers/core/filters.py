@@ -35,6 +35,15 @@ class SwaggerFilterInspector(CoreAPICompatInspector):
 
             if issubclass(filter_field_type, filters.BooleanFilter):
                 parameter.type = openapi.TYPE_BOOLEAN
+            elif issubclass(filter_field_type, filters.ModelChoiceFilter):
+                model_qs = filter_field.extra.get("queryset")
+                if model_qs:
+                    parameter.enum = list(
+                        model_qs.values_list(
+                            filter_field.extra.get("to_field_name", "pk"),
+                            flat=True
+                        )
+                    )
             elif issubclass(filter_field_type, filters.ChoiceFilter):
                 parameter.enum = [
                     choice[0] for choice in filter_field.extra.get("choices")
