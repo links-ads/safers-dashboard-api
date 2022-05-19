@@ -13,20 +13,29 @@ class CameraAdmin(gis_admin.GeoModelAdmin):
     fields = (
         "id",
         "is_active",
+        "camera_id",
         "name",
+        "model",
+        "owner",
+        "nation",
         "last_update",
-        "description",
         "direction",
+        "altitude",
         "geometry",
     )
     list_display = (
-        "name",
+        "camera_id",
         "get_n_camera_media_for_list_display",
         "last_update",
         "is_active",
     )
-    list_filter = ("is_active", )
-    ordering = ("name", )
+    list_filter = (
+        "is_active",
+        "model",
+        "owner",
+        "nation",
+    )
+    ordering = ("camera_id", )
     readonly_fields = ("id", )
     search_fields = ("name", )
 

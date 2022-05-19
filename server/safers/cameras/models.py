@@ -70,14 +70,24 @@ class Camera(gis_models.Model):
         editable=False,
     )
 
+    camera_id = models.CharField(
+        max_length=128,
+        blank=False,
+        null=False,
+        unique=True,
+    )
+
     is_active = models.BooleanField(default=True)
 
-    name = models.CharField(
-        max_length=128, blank=False, null=False, unique=True
+    name = models.CharField(max_length=128, blank=True, null=True)
+    model = models.CharField(max_length=128, blank=True, null=True)
+    owner = models.CharField(max_length=128, blank=True, null=True)
+    nation = models.CharField(max_length=128, blank=True, null=True)
+    altitude = models.FloatField(
+        blank=True,
+        null=True,
+        help_text=_("The altitude of the camera in meters.")
     )
-    description = models.TextField(blank=True, null=True)
-    last_update = models.DateTimeField(blank=True, null=True)
-    geometry = gis_models.PointField(blank=False, null=False)
     direction = models.FloatField(
         blank=False,
         null=False,
@@ -86,9 +96,12 @@ class Camera(gis_models.Model):
             "The angle of camera orientation, where 0 means North, 90 East, 180 South and 270 West"
         )
     )
+    geometry = gis_models.PointField(blank=False, null=False)
+
+    last_update = models.DateTimeField(blank=True, null=True)
 
     def __str__(self) -> str:
-        return self.name
+        return self.camera_id
 
 
 class CameraMediaTag(models.Model):
@@ -160,3 +173,43 @@ class CameraMedia(HashableMixin, gis_models.Model):
             if self.geometry.geom_type != "Point":
                 self.bounding_box = self.geometry.envelope
         return super().save(*args, **kwargs)
+
+
+def process_camera_events():
+    pass
+
+
+##################
+# CAMERA MESSAGE #
+##################
+
+{
+    "timestamp": "2022-01-27T09:48:00.000+0100",
+    "camera": {
+        "ID": "El_Perello",
+        "owner": "PCF",
+        "cam_direction": 297,
+        "model": "reolink RLC-823A",
+        "type": "PTZ",
+        "latitude": 40.916961,
+        "longitude": 0.694965,
+        "altitude": 298
+    },
+    "detection": {
+        "not_available": False, "smoke": False, "fire": False
+    },
+    "class_of_fire": {
+        "not_available": True,
+        "class_1": False,
+        "class_2": False,
+        "class_3": False
+    },
+    "fire_location": {
+        "not_available": False,
+        "direction": None,
+        "distance": None,
+        "latitude": None,
+        "longitude": None
+    },
+    "link": "link to AWS S3"
+}
