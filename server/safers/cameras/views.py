@@ -37,15 +37,15 @@ _camera_list_schema = openapi.Schema(
                     "coordinates": [1, 2]
                 },
                 "properties": {
-                    "id": "f2a19d9c-0156-416d-947f-191010e8a00c",
-                    "name": "PCF_El_Perellò_007",
-                    "description": "some information about the camera",
-                    "last_update": "2022-05-18T09:28:56.361Z",
-                    "direction": 7,
+                    "id": "PCF_El_Perello_083",
+                    "description": "name: El_Perello, model: reolink RLC-823A, owner: PCF, nation: Spain",
+                    "direction": 83,
+                    "altitude": 298,
                     "location": {
                         "longitude": 1,
                         "latitude": 2,
-                    }
+                    },
+                    "last_update": "2022-05-18T09:28:56.361Z",
                 },
             }
         ]
@@ -55,19 +55,19 @@ _camera_list_schema = openapi.Schema(
 _camera_detail_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     example={
-        "id": "f2a19d9c-0156-416d-947f-191010e8a00c",
-        "name": "PCF_El_Perellò_007",
-        "description": "some information about the camera",
-        "last_update": "2022-05-18T09:28:56.361Z",
-        "direction": 7,
+        "id": "PCF_El_Perello_083",
+        "description": "name: El_Perello, model: reolink RLC-823A, owner: PCF, nation: Spain",
+        "direction": 83,
+        "altitude": 298,
+        "location": {
+            "longitude": 1,
+            "latitude": 2,
+        },
         "geometry": {
             "type": "Point",
             "coordinates": [1, 2]
         },
-        "location": {
-            "longitude": 1,
-            "latitude": 2,
-        }
+        "last_update": "2022-05-18T09:28:56.361Z",
     }
 )  # yapf: disable
 
@@ -101,7 +101,7 @@ class CameraViewSet(viewsets.ReadOnlyModelViewSet):
     Returns a GeoJSON FeatureCollection of all cameras
     """
 
-    lookup_field = "id"
+    lookup_field = "camera_id"
     lookup_url_kwarg = "camera_id"
     permission_classes = [AllowAny]
     queryset = Camera.objects.active()

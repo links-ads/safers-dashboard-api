@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
@@ -12,19 +14,25 @@ class CameraDetailSerializer(serializers.ModelSerializer):
         model = Camera
         fields = (
             "id",
-            "name",
             "description",
-            "last_update",
             "direction",
-            "geometry",
+            "altitude",
             "location",
+            "geometry",
+            "last_update",
         )
+
+    id = serializers.CharField(
+        source="camera_id"
+    )  # note this is the external camera_id rather than the internal id
 
     geometry = gis_serializers.GeometryField(
         precision=Camera.PRECISION, remove_duplicates=True
     )
 
     location = serializers.SerializerMethodField()
+
+    description = serializers.SerializerMethodField()
 
     def get_location(self, obj):
         if obj.geometry:
@@ -33,6 +41,17 @@ class CameraDetailSerializer(serializers.ModelSerializer):
                 "longitude": longitude,
                 "latitude": latitude,
             }
+
+    def get_description(self, obj):
+        descriptors = OrderedDict((
+            ("name", obj.name),
+            ("model", obj.model),
+            ("owner", obj.owner),
+            ("nation", obj.nation),
+        ))
+        return ", ".join([
+            f"{k}: {v}" for k, v in descriptors.items() if v is not None
+        ])
 
 
 class CameraListSerializer(
@@ -45,12 +64,12 @@ class CameraListSerializer(
         model = Camera
         fields = (
             "id",
-            "name",
             "description",
-            "last_update",
             "direction",
-            "geometry",
+            "altitude",
             "location",
+            "geometry",
+            "last_update",
         )
         id_field = None
         geo_field = "geometry"
