@@ -50,6 +50,5 @@ class CameraMediaSerializer(serializers.ModelSerializer):
         return tags
 
     def is_favorite(self, obj):
-        return "foo"
         user = self.context["request"].user
         return obj in user.favorite_camera_medias.all()

@@ -157,7 +157,7 @@ class CameraMediaViewSet(
 
     lookup_field = "id"
     lookup_url_kwarg = "camera_media_id"
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = CameraMediaSerializer
 
     def get_queryset(self):
