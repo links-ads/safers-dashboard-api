@@ -29,7 +29,7 @@ BINDING_KEYS = {
     "newexternaldata.*": ("safers.data.models.Data", ),
     "alert.sem.astro": ("safers.alerts.models.Alert", ),
     "notification.sem.astro": ("safers.notifications.models.Notification", ),
-    "event.camera.#": ("safers.cameras.models.process_camera_events", ),
+    "event.camera.#": ("safers.cameras.utils.process_messages", ),
 }
 
 
