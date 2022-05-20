@@ -13,7 +13,8 @@ def add_camera_media_tags(apps, schema_editor):
             "description": None,
         },
         {
-            "name": "smoke", "description": None
+            "name": "smoke",
+            "description": None,
         },
     ]
     for data in TAGS:
