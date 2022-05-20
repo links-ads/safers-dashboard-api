@@ -20,11 +20,11 @@ from django_filters import rest_framework as filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 
-from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector, CaseInsensitiveChoiceFilter
+from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector, CaseInsensitiveChoiceFilter, CharInFilter
 
 from safers.users.permissions import IsLocal, IsRemote
 
-from safers.cameras.models import Camera, CameraMedia, CameraMediaType, CameraMediaFireClass
+from safers.cameras.models import Camera, CameraMedia, CameraMediaType, CameraMediaFireClass, CameraMediaTag
 from safers.cameras.serializers import CameraMediaSerializer
 
 _camera_media_schema = openapi.Schema(
@@ -67,8 +67,11 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         to_field_name="camera_id",
         help_text=_("The id of the camera that created the media")
     )
-    tags = filters.Filter(
-        method="tags_method", help_text=_("Available values: smoke, fire")
+    tags = CharInFilter(
+        # not using MultipleModelChoiceFilter b/c I want to allow a comma-separated list of values
+        field_name="tags__name",
+        lookup_expr="in",
+        help_text=_("How this media has been taged (ie: 'smoke','fire')")
     )
 
     start_date = filters.DateTimeFilter(
@@ -86,16 +89,6 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
     )
 
     # TODO: BBOX FILTERS
-
-    def tags_method(self, queryset, name, value):
-        tags = list(map(lambda x: x.upper(), value.split(",")))
-        qs_filters = []
-        if "FIRE" in tags:
-            qs_filters.append(Q(is_fire=True))
-        if "SMOKE" in tags:
-            qs_filters.append(Q(is_smoke=True))
-
-        return queryset.filter(reduce(__or__, qs_filters))
 
     def filter_queryset(self, queryset):
         """
