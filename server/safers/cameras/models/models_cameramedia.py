@@ -3,7 +3,7 @@ import uuid
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, F, ExpressionWrapper
 from django.contrib.gis.db import models as gis_models
 from django.utils.translation import gettext_lazy as _
 
@@ -14,7 +14,21 @@ class CameraMediaType(models.TextChoices):
 
 
 class CameraMediaManager(models.Manager):
-    pass
+    def get_queryset(self):
+        queryset = CameraMediaQuerySet(self.model, using=self._db).all()
+        annotated_queryset = queryset.annotate(
+            _is_fire=ExpressionWrapper(
+                Q(tags__name__in=["fire"]), output_field=models.BooleanField()
+            ),
+            _is_smoke=ExpressionWrapper(
+                Q(tags__name__in=["smoke"]), output_field=models.BooleanField()
+            ),
+            _is_detected=ExpressionWrapper(
+                Q(tags__name__in=["fire", "smoke"]),
+                output_field=models.BooleanField()
+            ),
+        )
+        return annotated_queryset
 
 
 class CameraMediaQuerySet(models.QuerySet):
@@ -25,22 +39,34 @@ class CameraMediaQuerySet(models.QuerySet):
         return self.filter(type=CameraMediaType.VIDEO)
 
     def fire(self):
-        return self.filter(is_fire=True)
+        return self.filter(_is_fire=True)
 
     def smoke(self):
-        return self.filter(is_smoke=True)
+        return self.filter(_is_smoke=True)
 
     def detected(self):
-        return self.filter(Q(is_fire=True) | Q(is_smoke=True))
+        return self.filter(Q(_is_fire=True) | Q(_is_smoke=True))
 
     def undetected(self):
-        return self.filter(Q(is_fire=False) & Q(is_smoke=False))
+        return self.filter(Q(_is_fire=False) & Q(_is_smoke=False))
 
 
 class CameraMediaFireClass(models.Model):
     class Meta:
         verbose_name = "Fire Class"
         verbose_name_plural = "Fire Classes"
+
+    name = models.CharField(max_length=128, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class CameraMediaTag(models.Model):
+    class Meta:
+        verbose_name = "Tag"
+        verbose_name_plural = "Tags"
 
     name = models.CharField(max_length=128, unique=True)
     description = models.TextField(blank=True, null=True)
@@ -56,8 +82,7 @@ class CameraMedia(gis_models.Model):
 
     PRECISION = 12
 
-    objects = CameraMediaManager.from_queryset(CameraMediaQuerySet)()
-
+    objects = CameraMediaManager()
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -87,8 +112,12 @@ class CameraMedia(gis_models.Model):
         max_length=512, blank=True, null=True
     )  # pre-signed AWS URLs can be quite long, hence the max_length kwarg
 
-    is_smoke = models.BooleanField(default=False)
-    is_fire = models.BooleanField(default=False)
+    tags = models.ManyToManyField(
+        CameraMediaTag,
+        blank=True,
+        related_name="media",
+        help_text=_("Determines whether this media captures fire or smoke")
+    )
 
     fire_classes = models.ManyToManyField(
         CameraMediaFireClass,
