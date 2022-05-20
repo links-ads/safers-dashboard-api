@@ -24,6 +24,7 @@ class Camera(gis_models.Model):
         verbose_name_plural = "Cameras"
 
     PRECISION = 12
+    MIN_BOUNDING_BOX_SIZE = 0.00001  # TODO: NOT SURE WHAT THIS SHOULD BE
 
     objects = CameraManager.from_queryset(CameraQuerySet)()
 

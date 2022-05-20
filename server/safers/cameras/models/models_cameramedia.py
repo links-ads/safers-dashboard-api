@@ -14,21 +14,23 @@ class CameraMediaType(models.TextChoices):
 
 
 class CameraMediaManager(models.Manager):
-    def get_queryset(self):
-        queryset = CameraMediaQuerySet(self.model, using=self._db).all()
-        annotated_queryset = queryset.annotate(
-            _is_fire=ExpressionWrapper(
-                Q(tags__name__in=["fire"]), output_field=models.BooleanField()
-            ),
-            _is_smoke=ExpressionWrapper(
-                Q(tags__name__in=["smoke"]), output_field=models.BooleanField()
-            ),
-            _is_detected=ExpressionWrapper(
-                Q(tags__name__in=["fire", "smoke"]),
-                output_field=models.BooleanField()
-            ),
-        )
-        return annotated_queryset
+    pass
+
+    # def get_queryset(self):
+    #     queryset = CameraMediaQuerySet(self.model, using=self._db).all()
+    #     annotated_queryset = queryset.annotate(
+    #         _is_fire=ExpressionWrapper(
+    #             Q(tags__name__in=["fire"]), output_field=models.BooleanField()
+    #         ),
+    #         _is_smoke=ExpressionWrapper(
+    #             Q(tags__name__in=["smoke"]), output_field=models.BooleanField()
+    #         ),
+    #         _is_detected=ExpressionWrapper(
+    #             Q(tags__name__in=["fire", "smoke"]),
+    #             output_field=models.BooleanField()
+    #         ),
+    #     )
+    #     return annotated_queryset
 
 
 class CameraMediaQuerySet(models.QuerySet):
@@ -39,16 +41,20 @@ class CameraMediaQuerySet(models.QuerySet):
         return self.filter(type=CameraMediaType.VIDEO)
 
     def fire(self):
-        return self.filter(_is_fire=True)
+        return self.filter(tags__name__in=["fire"])
+        # return self.filter(_is_fire=True)
 
     def smoke(self):
-        return self.filter(_is_smoke=True)
+        return self.filter(tags__name__in=["smoke"])
+        # return self.filter(_is_smoke=True)
 
     def detected(self):
-        return self.filter(Q(_is_fire=True) | Q(_is_smoke=True))
+        return self.filter(tags__name__in=["fire", "smoke"]).distinct()
+        # return self.filter(Q(_is_fire=True) | Q(_is_smoke=True))
 
     def undetected(self):
-        return self.filter(Q(_is_fire=False) & Q(_is_smoke=False))
+        return self.exclude(tags__name__in=["fire", "smoke"]).distinct()
+        # return self.filter(Q(_is_fire=False) & Q(_is_smoke=False))
 
 
 class CameraMediaFireClass(models.Model):
@@ -82,7 +88,8 @@ class CameraMedia(gis_models.Model):
 
     PRECISION = 12
 
-    objects = CameraMediaManager()
+    objects = CameraMediaManager.from_queryset(CameraMediaQuerySet)()
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,

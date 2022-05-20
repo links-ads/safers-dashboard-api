@@ -8,6 +8,8 @@ from safers.users.serializers import UserSerializer
 from safers.users.tests.factories import UserFactory
 from safers.users.utils import create_knox_token
 
+from safers.cameras.models import CameraMediaFireClass, CameraMediaTag
+
 
 @pytest.fixture
 def admin():
@@ -59,3 +61,53 @@ def user_data():
     user.delete()
 
     return data
+
+
+@pytest.fixture
+def camera_fire_classes():
+    """
+    create the default set of fire_classes
+    """
+    FIRE_CLASSES_DATA = [
+        {
+            "name": "CL1",
+            "description": "fires involving wood/plants",
+        },
+        {
+            "name": "CL2",
+            "description": "fires involving flammable materials/liquids",
+        },
+        {
+            "name": "CL3",
+            "description": "fires involving gas",
+        },
+    ]
+    fire_classes = [
+        CameraMediaFireClass.objects.get_or_create(
+            name=data.pop("name"), defaults=data
+        )[0] for data in FIRE_CLASSES_DATA
+    ]
+    return fire_classes
+
+
+@pytest.fixture
+def camera_tags():
+    """
+    create the default set of tags
+    """
+    TAGS_DATA = [
+        {
+            "name": "fire",
+            "description": None,
+        },
+        {
+            "name": "smoke",
+            "description": None,
+        },
+    ]
+    tags = [
+        CameraMediaTag.objects.get_or_create(
+            name=data.pop("name"), defaults=data
+        )[0] for data in TAGS_DATA
+    ]
+    return tags
