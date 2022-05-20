@@ -3,14 +3,14 @@ from functools import reduce
 from operator import __or__
 
 from django.conf import settings
-from django.db.models import Q
+from django.contrib.gis.geos import Polygon
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.generics import get_object_or_404 as drf_get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -58,7 +58,10 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
             "type",
         }
 
+    order = filters.OrderingFilter(fields=(("timestamp", "date"), ))
+
     type = CaseInsensitiveChoiceFilter(choices=CameraMediaType.choices)
+
     camera_id = filters.ModelChoiceFilter(
         field_name="camera",
         lookup_expr="exact",  # not sure why I can't use "iexact" ?
@@ -66,6 +69,7 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         to_field_name="camera_id",
         help_text=_("The id of the camera that created the media")
     )
+
     tags = CharInFilter(
         # not using MultipleModelChoiceFilter b/c I want to allow a comma-separated list of values
         field_name="tags__name",
@@ -87,7 +91,26 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         )
     )
 
-    # TODO: BBOX FILTERS
+    bbox = filters.Filter(
+        method="bbox_filter", help_text=_("xmin, ymin, xmax, ymax")
+    )
+    default_bbox = filters.BooleanFilter(
+        initial=True,
+        help_text=_(
+            "If default_bbox is True and no bbox is provided the user's default_aoi bbox will be used; "
+            "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
+        )
+    )
+
+    def bbox_filter(self, queryset, name, value):
+
+        try:
+            xmin, ymin, xmax, ymax = list(map(float, value.split(",")))
+        except ValueError:
+            raise ParseError("invalid bbox string supplied")
+        bbox = Polygon.from_bbox((xmin, ymin, xmax, ymax))
+
+        return queryset.filter(camera__geometry__intersects=bbox)
 
     def filter_queryset(self, queryset):
         """
@@ -105,6 +128,12 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         if default_date and not updated_cleaned_data.get("start_date"):
             updated_cleaned_data["start_date"] = timezone.now(
             ) - settings.SAFERS_DEFAULT_TIMERANGE
+
+        default_bbox = updated_cleaned_data.pop("default_bbox")
+        if default_bbox and not updated_cleaned_data.get("bbox"):
+            user = self.request.user
+            bbox = user.default_aoi.geometry.extent
+            updated_cleaned_data["bbox"] = ",".join(map(str, bbox))
 
         self.form.cleaned_data = updated_cleaned_data
 
