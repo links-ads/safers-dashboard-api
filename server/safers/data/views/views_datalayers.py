@@ -26,20 +26,24 @@ _data_layer_schema = openapi.Schema(
         "id": "1",
         "text": "Weather forecast",
         "info": "whatever",
+        "info_url": None,
         "children": [
           {
             "id": "1.1",
             "text": "Short term",
             "info": "whatever",
+            "info_url": None,
             "children": [
               {
                 "id": "1.1.1",
                 "text": "Temperature at 2m",
                 "info": "whatever",
+                "info_url": None,
                 "children": [
                   {
                     "id": "1.1.1.1",
                     "text": "2022-04-28T12:15:20Z",
+                    "info": None,
                     "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5",
                     "urls": {
                       "2022-04-28T12:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
@@ -159,21 +163,25 @@ class DataLayerView(views.APIView):
             "id": f"{i}",
             "text": group["group"],
             "info": None,
+            "info_url": None,
             "children": [
               {
                 "id": f"{i}.{j}",
                 "text": sub_group["subGroup"],
                 "info": None,
+                "info_url": None,
                 "children": [
                   {
                     "id": f"{i}.{j}.{k}",
                     "text": layer["name"],
                     "info": data_type_info.get(str(layer.get("dataTypeId"))),
+                    "info_url": None,
                     "children": [
                       {
                         # "data_type": detail.get("dataTypeId"),
                         "id": f"{i}.{j}.{k}.{l}",
                         "text": detail["created_At"],
+                        "info": None,
                         "info_url": metadata_url.format(metadata_id=detail.get("metadata_Id")),
                         "urls": OrderedDict(
                           [
