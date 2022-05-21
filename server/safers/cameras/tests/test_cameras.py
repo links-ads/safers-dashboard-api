@@ -1,7 +1,10 @@
 import pytest
 import urllib
 
+from datetime import timedelta
+
 from django.urls import resolve, reverse
+from django.utils import timezone
 
 from rest_framework import status
 
@@ -9,6 +12,47 @@ from safers.core.tests.factories import *
 
 from safers.cameras.models import CameraMediaTag
 from safers.cameras.tests.factories import *
+
+
+@pytest.mark.django_db
+class TestCameraModel:
+    def test_last_update(self):
+
+        camera = CameraFactory()
+
+        assert camera.last_update is None
+
+        TODAY = timezone.now()
+        YESTERDAY = TODAY - timedelta(days=1)
+        BEFORE_YESTERDAY = TODAY - timedelta(days=2)
+
+        before_yesterday_camera_media = CameraMediaFactory(
+            timestamp=BEFORE_YESTERDAY, camera=camera
+        )
+        camera.refresh_from_db()
+        assert camera.last_update == BEFORE_YESTERDAY
+
+        today_camera_media = CameraMediaFactory(timestamp=TODAY, camera=camera)
+        camera.refresh_from_db()
+        assert camera.last_update == TODAY
+
+        yesterday_camera_media = CameraMediaFactory(
+            timestamp=YESTERDAY, camera=camera
+        )
+        camera.refresh_from_db()
+        assert camera.last_update == TODAY
+
+        today_camera_media.delete()
+        camera.refresh_from_db()
+        assert camera.last_update == YESTERDAY
+
+        yesterday_camera_media.delete()
+        camera.refresh_from_db()
+        assert camera.last_update == BEFORE_YESTERDAY
+
+        before_yesterday_camera_media.delete()
+        camera.refresh_from_db()
+        assert camera.last_update is None
 
 
 @pytest.mark.django_db
