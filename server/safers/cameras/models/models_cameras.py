@@ -66,3 +66,13 @@ class Camera(gis_models.Model):
 
     def __str__(self) -> str:
         return self.camera_id
+
+    def recalculate_last_update(self, ignore=[]):
+        """
+        called in response to an associated CameraMedia object being saved/deleted
+        """
+        most_recent_camera_media_timestamp = self.media.exclude(
+            pk__in=[camera_media.pk for camera_media in ignore]
+        ).order_by("timestamp").values_list("timestamp", flat=True).last()
+        self.last_update = most_recent_camera_media_timestamp
+        self.save()

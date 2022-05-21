@@ -58,14 +58,14 @@ def process_messages(message_body, **kwargs):
                 }
             )
 
-            # create camera_media object (and update camera object)...
+            # create camera_media object...
+            # (the post_save signal will take care of camera.last_update)
             if serializer.is_valid(raise_exception=True):
                 camera_media = serializer.save()
-                camera.last_update = camera_media.timestamp
-                camera.save()
                 details.append(f"created camera_media: {str(camera_media)}")
 
             # delete old undetected camera_media objects...
+            # (the pre_delete signal will take care of camera.last_update)
             old_undetected_camera_medias = camera.media.undetected().filter(
                 timestamp__lt=timezone.now() - settings.SAFERS_DEFAULT_TIMERANGE
             ).exclude(pk=camera_media.pk)

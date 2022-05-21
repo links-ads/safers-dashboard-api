@@ -8,6 +8,7 @@ from safers.cameras.models import Camera
 
 @admin.register(Camera)
 class CameraAdmin(gis_admin.GeoModelAdmin):
+    actions = ("recalculate_last_update", )
     fields = (
         "id",
         "is_active",
@@ -44,3 +45,13 @@ class CameraAdmin(gis_admin.GeoModelAdmin):
     @admin.display(description="N MEDIA")
     def get_n_camera_media_for_list_display(self, obj):
         return obj.media.count()
+
+    @admin.display(description="Recalculate last_update of selected Cameras")
+    def recalculate_last_update(self, request, queryset):
+
+        for obj in queryset:
+
+            obj.recalculate_last_update()
+
+            msg = f"set 'last_update' of {obj} to {obj.last_update}."
+            self.message_user(request, msg)
