@@ -1,4 +1,3 @@
-from unittest import defaultTestLoader
 import uuid
 
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -152,3 +151,19 @@ class CameraMedia(gis_models.Model):
         )
     )
     geometry = gis_models.GeometryField(blank=True, null=True)
+
+    @property
+    def is_fire(self):
+        return self.tags.filter(name__in=["fire"]).exists()
+
+    @property
+    def is_smoke(self):
+        return self.tags.filter(name__in=["smoke"]).exists()
+
+    @property
+    def is_detected(self):
+        return self.tags.filter(name__in=["fire", "smoke"]).distinct().exists()
+
+    @property
+    def undetected(self):
+        return self.tags.exclude(name__in=["fire", "smoke"]).distinct().exists()
