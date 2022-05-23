@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.contrib.gis import geos
 from django.db import transaction
@@ -5,7 +7,9 @@ from django.utils import timezone
 
 from safers.rmq.exceptions import RMQException
 
-from safers.cameras.models import Camera, CameraMediaType, CameraMediaFireClass
+from safers.alerts.serializers import AlertSerializer
+
+from safers.cameras.models import Camera, CameraMediaType, CameraMediaFireClass, CameraMediaTag
 from safers.cameras.serializers import CameraMediaSerializer
 
 FIRE_CLASS_MAP = {
@@ -13,6 +17,12 @@ FIRE_CLASS_MAP = {
     "class_1": "CL1",
     "class_2": "CL2",
     "class_3": "CL3",
+}
+
+TAG_MAP = {
+    "not_available": None,
+    "fire": "fire",
+    "smoke": "smoke",
 }
 
 
@@ -36,22 +46,26 @@ def process_messages(message_body, **kwargs):
                     v in message_body["class_of_fire"].items() if v is True
                 ]
             ).values_list("name", flat=True)
+            tags = CameraMediaTag.objects.filter(
+                name__in=[
+                    TAG_MAP[k] for k,
+                    v in message_body["detection"].items() if v is True
+                ]
+            ).values_list("name", flat=True)
             geometry_details = message_body.get("fire_location", {})
             lon, lat = (geometry_details.get("longitude"), geometry_details.get("latitude"))
             geometry_details.update({
                 "geometry": geos.Point(lon, lat) if lon and lat else None
             })
-            is_fire, is_smoke = (message_body["detection"]["fire"], message_body["detection"]["smoke"])
 
             serializer = CameraMediaSerializer(
                 data={
-                    "camera": camera,
+                    "camera_id": camera.camera_id,
                     "type": CameraMediaType.IMAGE,
                     "timestamp": message_body["timestamp"],
                     "url": message_body["link"],
-                    "is_fire": is_fire,
-                    "is_smoke": is_smoke,
                     "fire_classes": fire_classes,
+                    "tags": tags,
                     "direction": geometry_details.get("direction"),
                     "distance": geometry_details.get("distance"),
                     "geometry": geometry_details.get("geometry"),
@@ -62,6 +76,7 @@ def process_messages(message_body, **kwargs):
             # (the post_save signal will take care of camera.last_update)
             if serializer.is_valid(raise_exception=True):
                 camera_media = serializer.save()
+                camera.refresh_from_db()
                 details.append(f"created camera_media: {str(camera_media)}")
 
             # delete old undetected camera_media objects...
@@ -75,11 +90,46 @@ def process_messages(message_body, **kwargs):
                         f"deleted old camera_media: {str(old_undected_camera_media)}"
                     )
                     old_undected_camera_media.delete()
+                camera.refresh_from_db()
 
             # maybe create alert...
-            if is_fire or is_smoke:
-                # TODO: I AM HERE
-                pass
+            if camera_media.is_detected:
+
+                most_recent_camera_media_detected_timestamp = camera.media.exclude(
+                    pk=camera_media.pk
+                ).order_by("timestamp").values_list("timestamp", flat=True).last()  # yapf: disable
+
+                if not most_recent_camera_media_detected_timestamp or (
+                    camera_media.timestamp -
+                    most_recent_camera_media_detected_timestamp >=
+                    settings.SAFERS_DEFAULT_TIMERANGE
+                ):
+
+                    serializer = AlertSerializer(
+                        data={
+                            # TODO: CAMERAS NEED CAP INFORMATION
+                            "timestamp": camera_media.timestamp,
+                            "status": None,
+                            "source": None,
+                            "scope": None,
+                            "category": None,
+                            "event": None,
+                            "urgency": None,
+                            "severity": None,
+                            "certainty": None,
+                            "description": None,
+                            "geometry": [{
+                                "type": "Feature",
+                                "properties": {},
+                                "geometry": json.loads(camera.geometry.json)
+                            }],
+                            "message": message_body,
+                        }
+                    )
+
+                    if serializer.is_valid(raise_exception=True):
+                        alert = serializer.save()
+                        details.append(f"created alert: {str(alert)}")
 
     except Exception as e:
         msg = f"unable to process_message: {e}"
