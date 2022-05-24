@@ -20,6 +20,7 @@ class AlertType(models.TextChoices):
 class AlertSource(models.TextChoices):
     REPORT = "REPORT", _("Report (from chatbot)")
     EFFIS_FWI = "EFFIS_FWI", _("FWI (from netCDF)")
+    IN_SITU = "IN SITU CAMERAS", _("In-Situ Cameras")
 
 
 class AlertManager(models.Manager):
