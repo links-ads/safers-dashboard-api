@@ -37,7 +37,16 @@ class MessageAdmin(admin.ModelAdmin):
         "timestamp",
         "is_demo",
     )
+    ordering = (
+        "timestamp",
+        "routing_key",
+        "name",
+    )
     readonly_fields = ("id", )
+    search_fields = (
+        "name",
+        "routing_key",
+    )
 
     @admin.display(description="ID or NAME")
     def get_id_or_name_for_list_display(self, obj):
