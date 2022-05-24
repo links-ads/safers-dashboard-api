@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from safers.rmq.exceptions import RMQException
 
+from safers.alerts.models import AlertSource
 from safers.alerts.serializers import AlertSerializer
 
 from safers.cameras.models import Camera, CameraMediaType, CameraMediaFireClass, CameraMediaTag
@@ -60,15 +61,24 @@ def process_messages(message_body, **kwargs):
 
             serializer = CameraMediaSerializer(
                 data={
-                    "camera_id": camera.camera_id,
-                    "type": CameraMediaType.IMAGE,
-                    "timestamp": message_body["timestamp"],
-                    "url": message_body["link"],
-                    "fire_classes": fire_classes,
-                    "tags": tags,
-                    "direction": geometry_details.get("direction"),
-                    "distance": geometry_details.get("distance"),
-                    "geometry": geometry_details.get("geometry"),
+                    "camera_id":
+                        camera.camera_id,
+                    "type":
+                        CameraMediaType.IMAGE,
+                    "timestamp":
+                        message_body["timestamp"],
+                    "url":
+                        message_body["link"],
+                    "fire_classes":
+                        fire_classes,
+                    "tags":
+                        tags,
+                    "distance":
+                        geometry_details.get("distance"),
+                    "direction":
+                        geometry_details.get("direction") or camera.direction,
+                    "geometry":
+                        geometry_details.get("geometry") or camera.geometry,
                 }
             )
 
@@ -110,9 +120,9 @@ def process_messages(message_body, **kwargs):
                             # TODO: CAMERAS NEED CAP INFORMATION
                             "timestamp": camera_media.timestamp,
                             "status": None,
-                            "source": None,
+                            "source": AlertSource.IN_SITU,
                             "scope": None,
-                            "category": None,
+                            "category": "Fire",
                             "event": None,
                             "urgency": None,
                             "severity": None,
@@ -123,6 +133,7 @@ def process_messages(message_body, **kwargs):
                                 "properties": {},
                                 "geometry": json.loads(camera.geometry.json)
                             }],
+                            "media": [camera_media.url],
                             "message": message_body,
                         }
                     )
