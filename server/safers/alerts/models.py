@@ -8,19 +8,35 @@ from django.contrib.postgres.fields import ArrayField
 from django.utils.translation import gettext_lazy as _
 
 from safers.core.mixins import HashableMixin
+from safers.core.utils import CaseInsensitiveTextChoices
 from safers.rmq.exceptions import RMQException
 
 
-class AlertType(models.TextChoices):
+class AlertType(CaseInsensitiveTextChoices):
     UNVALIDATED = "UNVALIDATED", _("Unvalidated")
     VALIDATED = "VALIDATED", _("Validated")
     POSSIBLE_EVENT = "POSSIBLE_EVENT", _("Possible Event")
 
 
-class AlertSource(models.TextChoices):
+class AlertSource(CaseInsensitiveTextChoices):
     REPORT = "REPORT", _("Report (from chatbot)")
     EFFIS_FWI = "EFFIS_FWI", _("FWI (from netCDF)")
     IN_SITU = "IN SITU CAMERAS", _("In-Situ Cameras")
+
+
+# TODO: AlertCategory
+# “Geo” - Geophysical (inc. landslide)
+# “Met” - Meteorological (inc. flood)
+# “Safety” - General emergency and public safety
+# “Security” - Law enforcement, military, homeland and local/private security
+# “Rescue” - Rescue and recovery
+# “Fire” - Fire suppression and rescue
+# “Health” - Medical and public health
+# “Env” - Pollution and other environmental
+# “Transport” - Public and private transportation
+# “Infra” - Utility, telecommunication, other non-transport infrastructure
+# “CBRNE” – Chemical, Biological, Radiological, Nuclear or High-Yield Explosive threat or attack
+# “Other” - Other events
 
 
 class AlertManager(models.Manager):
@@ -206,20 +222,28 @@ class Alert(models.Model):
 
         try:
             with transaction.atomic():
+                message_timestamp = message_body.get("sent")
+                message_status = message_body.get("status")
+                message_source = message_body.get("source")
+                if message_source:
+                    message_source = AlertSource.find_enum(message_source)
+                message_scope = message_body.get("scope")
+                message_category = message_body.get("category")
+
                 for info in message_body["info"]:
                     from safers.alerts.serializers import AlertSerializer
                     serializer = AlertSerializer(
                         data={
                             "timestamp":
-                                message_body.get("sent"),
+                                message_timestamp,
                             "status":
-                                message_body.get("status"),
+                                message_status,
                             "source":
-                                message_body.get("source"),
+                                message_source,
                             "scope":
-                                message_body.get("scope"),
+                                message_scope,
                             "category":
-                                info.get("category"),
+                                message_category,
                             "event":
                                 info.get("event"),
                             "urgency":
