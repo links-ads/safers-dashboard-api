@@ -7,7 +7,8 @@ from django.utils.translation import gettext_lazy as _
 
 
 class CameraManager(models.Manager):
-    pass
+    def get_by_natural_key(self, camera_id):
+        return self.get(camera_id=camera_id)
 
 
 class CameraQuerySet(models.QuerySet):
@@ -66,6 +67,9 @@ class Camera(gis_models.Model):
 
     def __str__(self) -> str:
         return self.camera_id
+
+    def natural_key(self):
+        return (self.camera_id, )
 
     def recalculate_last_update(self, ignore=[]):
         """

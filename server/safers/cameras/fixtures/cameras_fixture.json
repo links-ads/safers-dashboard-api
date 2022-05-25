@@ -10,8 +10,7 @@
       "nation": "Spain",
       "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
       "direction": 7.0,
-      "altitude": 298,
-      "last_update": null
+      "altitude": 298
     }
   },
   {
@@ -25,8 +24,7 @@
       "nation": "Spain",
       "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
       "direction": 83.0,
-      "altitude": 298,
-      "last_update": null
+      "altitude": 298
     }
   },
   {
@@ -40,8 +38,7 @@
       "nation": "Spain",
       "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
       "direction": 129.0,
-      "altitude": 298,
-      "last_update": null
+      "altitude": 298
     }
   },
   {
@@ -55,8 +52,7 @@
       "nation": "Spain",
       "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
       "direction": 186.0,
-      "altitude": 298,
-      "last_update": null
+      "altitude": 298
     }
   },
   {
@@ -70,8 +66,7 @@
       "nation": "Spain",
       "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
       "direction": 250.0,
-      "altitude": 298,
-      "last_update": null
+      "altitude": 298
     }
   },
   {
@@ -85,23 +80,77 @@
       "nation": "Spain",
       "geometry": "SRID=4326;POINT (0.6949650000000001 40.916961)",
       "direction": 297.0,
-      "altitude": 298,
-      "last_update": null
+      "altitude": 298
     }
   },
   {
     "model": "cameras.camera",
     "fields": {
       "is_active": true,
-      "camera_id": "CSI_San_Michele_000",
+      "camera_id": "CSI_San_Michele_055",
       "name": "San_Michelle",
       "model": "reolink RLC-823A",
       "owner": "CSI",
       "nation": "Italy",
       "geometry": "SRID=4326;POINT (7.342011 45.098897)",
-      "direction": 0.0,
-      "altitude": 734,
-      "last_update": null
+      "direction": 55.0,
+      "altitude": 734
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "camera_id": "CSI_San_Michele_201",
+      "name": "San_Michelle",
+      "model": "reolink RLC-823A",
+      "owner": "CSI",
+      "nation": "Italy",
+      "geometry": "SRID=4326;POINT (7.342011 45.098897)",
+      "direction": 201.0,
+      "altitude": 734
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "camera_id": "CSI_San_Michele_252",
+      "name": "San_Michelle",
+      "model": "reolink RLC-823A",
+      "owner": "CSI",
+      "nation": "Italy",
+      "geometry": "SRID=4326;POINT (7.342011 45.098897)",
+      "direction": 252.0,
+      "altitude": 734
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "camera_id": "CSI_San_Michele_301",
+      "name": "San_Michelle",
+      "model": "reolink RLC-823A",
+      "owner": "CSI",
+      "nation": "Italy",
+      "geometry": "SRID=4326;POINT (7.342011 45.098897)",
+      "direction": 301.0,
+      "altitude": 734
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "camera_id": "CSI_San_Michele_352",
+      "name": "San_Michelle",
+      "model": "reolink RLC-823A",
+      "owner": "CSI",
+      "nation": "Italy",
+      "geometry": "SRID=4326;POINT (7.342011 45.098897)",
+      "direction": 352.0,
+      "altitude": 734
     }
   },
   {
@@ -115,8 +164,7 @@
       "nation": "Greece",
       "geometry": "SRID=4326;POINT (23.068407 40.620997)",
       "direction": 0.0,
-      "altitude": 492,
-      "last_update": null
+      "altitude": 492
     }
   }
 ]
