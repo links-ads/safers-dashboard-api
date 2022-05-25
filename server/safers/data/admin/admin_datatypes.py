@@ -9,6 +9,7 @@ from django.shortcuts import render
 from django.urls import path, reverse
 
 import json
+import numpy as np
 import pandas as pd
 
 from safers.core.admin import JSONAdminWidget
@@ -24,6 +25,7 @@ class DataTypeAdmin(admin.ModelAdmin):
         "datatype_id",
         "is_active",
         "description",
+        "info",
         "group",
         "subgroup",
         "format",
@@ -38,10 +40,14 @@ class DataTypeAdmin(admin.ModelAdmin):
         "datatype_id",
         "group",
         "subgroup",
-        "format",
         "get_description_for_list_display",
     )
-    list_filter = ("group", "subgroup", "format")
+    list_filter = (
+        "group",
+        "subgroup",
+        ("group", admin.EmptyFieldListFilter),
+        ("subgroup", admin.EmptyFieldListFilter),
+    )
     readonly_fields = ("id", )
     search_fields = (
         "datatype_id",
@@ -75,11 +81,12 @@ class DataTypeAdmin(admin.ModelAdmin):
     def import_csv(self, request):
 
         DATATYPE_COLUMNS = {
-            "datatypeID\ngreen=available": "datatype_id",
+            "datatypeID": "datatype_id",
             "Group": "group",
             "Subgroup": "subgroup",
             "Format": "format",
             "Data Description": "description",
+            "Info (short description )for frontend": "info",
             # "Responsible":
             # "Update frequency": "update_frequency",
             # "Comments":
@@ -107,12 +114,13 @@ class DataTypeAdmin(admin.ModelAdmin):
                     df = pd.read_csv(import_file)
                     assert set(DATATYPE_COLUMNS).issubset(df.columns), "Invalid columns"
                     df = df.rename(columns=DATATYPE_COLUMNS)
+                    df = df.replace({np.NaN: None})
                     with transaction.atomic():
                         n_created = n_updated = 0
                         for index, row in df.iterrows():
-                            data_type, created = DataType.objects.get_or_create(datatype_id=row.datatype_id)
+                            data_type, created = DataType.objects.get_or_create(datatype_id=row.datatype_id, subgroup=row.subgroup, group=row.group)
                             for field in DATATYPE_COLUMNS.values():
-                                setattr(data_type, field, getattr(row, field))
+                                setattr(data_type, field, row[field])
                             data_type.extra_info = json.loads(row.to_json())
                             data_type.save()
                             if created:

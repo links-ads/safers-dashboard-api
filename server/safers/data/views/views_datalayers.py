@@ -151,10 +151,11 @@ class DataLayerView(views.APIView):
         metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}"
 
         data_type_info = {"None": None}
-        data_type_info.update({
-            data_type.datatype_id: data_type.description
-            for data_type in DataType.objects.all()
-        })
+        data_type_info.update(
+            {(data_type.datatype_id or data_type.subgroup or
+              data_type.group).upper(): data_type.info or data_type.description
+             for data_type in DataType.objects.all()}
+        )
 
         content = response.json()
 
@@ -162,13 +163,13 @@ class DataLayerView(views.APIView):
           {
             "id": f"{i}",
             "text": group["group"],
-            "info": None,
+            "info": data_type_info.get(group["group"].upper()),
             "info_url": None,
             "children": [
               {
                 "id": f"{i}.{j}",
                 "text": sub_group["subGroup"],
-                "info": None,
+                "info": data_type_info.get(sub_group["subGroup"].upper()),
                 "info_url": None,
                 "children": [
                   {
