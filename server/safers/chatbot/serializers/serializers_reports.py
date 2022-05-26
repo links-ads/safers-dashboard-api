@@ -58,20 +58,18 @@ class ReportViewSerializer(serializers.Serializer):
 
     ProxyFieldMapping = {
         # fields to pass onto proxy
-        "hazards": "Hazards",
-        "status": "Status",
-        "content": "Contents",
-        "visibility": "Visibility",
-        "start": "StartDate",
-        "end": "EndDate",
+        # "hazards": "Hazards",
+        # "status": "Status",
+        # "content": "Contents",
+        "visibility": "Visibility",  # "start": "StartDate",
+  # "end": "EndDate",
         "max_results": "MaxResultCount",
         "bbox": "bbox",  # bbox will need further processing in View
     }
 
     hazards = serializers.MultipleChoiceField(
         choices=ReportHazardTypes.choices,
-        default=[ReportHazardTypes.FIRE],
-        required=False,
+        default=[ReportHazardTypes.FIRE],  # required=False,
     )
 
     status = serializers.MultipleChoiceField(
@@ -107,7 +105,8 @@ class ReportViewSerializer(serializers.Serializer):
     )
 
     default_start = serializers.BooleanField(
-        default=True,
+        # default=True,
+        default=False,
         required=False,
         help_text=_(
             "If default_start is True and no start is provided the default start (now) will be used; "
@@ -115,7 +114,8 @@ class ReportViewSerializer(serializers.Serializer):
         )
     )
     default_end = serializers.BooleanField(
-        default=True,
+        # default=True,
+        default=False,
         required=False,
         help_text=_(
             "If default_end is True and no end is provided the default start (3 days prior to now) will be used; "
@@ -123,7 +123,8 @@ class ReportViewSerializer(serializers.Serializer):
         )
     )
     default_bbox = serializers.BooleanField(
-        default=True,
+        # default=True,
+        default=False,
         required=False,
         help_text=_(
             "If default_bbox is True and no bbox is provided the user's default_aoi bbox will be used; "
