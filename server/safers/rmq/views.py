@@ -8,6 +8,9 @@ from rest_framework.response import Response
 from rest_framework.utils.encoders import JSONEncoder
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 from safers.core.decorators import swagger_fake
 
 from safers.rmq import RMQ
@@ -25,7 +28,12 @@ class MessageViewSet(ReadOnlyModelViewSet):
         return Message.objects.all()
 
     @action(detail=False, methods=["post"])
+    @swagger_auto_schema(responses={status.HTTP_200_OK: MessageSerializer})
     def publish(self, request, *args, **kwargs):
+        """
+        For development purposes only.
+        Allows me to manually publish a message to the queue.
+        """
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -44,38 +52,3 @@ class MessageViewSet(ReadOnlyModelViewSet):
 
         except Exception as e:
             raise ValidationError(e)
-
-
-# class PublishMessageView(GenericAPIView):
-#     """
-#     send a message to RMQ
-#     """
-
-#     permission_classes = [AllowAny]
-#     serializer_class = MessageSerializer
-
-#     def post(self, request, *args, **kwargs):
-
-#         message_serializer = self.get_serializer(
-#             data=request.data, context=self.get_serializer_context()
-#         )
-#         message_serializer.is_valid(raise_exception=True)
-#         message_data = message_serializer.data
-
-#         try:
-#             routing_key = "status.test.1"
-#             message_id = "test_message_id"
-#             app_id = "test_app_id"
-
-#             rmq = RMQ()
-#             rmq.publish(
-#                 json.dumps(message_data, cls=JSONEncoder),
-#                 routing_key,
-#                 message_id,
-#                 app_id
-#             )
-
-#             return Response(message_data, status=status.HTTP_200_OK)
-
-#         except Exception as e:
-#             raise ValidationError(e)
