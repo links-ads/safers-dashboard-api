@@ -48,7 +48,14 @@ class Message(models.Model):
         help_text=_("Identifies messages that should be used for demos, etc."),
     )
 
-    timestamp = models.DateTimeField(default=timezone.now)
+    timestamp = models.DateTimeField(
+        default=timezone.now,
+        help_text=_(
+            "This is the timestamp that the message was sent, "
+            "NOT the timestamp of the artefact being messaged about "
+            "(that is likely to be found in the message body)."
+        )
+    )
 
     status = models.CharField(
         max_length=64,
