@@ -178,7 +178,7 @@ class RMQ(object):
     ):
         logger.info(f"[{datetime.now()}] Received {method.routing_key}:")
         logger.info("properties: ")
-        logger.info(properties)  ## TODO: THIS DOESN'T PRINT NICELY
+        logger.info(properties)
         logger.info("body: ")
         logger.info(body)
 

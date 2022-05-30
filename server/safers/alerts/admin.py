@@ -179,11 +179,13 @@ class AlertAdmin(gis_admin.GeoModelAdmin):
     list_display = (
         "title",
         "type",
+        "source",
         "timestamp",
         "created",
     )
     list_filter = (
         "favorited_users",
+        "source",
         "type",
     )
     ordering = ("-created", )
