@@ -105,9 +105,10 @@ def process_messages(message_body, **kwargs):
             # maybe create alert...
             if camera_media.is_detected:
 
-                most_recent_camera_media_detected_timestamp = camera.media.exclude(
-                    pk=camera_media.pk
-                ).order_by("timestamp").values_list("timestamp", flat=True).last()  # yapf: disable
+                most_recent_camera_media_detected_timestamp = camera.media.detected(
+                ).exclude(pk=camera_media.pk).order_by("timestamp").values_list(
+                    "timestamp", flat=True
+                ).last()  # yapf: disabled
 
                 if not most_recent_camera_media_detected_timestamp or (
                     camera_media.timestamp -
