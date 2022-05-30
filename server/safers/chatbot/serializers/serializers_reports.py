@@ -61,8 +61,9 @@ class ReportViewSerializer(serializers.Serializer):
         # "hazards": "Hazards",
         # "status": "Status",
         # "content": "Contents",
-        "visibility": "Visibility",  # "start": "StartDate",
-  # "end": "EndDate",
+        "visibility": "Visibility",
+        "start": "StartDate",
+        "end": "EndDate",
         "max_results": "MaxResultCount",
         "bbox": "bbox",  # bbox will need further processing in View
     }
