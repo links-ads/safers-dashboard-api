@@ -165,12 +165,6 @@ class ReportDetailView(ReportView):
 
         GATEWAY_URL_PATH = "/api/services/app/Reports/GetReportById"
 
-        # view_serializer = ReportViewSerializer(
-        #     data=request.query_params,
-        #     context=self.get_serializer_context(),
-        # )
-        # view_serializer.is_valid(raise_exception=True)
-
         proxy_params = {
             "Id": kwargs["report_id"],
             "IncludeArea": True,
