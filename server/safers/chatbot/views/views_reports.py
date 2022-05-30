@@ -56,7 +56,6 @@ _report_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=_report_schema
 )  # yapf: disable
 
-
 class ReportView(views.APIView):
 
     permission_classes = [IsAuthenticated, IsRemote]
@@ -66,6 +65,8 @@ class ReportView(views.APIView):
             'request': self.request, 'format': self.format_kwarg, 'view': self
         }
 
+
+class ReportListView(ReportView):
     def update_default_data(self, data):
 
         if data.pop("default_start") and "start" not in data:
@@ -152,8 +153,74 @@ class ReportView(views.APIView):
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
 
 
+class ReportDetailView(ReportView):
+    @swagger_auto_schema(
+        query_serializer=ReportViewSerializer,
+        responses={status.HTTP_200_OK: _report_schema},
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        Return all reports
+        """
+
+        GATEWAY_URL_PATH = "/api/services/app/Reports/GetReportById"
+
+        # view_serializer = ReportViewSerializer(
+        #     data=request.query_params,
+        #     context=self.get_serializer_context(),
+        # )
+        # view_serializer.is_valid(raise_exception=True)
+
+        proxy_params = {
+            "Id": kwargs["report_id"],
+            "IncludeArea": True,
+        }
+
+        try:
+
+            response = requests.get(
+                urljoin(settings.SAFERS_GATEWAY_API_URL, GATEWAY_URL_PATH),
+                auth=ProxyAuthentication(request.user),
+                params=proxy_params,
+            )
+            response.raise_for_status()
+        except Exception as e:
+            raise APIException(e)
+
+        feature = response.json()["feature"]
+        geometry = feature.get("geometry", None)
+        properties = feature.get("properties", {})
+
+        report = Report(
+            report_id=properties.get("id"),
+            mission_id=properties.get("relativeMissionId"),
+            timestamp=properties.get("timestamp"),
+            source=properties.get("source"),
+            hazard=properties.get("hazard"),
+            status=properties.get("status"),
+            content=properties.get("content"),
+            is_public=properties.get("isPublic"),
+            description=properties.get("description"),
+            geometry=geos.GEOSGeometry(geometry) if geometry else None,
+            media=[{
+                "url": media_uri.get("mediaURI"),
+                "type": media_uri.get("mediaType"),
+                "thumbnail": media_uri.get("thumbnailURI"),
+            } for media_uri in properties.get("mediaURIs", [])],
+            reporter={
+                "name": properties.get("username"),
+                "organization": properties.get("organizationName"),
+            },
+        )
+        model_serializer = ReportSerializer(
+            report, context=self.get_serializer_context(), many=False
+        )
+
+        return Response(data=model_serializer.data, status=status.HTTP_200_OK)
+
+
 """
-SAMPLE PROXY DATA SHAPE:
+SAMPLE PROXY DATA SHAPE (list):
 [
   {
     'id': 19,
@@ -205,4 +272,8 @@ SAMPLE PROXY DATA SHAPE:
     'isPublic': False
   }
 ]
+"""
+"""
+SAMPLE PROXY DATA SHAPE (detail):
+TODO
 """

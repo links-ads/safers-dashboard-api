@@ -1,1 +1,1 @@
-from .views_reports import ReportView
+from .views_reports import ReportListView, ReportDetailView
