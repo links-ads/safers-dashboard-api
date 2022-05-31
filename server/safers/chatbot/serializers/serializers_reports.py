@@ -148,6 +148,22 @@ class ReportViewSerializer(serializers.Serializer):
             raise serializers.ValidationError(e)
         return bbox
 
+    def validate_start(self, value):
+        if value:
+            # move start to the start of the day
+            start_time_kwargs = {
+                "hour": 0, "minute": 0, "second": 0, "microsecond": 0
+            }
+            return value.replace(**start_time_kwargs)
+
+    def validate_end(self, value):
+        if value:
+            # move end to end of the day
+            end_time_kwargs = {
+                "hour": 23, "minute": 59, "second": 59, "microsecond": 999999
+            }
+            return value.replace(**end_time_kwargs)
+
     def validate(self, data):
 
         validated_data = super().validate(data)
