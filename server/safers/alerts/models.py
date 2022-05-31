@@ -140,7 +140,9 @@ class Alert(models.Model):
     )
     scope = models.CharField(max_length=128, blank=True, null=True)
 
-    media = ArrayField(models.URLField(), blank=True, default=list)
+    media = ArrayField(
+        models.URLField(max_length=512), blank=True, default=list
+    )
 
     category = models.CharField(max_length=128, blank=True, null=True)
     event = models.CharField(max_length=128, blank=True, null=True)

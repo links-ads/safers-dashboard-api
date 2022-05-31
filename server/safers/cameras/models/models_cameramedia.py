@@ -114,9 +114,9 @@ class CameraMedia(gis_models.Model):
 
     description = models.TextField(blank=True, null=True)
 
-    url = models.TextField(
-        blank=True, null=True
-    )  # pre-signed AWS URLs can be quite long, hence this is a TextField instead of a URLField
+    url = models.URLField(
+        max_length=512, blank=True, null=True
+    )  # pre-signed AWS URLs can be quite long, hence the max_length kwarg
 
     tags = models.ManyToManyField(
         CameraMediaTag,
