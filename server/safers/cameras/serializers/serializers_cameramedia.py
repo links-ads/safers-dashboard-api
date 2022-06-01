@@ -19,6 +19,7 @@ class CameraMediaSerializer(serializers.ModelSerializer):
             "distance",
             "geometry",
             "url",
+            "message",
             "favorite",
         )
 
@@ -38,6 +39,8 @@ class CameraMediaSerializer(serializers.ModelSerializer):
     geometry = gis_serializers.GeometryField(
         precision=CameraMedia.PRECISION, allow_null=True, required=False
     )
+
+    message = serializers.JSONField(write_only=True)
 
     favorite = serializers.SerializerMethodField(method_name="is_favorite")
 
