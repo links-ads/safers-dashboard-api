@@ -44,11 +44,7 @@ class CameraAdmin(gis_admin.GeoModelAdmin):
 
     @admin.display(description="N MEDIA")
     def get_n_camera_media_for_list_display(self, obj):
-        # I AM HERE
-        try:
-            return obj.media.count()
-        except Exception as e:
-            print(e)
+        return obj.media.count()
 
     @admin.display(description="Recalculate last_update of selected Cameras")
     def recalculate_last_update(self, request, queryset):
