@@ -30,7 +30,7 @@ TAG_MAP = {
 def process_messages(message_body, **kwargs):
     """
     Handler for messages from the cameras service.
-    Decides whether to create an Alert instance and/or a CameraMedia instance
+    Decides whether to create an Alert instance and/or a CameraMedia instance.
     """
 
     message_properties = kwargs.get("properties", {})
@@ -104,46 +104,36 @@ def process_messages(message_body, **kwargs):
                     old_undected_camera_media.delete()
                 camera.refresh_from_db()
 
-            # maybe create alert...
-            if camera_media.is_detected:
+            # maybe create alert
+            if camera_media.triggers_alert():
+                serializer = AlertSerializer(
+                    data={
+                        # TODO: CAMERAS NEED CAP INFORMATION
+                        "timestamp": camera_media.timestamp,
+                        "status": None,
+                        "source": AlertSource.IN_SITU,
+                        "scope": None,
+                        "category": "Fire",
+                        "event": None,
+                        "urgency": None,
+                        "severity": None,
+                        "certainty": None,
+                        "description": None,
+                        "geometry": [{
+                            "type": "Feature",
+                            "properties": {},
+                            "geometry": json.loads(camera.geometry.json)
+                        }],
+                        "media": [camera_media.url],
+                        "message": message_body,
+                    }
+                )
 
-                most_recent_camera_media_detected_timestamp = camera.media.detected(
-                ).exclude(pk=camera_media.pk).order_by("timestamp").values_list(
-                    "timestamp", flat=True
-                ).last()  # yapf: disabled
-
-                if not most_recent_camera_media_detected_timestamp or (
-                    camera_media.timestamp -
-                    most_recent_camera_media_detected_timestamp >=
-                    settings.SAFERS_DEFAULT_TIMERANGE
-                ):
-
-                    serializer = AlertSerializer(
-                        data={
-                            # TODO: CAMERAS NEED CAP INFORMATION
-                            "timestamp": camera_media.timestamp,
-                            "status": None,
-                            "source": AlertSource.IN_SITU,
-                            "scope": None,
-                            "category": "Fire",
-                            "event": None,
-                            "urgency": None,
-                            "severity": None,
-                            "certainty": None,
-                            "description": None,
-                            "geometry": [{
-                                "type": "Feature",
-                                "properties": {},
-                                "geometry": json.loads(camera.geometry.json)
-                            }],
-                            "media": [camera_media.url],
-                            "message": message_body,
-                        }
-                    )
-
-                    if serializer.is_valid(raise_exception=True):
-                        alert = serializer.save()
-                        details.append(f"created alert: {str(alert)}")
+                if serializer.is_valid(raise_exception=True):
+                    alert = serializer.save()
+                    camera_media.alert = alert
+                    camera_media.save()
+                    details.append(f"created alert: {str(alert)}")
 
     except Exception as e:
         msg = f"unable to process_message: {e}"
@@ -152,12 +142,13 @@ def process_messages(message_body, **kwargs):
     return {"detail": details}
 
 
-##################
-# CAMERA MESSAGE #
-##################
+#######################
+# CAMERA MESSAGE BODY #
+#######################
 
 {
-    "timestamp": "2022-01-27T09:48:00.000+0100",
+    "timestamp":
+        "2022-01-27T09:48:00.000+0100",
     "camera": {
         "ID": "El_Perello",
         "owner": "PCF",
@@ -184,47 +175,6 @@ def process_messages(message_body, **kwargs):
         "latitude": None,
         "longitude": None
     },
-    "link": "link to AWS S3"
+    "link":
+        "https://s3.eu-central-1.amazonaws.com/waterview.faketp/PCFElPerello_1db3454c2250/2022/05/19/pic_2022-05-19_08-22-40.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJQR7EL2CSUT7FDIA%2F20220519%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Date=20220519T082248Z&X-Amz-Expires=1200&X-Amz-SignedHeaders=host&X-Amz-Signature=e7e68343d43abaa7bb0771c50bb180e7b7ac0bd11c3aeaf433a8f2c8a90b0a86"
 }
-
-######
-# sample message
-"""
-{
-    "timestamp": "2022-05-19T15:57:01.663Z",
-    "routing_key": "event.camera.whatever",
-    "status": "PENDING",
-    "body": {
-        "timestamp": "2022-01-27T09:48:00.000+0100",
-        "camera": {
-            "ID": "PCF_El_Perello_297",
-            "owner": "PCF",
-            "cam_direction": 297,
-            "model": "reolink RLC-823A",
-            "type": "PTZ",
-            "latitude": 40.916961,
-            "longitude": 0.694965,
-            "altitude": 298
-        },
-        "detection": {
-            "not_available": true,
-            "smoke": false,
-            "fire": false
-        },
-        "class_of_fire": {
-            "not_available": true,
-            "class_1": false,
-            "class_2": false,
-            "class_3": false
-        },
-        "fire_location": {
-            "not_available": false,
-            "direction": null,
-            "distance": null,
-            "latitude": null,
-            "longitude": null
-        },
-        "link": "https://s3.eu-central-1.amazonaws.com/waterview.faketp/PCFElPerello_1db3454c2250/2022/05/19/pic_2022-05-19_08-22-40.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJQR7EL2CSUT7FDIA%2F20220519%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Date=20220519T082248Z&X-Amz-Expires=1200&X-Amz-SignedHeaders=host&X-Amz-Signature=e7e68343d43abaa7bb0771c50bb180e7b7ac0bd11c3aeaf433a8f2c8a90b0a86"
-    }
-}
-"""
