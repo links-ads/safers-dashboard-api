@@ -62,6 +62,7 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
         "direction",
         "distance",
         "geometry",
+        "alert",
         "message",
     )
     filter_horizontal = (
@@ -86,6 +87,7 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
         "type",
         "tags",
         "fire_classes",
+        ("alert", admin.EmptyFieldListFilter),
     )
     readonly_fields = (
         "id",
@@ -108,9 +110,8 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
 
     @admin.display(description="MESSAGE TIMESTAMP")
     def get_message_timestamp_for_list_display(self, obj):
-        if obj.message:
-            try:
-                message_timestamp = obj.message.get("timestamp")
-                return datetime.fromisoformat(message_timestamp)
-            except:
-                pass
+        try:
+            message_timestamp = obj.message.get("timestamp")
+            return datetime.fromisoformat(message_timestamp)
+        except:
+            pass

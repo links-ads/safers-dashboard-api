@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q, ExpressionWrapper
@@ -148,12 +149,23 @@ class CameraMedia(gis_models.Model):
         null=True,
         help_text=_(
             "The distance in meters of the detected fire with respect to the camera location"
-        )
+        ),
     )
     geometry = gis_models.GeometryField(blank=True, null=True)
 
     message = models.JSONField(
         blank=True, null=True, help_text=_("raw message content")
+    )
+
+    alert = models.ForeignKey(
+        "alerts.alert",
+        blank=True,
+        null=True,
+        related_name="camera_media",
+        on_delete=models.SET_NULL,
+        help_text=_(
+            "The alert that this camera_media might be associated with"
+        ),
     )
 
     @property
@@ -171,3 +183,22 @@ class CameraMedia(gis_models.Model):
     @property
     def undetected(self):
         return self.tags.exclude(name__in=["fire", "smoke"]).distinct().exists()
+
+    def triggers_alert(self):
+        """
+        determines whether this camera_media obj warrants the creation of a new alert
+        """
+
+        if not self.is_detected:
+            return False
+
+        most_recent_other_detected_camera_media = self.camera.media.exclude(
+            pk=self.pk
+        ).detected().order_by("timestamp").last()
+
+        return not most_recent_other_detected_camera_media or (
+            abs(
+                self.timestamp -
+                most_recent_other_detected_camera_media.timestamp
+            ) >= settings.SAFERS_DEFAULT_TIMERANGE
+        )
