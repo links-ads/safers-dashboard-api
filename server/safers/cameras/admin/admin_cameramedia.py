@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from django.contrib import admin
 from django.contrib.gis import admin as gis_admin
+from django.db.models import JSONField
 
-from safers.core.admin import get_clickable_fk_list_display, get_clickable_m2m_list_display
+from safers.core.admin import JSONAdminWidget, get_clickable_fk_list_display, get_clickable_m2m_list_display
 
 from safers.aois.constants import NAMED_AOIS
 
@@ -59,15 +62,22 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
         "direction",
         "distance",
         "geometry",
+        "message",
     )
     filter_horizontal = (
         "tags",
         "fire_classes",
     )
+    formfield_overrides = {
+        JSONField: {
+            "widget": JSONAdminWidget
+        },
+    }
     list_display = (
         "id",
-        "timestamp",
         "type",
+        "timestamp",
+        "get_message_timestamp_for_list_display",
         "get_camera_for_list_display",
         "get_tags_for_list_display",
     )
@@ -95,3 +105,12 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
     @admin.display(description="TAGS")
     def get_tags_for_list_display(self, obj):
         return get_clickable_m2m_list_display(CameraMediaTag, obj.tags.all())
+
+    @admin.display(description="MESSAGE TIMESTAMP")
+    def get_message_timestamp_for_list_display(self, obj):
+        if obj.message:
+            try:
+                message_timestamp = obj.message.get("timestamp")
+                return datetime.fromisoformat(message_timestamp)
+            except:
+                pass

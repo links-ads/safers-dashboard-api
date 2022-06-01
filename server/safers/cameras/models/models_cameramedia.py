@@ -152,6 +152,10 @@ class CameraMedia(gis_models.Model):
     )
     geometry = gis_models.GeometryField(blank=True, null=True)
 
+    message = models.JSONField(
+        blank=True, null=True, help_text=_("raw message content")
+    )
+
     @property
     def is_fire(self):
         return self.tags.filter(name__in=["fire"]).exists()

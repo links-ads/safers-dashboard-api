@@ -79,6 +79,8 @@ def process_messages(message_body, **kwargs):
                         geometry_details.get("direction") or camera.direction,
                     "geometry":
                         geometry_details.get("geometry") or camera.geometry,
+                    "message":
+                        message_body,
                 }
             )
 
