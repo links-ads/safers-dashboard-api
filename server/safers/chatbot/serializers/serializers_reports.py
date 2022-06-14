@@ -105,22 +105,13 @@ class ReportViewSerializer(serializers.Serializer):
         input_formats=ReportSerializerDateTimeFormats, required=False
     )
 
-    default_start = serializers.BooleanField(
+    default_date = serializers.BooleanField(
         # default=True,
         default=False,
         required=False,
         help_text=_(
-            "If default_start is True and no start is provided the default start (now) will be used; "
-            "If default_start is False and no start is provided then no start filter will be passed to the API"
-        )
-    )
-    default_end = serializers.BooleanField(
-        # default=True,
-        default=False,
-        required=False,
-        help_text=_(
-            "If default_end is True and no end is provided the default start (3 days prior to now) will be used; "
-            "If default_end is False and no end is provided then no end filter will be passed to the API"
+            "If default_date is True and no start/end is provided the default start (now) and end (3 days prior to now) will be used; "
+            "If default_date is False and no start/end is provided then no date filter will be passed to the API"
         )
     )
     default_bbox = serializers.BooleanField(

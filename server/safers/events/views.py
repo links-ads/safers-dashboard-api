@@ -86,10 +86,10 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         method="status_method", choices=EventStatus.choices
     )
 
-    start_date = filters.DateTimeFilter(
+    start_date = filters.DateFilter(
         field_name="start_date", lookup_expr="date__gte"
     )
-    end_date = filters.DateTimeFilter(
+    end_date = filters.DateFilter(
         field_name="start_date", lookup_expr="date__lte"
     )
     default_date = filters.BooleanFilter(

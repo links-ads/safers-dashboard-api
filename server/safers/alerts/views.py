@@ -97,10 +97,10 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 
     order = filters.OrderingFilter(fields=(("timestamp", "date"), ))
 
-    start_date = filters.DateTimeFilter(
+    start_date = filters.DateFilter(
         field_name="timestamp", lookup_expr="date__gte"
     )
-    end_date = filters.DateTimeFilter(
+    end_date = filters.DateFilter(
         field_name="timestamp", lookup_expr="date__lte"
     )
     default_date = filters.BooleanFilter(
