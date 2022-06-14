@@ -77,10 +77,10 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         help_text=_("How this media has been taged (ie: 'smoke','fire')")
     )
 
-    start_date = filters.DateTimeFilter(
+    start_date = filters.DateFilter(
         field_name="timestamp", lookup_expr="date__gte"
     )
-    end_date = filters.DateTimeFilter(
+    end_date = filters.DateFilter(
         field_name="timestamp", lookup_expr="date__lte"
     )
     default_date = filters.BooleanFilter(
