@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from django.conf import settings
 from django.contrib.gis.geos import Polygon
+from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -18,7 +19,7 @@ from django_filters import rest_framework as filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 
-from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector, CaseInsensitiveChoiceFilter
+from safers.core.filters import CaseInsensitiveChoiceFilter, DefaultFilterSetMixin, MultiFieldOrderingFilter, SwaggerFilterInspector
 
 from safers.users.permissions import IsRemote
 
@@ -95,7 +96,9 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 
     source = CaseInsensitiveChoiceFilter(choices=AlertSource.choices)
 
-    order = filters.OrderingFilter(fields=(("timestamp", "date"), ))
+    order = MultiFieldOrderingFilter(
+        fields=(("timestamp", "date"), ), multi_fields=["favorite"]
+    )
 
     start_date = filters.DateFilter(
         field_name="timestamp", lookup_expr="date__gte"
@@ -208,8 +211,19 @@ class AlertViewSet(
     serializer_class = AlertViewSetSerializer
 
     def get_queryset(self):
-        queryset = Alert.objects.all()
-        return queryset.prefetch_related("geometries")
+        """
+        ensures that favorite alerts are at the start of the qs
+        """
+        user = self.request.user
+        qs = Alert.objects.all().prefetch_related(
+            "geometries", "favorited_users"
+        )
+        qs = qs.annotate(
+            favorite=ExpressionWrapper(
+                Q(favorited_users=user), output_field=BooleanField()
+            )
+        ).distinct()
+        return qs.order_by("favorite")
 
     def get_object(self):
         queryset = self.get_queryset()

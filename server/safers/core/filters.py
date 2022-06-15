@@ -95,6 +95,24 @@ class CaseInsensitiveChoiceFilter(filters.ChoiceFilter):
     field_class = _CaseInsensitiveChoiceField
 
 
+class MultiFieldOrderingFilter(filters.OrderingFilter):
+    """
+    An ordering filter that allows multiple "implicit" fields to be used along w/ the specified filter value
+    (so that a pre-ordered qs doesn't get overwritten)
+    """
+    def __init__(self, *args, **kwargs):
+        multi_fields = kwargs.pop("multi_fields", [])
+        primary = kwargs.pop("primary", False)
+        assert isinstance(multi_fields, list)
+        super().__init__(*args, **kwargs)
+        self.multi_fields = multi_fields
+        self.primary = primary
+
+    def filter(self, qs, value):
+        multi_value = value or [] + self.multi_fields if self.primary else self.multi_fields + value or []
+        return super().filter(qs, multi_value)
+
+
 class DefaultFilterBackend(filters.DjangoFilterBackend):
     """
     alternative way of providing default values to filters

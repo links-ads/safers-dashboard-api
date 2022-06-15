@@ -17,6 +17,38 @@ from safers.events.models import Event
 
 @pytest.mark.django_db
 class TestAlertViews:
+    def test_ordering_favorites(self, remote_user, api_client):
+
+        TODAY = timezone.now()
+        YESTERDAY = TODAY - timedelta(days=1)
+        TOMORROW = TODAY + timedelta(days=1)
+
+        alerts = [
+            AlertFactory(timestamp=timestamp)
+            for timestamp in [YESTERDAY, TODAY, TOMORROW]
+        ]
+
+        client = api_client(remote_user)
+        url = f"{reverse('alerts-list')}?order=-date&default_bbox=false&default_date=false"
+
+        response = client.get(url, format="json")
+        content = response.json()
+        assert status.is_success(response.status_code)
+
+        assert content[0]["id"] == str(alerts[2].id)
+        assert content[1]["id"] == str(alerts[1].id)
+        assert content[2]["id"] == str(alerts[0].id)
+
+        remote_user.favorite_alerts.add(alerts[1])
+
+        response = client.get(url, format="json")
+        content = response.json()
+        assert status.is_success(response.status_code)
+
+        assert content[0]["id"] == str(alerts[1].id)
+        assert content[1]["id"] == str(alerts[2].id)
+        assert content[2]["id"] == str(alerts[0].id)
+
     def test_favorite_alert(self, remote_user, api_client):
         alert = AlertFactory()
 
