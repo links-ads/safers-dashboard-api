@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from django.conf import settings
 from django.contrib.gis.geos import Polygon
+from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
@@ -18,7 +19,7 @@ from django_filters import rest_framework as filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
+from safers.core.filters import DefaultFilterSetMixin, MultiFieldOrderingFilter, SwaggerFilterInspector
 
 from safers.users.permissions import IsRemote
 
@@ -80,7 +81,9 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         model = Event
         fields = {}
 
-    order = filters.OrderingFilter(fields=(("start_date", "date"), ))
+    order = MultiFieldOrderingFilter(
+        fields=(("start_date", "date"), ), multi_fields=["favorite"]
+    )
 
     status = filters.ChoiceFilter(
         method="status_method", choices=EventStatus.choices
@@ -196,8 +199,20 @@ class EventViewSet(
     lookup_field = "id"
     lookup_url_kwarg = "event_id"
     permission_classes = [IsAuthenticated, IsRemote]
-    queryset = Event.objects.all()
     serializer_class = EventSerializer
+
+    def get_queryset(self):
+        """
+        ensures that favorite events are at the start of the qs
+        """
+        user = self.request.user
+        qs = Event.objects.all().prefetch_related("favorited_users")
+        qs = qs.annotate(
+            favorite=ExpressionWrapper(
+                Q(favorited_users=user), output_field=BooleanField()
+            )
+        ).distinct()
+        return qs.order_by("favorite")
 
     def get_object(self):
         queryset = self.get_queryset()

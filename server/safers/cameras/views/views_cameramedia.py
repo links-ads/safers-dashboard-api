@@ -4,6 +4,7 @@ from operator import __or__
 
 from django.conf import settings
 from django.contrib.gis.geos import Polygon
+from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
@@ -20,7 +21,7 @@ from django_filters import rest_framework as filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 
-from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector, CaseInsensitiveChoiceFilter, CharInFilter
+from safers.core.filters import CaseInsensitiveChoiceFilter, CharInFilter, DefaultFilterSetMixin, MultiFieldOrderingFilter, SwaggerFilterInspector
 
 from safers.users.permissions import IsLocal, IsRemote
 
@@ -58,7 +59,9 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
             "type",
         }
 
-    order = filters.OrderingFilter(fields=(("timestamp", "date"), ))
+    order = MultiFieldOrderingFilter(
+        fields=(("timestamp", "date"), ), multi_fields=["favorite"]
+    )
 
     type = CaseInsensitiveChoiceFilter(choices=CameraMediaType.choices)
 
@@ -184,6 +187,21 @@ class CameraMediaViewSet(
     def get_queryset(self):
         queryset = CameraMedia.objects.all()
         return queryset.prefetch_related("fire_classes")
+
+    def get_queryset(self):
+        """
+        ensures that favorite camera_medias are at the start of the qs
+        """
+        user = self.request.user
+        qs = CameraMedia.objects.all().prefetch_related(
+            "fire_classes", "favorited_users"
+        )
+        qs = qs.annotate(
+            favorite=ExpressionWrapper(
+                Q(favorited_users=user), output_field=BooleanField()
+            )
+        ).distinct()
+        return qs.order_by("favorite")
 
     def get_object(self):
         queryset = self.get_queryset()
