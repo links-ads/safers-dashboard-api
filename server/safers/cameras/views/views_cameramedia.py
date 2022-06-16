@@ -185,10 +185,6 @@ class CameraMediaViewSet(
     serializer_class = CameraMediaSerializer
 
     def get_queryset(self):
-        queryset = CameraMedia.objects.all()
-        return queryset.prefetch_related("fire_classes")
-
-    def get_queryset(self):
         """
         ensures that favorite camera_medias are at the start of the qs
         """

@@ -109,7 +109,8 @@ class MultiFieldOrderingFilter(filters.OrderingFilter):
         self.primary = primary
 
     def filter(self, qs, value):
-        multi_value = value or [] + self.multi_fields if self.primary else self.multi_fields + value or []
+        value = value or []
+        multi_value = value + self.multi_fields if self.primary else self.multi_fields + value
         return super().filter(qs, multi_value)
 
 
