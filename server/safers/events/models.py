@@ -15,7 +15,7 @@ from safers.core.mixins import HashableMixin
 
 
 class EventStatus(models.TextChoices):
-    OPEN = "OPEN", _("Open")
+    ONGOING = "ONGOING", _("Ongoing")
     CLOSED = "CLOSED", _("Closed")
 
 
@@ -106,7 +106,7 @@ class Event(gis_models.Model):
         return title
 
     @property
-    def open(self):
+    def ongoing(self):
         return self.end_date is None
 
     @property

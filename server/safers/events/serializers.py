@@ -79,8 +79,8 @@ class EventSerializer(serializers.ModelSerializer):
     def get_status(self, obj):
         if obj.closed:
             return EventStatus.CLOSED
-        elif obj.open:
-            return EventStatus.OPEN
+        elif obj.ongoing:
+            return EventStatus.ONGOING
 
     def get_alerts(self, obj):
         """
