@@ -85,8 +85,8 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         fields=(("start_date", "date"), ), multi_fields=["favorite"]
     )
 
-    status = filters.ChoiceFilter(
-        method="status_method", choices=EventStatus.choices
+    status = filters.MultipleChoiceFilter(
+        method="status_method", choices=EventStatus.choices, conjoined=True
     )
 
     start_date = filters.DateFilter(
@@ -113,11 +113,12 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         )
     )
 
-    def status_method(self, queryset, name, value):
+    def status_method(self, queryset, name, values):
         filter_kwargs = {
-            # if end_date is None then the status must be OPEN
+            # if end_date is None then the status must be ONGOING
             # if end_date is not None then the status must be CLOSED
-            "end_date__isnull": value == EventStatus.OPEN,
+            "end_date__isnull": value == EventStatus.ONGOING
+            for value in values
         }
         return queryset.filter(**filter_kwargs)
 
