@@ -10,10 +10,10 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.generics import get_object_or_404 as drf_get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
@@ -239,3 +239,25 @@ class CameraMediaViewSet(
         serializer = SerializerClass(obj, context=self.get_serializer_context())
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    responses={
+        status.HTTP_200_OK:
+            openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_STRING)
+            )
+    },
+    method="get"
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def camera_media_sources_view(request):
+    """
+    Returns the list of possible cameras to use as sources.
+    """
+    cameras = Camera.objects.all()
+    return Response(
+        cameras.values_list("camera_id", flat=True), status=status.HTTP_200_OK
+    )
