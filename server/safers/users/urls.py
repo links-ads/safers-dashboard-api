@@ -6,6 +6,7 @@ from rest_framework import routers
 
 from .views import (
     Oath2LoginView,
+    Oauth2RegisterView,
     Oauth2LogoutView,
     Oauth2LogoutAllView,
     LoginView,
@@ -26,6 +27,9 @@ api_router = routers.DefaultRouter()
 api_urlpatterns = [
     path("", include(api_router.urls)),
     path("oauth2/login", Oath2LoginView.as_view(), name="oauth2-login"),
+    path(
+        "oauth2/register", Oauth2RegisterView.as_view(), name="oauth2-register"
+    ),
     path("oauth2/logout", Oauth2LogoutView.as_view(), name="oauth2-logout"),
     path(
         "oauth2/logoutall",
@@ -76,7 +80,7 @@ if getattr(settings, 'REST_USE_JWT', False):
     ]
 
 urlpatterns = [
-    # even though safers-dashboard-api is a "pure" API, dj-rest-auth might
+    # even though safers-gateway is a "pure" API, dj-rest-auth might
     # require django-allauth views to be reachable for certain fns
     path('accounts/', include('allauth.urls')),
 ]

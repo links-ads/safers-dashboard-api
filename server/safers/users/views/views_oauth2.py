@@ -9,6 +9,7 @@ from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.templatetags.static import static
 
 from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -26,7 +27,7 @@ from knox.views import (
 
 from safers.users.exceptions import AuthenticationException
 from safers.users.models import User, Oauth2User, AUTH_USER_FIELDS, AUTH_PROFILE_FIELDS, AUTH_TOKEN_FIELDS
-from safers.users.serializers import AuthenticateSerializer, KnoxTokenSerializer, UserProfileSerializer
+from safers.users.serializers import AuthenticateSerializer, Oauth2RegisterViewSerializer, KnoxTokenSerializer, UserSerializerLite, UserProfileSerializer
 from safers.users.utils import AUTH_CLIENT, create_knox_token
 """
 code to authenticate using OAUTH2
@@ -37,8 +38,6 @@ code to authenticate using OAUTH2
 3. if code is in GET, client POSTS code to AuthenticateView
 4. that gets user details and generates token for client
 """
-
-# TODO: PREVENT LOGIN IF LOCAL USER TRIES TO LOGIN AS REMOTE
 
 
 class LoginView(GenericAPIView):
@@ -153,6 +152,76 @@ class LoginView(GenericAPIView):
 
         except Exception as e:
             raise AuthenticationException(e)
+
+
+_register_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    example={
+        "email": "allyn.treshansky+1@gmail.com",
+        "first_name": "Allyn",
+        "last_name": "Treshansky",
+        "password": "RandomPassword123",
+        "role": "Organization Manager",
+        "organization": None,
+        "agreed_terms": True,
+    }
+)
+
+
+# TODO: DEAL W/ ORGANIZATIONS & ROLES FROM FA
+class RegisterView(GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = Oauth2RegisterViewSerializer
+
+    @swagger_auto_schema(
+        request_body=_register_schema,
+        responses={status.HTTP_200_OK: UserSerializerLite},
+    )
+    def post(self, request, *args, **kwargs):
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        request_params = {
+            "registration": {
+                "applicationId": settings.FUSION_AUTH_CLIENT_ID,
+            },
+            "user": {
+                "email": serializer.validated_data["email"],
+                "username": serializer.validated_data["email"],
+                "password": serializer.validated_data["password"],
+                "firstName": serializer.validated_data["first_name"],
+                "lastName": serializer.validated_data["last_name"],
+                "twoFactorEnabled": False,
+            },
+        }
+        response = AUTH_CLIENT.register(request_params)
+
+        if not response.was_successful():
+            raise APIException(response.error_response)
+
+        auth_user_data = response.success_response["user"]
+        user, created_user = User.objects.get_or_create(
+            auth_id=auth_user_data["id"],
+            defaults=dict(
+                organization=serializer.validated_data["organization"],
+                role=serializer.validated_data["role"],
+                **{
+                    AUTH_USER_FIELDS[k]: v
+                    for k, v in auth_user_data.items() if k in AUTH_USER_FIELDS
+                }
+            )
+        )
+        if created_user:
+            profile_serializer = UserProfileSerializer()
+            profile_data = {
+                AUTH_PROFILE_FIELDS[k]: v
+                for k,
+                v in auth_user_data.items() if k in AUTH_PROFILE_FIELDS
+            }
+            profile_serializer.update(user.profile, profile_data)
+
+        return Response(data=UserSerializerLite(user).data)
 
 
 class LogoutView(KnoxLogoutView):
