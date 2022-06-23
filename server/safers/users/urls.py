@@ -76,7 +76,7 @@ if getattr(settings, 'REST_USE_JWT', False):
     ]
 
 urlpatterns = [
-    # even though safers-gateway is a "pure" API, dj-rest-auth might
+    # even though safers-dashboard-api is a "pure" API, dj-rest-auth might
     # require django-allauth views to be reachable for certain fns
     path('accounts/', include('allauth.urls')),
 ]

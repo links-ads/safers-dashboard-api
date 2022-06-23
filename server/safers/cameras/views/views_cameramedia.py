@@ -204,7 +204,7 @@ class CameraMediaViewSet(
 
         # disable filtering for detail views
         # (the rest of this fn is just like the parent class)
-        # TODO: https://github.com/astrosat/safers-gateway/issues/45
+        # TODO: https://github.com/astrosat/safers-dashboard-api/issues/45
         if self.action in ["list"]:
             queryset = self.filter_queryset(queryset)
 

@@ -1,5 +1,5 @@
 """
-Django settings for safers-gateway project.
+Django settings for safers-dashboard-api project.
 """
 
 import environ
@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 CONFIG_DIR = BASE_DIR / "config"
 APP_DIR = BASE_DIR / "safers"
 
-PROJECT_NAME = "Safers Gateway"
+PROJECT_NAME = "Safers Dashboard API"
 PROJECT_SLUG = slugify(PROJECT_NAME)
 
 WSGI_APPLICATION = 'config.wsgi.application'
@@ -308,8 +308,8 @@ REST_AUTH_TOKEN_MODEL = "knox.models.AuthToken"
 REST_AUTH_TOKEN_CREATOR = "safers.users.utils.create_knox_token"
 
 # REST_USE_JWT = True
-# JWT_AUTH_COOKIE = "safers-gateway-auth"
-# JWT_AUTH_REFRESH_COOKIE = "safers-gateway-refresh"
+# JWT_AUTH_COOKIE = "safers-dashboard-auth"
+# JWT_AUTH_REFRESH_COOKIE = "safers-dashboard-refresh"
 
 # custom serializers...
 REST_AUTH_SERIALIZERS = {
@@ -351,7 +351,7 @@ SWAGGER_SETTINGS = {
     "OAUTH2_CONFIG": {
       "clientId": FUSION_AUTH_CLIENT_ID,
       "clientSecret": FUSION_AUTH_CLIENT_SECRET,
-      "appName": "safers-gateway",  # PROJECT_SLUG
+      "appName": "safers-dashboard",  # PROJECT_SLUG
     },
     # "USE_SESSION_AUTH": False,
     "DEFAULT_MODEL_RENDERING": "example",

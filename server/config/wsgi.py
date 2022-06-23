@@ -1,5 +1,5 @@
 """
-WSGI config for safers-gateway project.
+WSGI config for safers-dashboard-api project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

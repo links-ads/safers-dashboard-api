@@ -1,5 +1,5 @@
 """
-ASGI config for safers-gateway project.
+ASGI config for safers-dashboard-api project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

@@ -9,4 +9,4 @@
                        |___/ 
 """
 
-# global config for safers-gateway
+# global config for safers-dashboard-api

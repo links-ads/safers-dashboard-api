@@ -1,7 +1,6 @@
-# safers-gateway
-Common API Gateway for SAFERS
+# safers-dashboard-api
 
-This API provides the backend for the safers-dashboard.
+This API provides the backend for the safers-dashboard-app.
 
 ## components
 

@@ -117,7 +117,7 @@ class MultiFieldOrderingFilter(filters.OrderingFilter):
 class DefaultFilterBackend(filters.DjangoFilterBackend):
     """
     alternative way of providing default values to filters
-    as per https://github.com/astrosat/safers-gateway/issues/45
+    as per https://github.com/astrosat/safers-dashboard-api/issues/45
     (since DefaultFilterSetMixin might not be the best idea)
     """
     @property
