@@ -1,0 +1,5 @@
+# don't include the broker db or log files
+db
+logs
+!.gitignore
+

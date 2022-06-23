@@ -1,82 +1,123 @@
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
+from django.contrib.auth.models import Group, Permission
 from django.utils.translation import gettext_lazy as _
 
 from safers.users.forms import UserCreationForm, UserChangeForm
 from safers.users.models import User
 
 
+class LocalOrRemoteFilter(admin.SimpleListFilter):
+    title = "authentication type"
+    parameter_name = "_ignore"  # ignoring parameter_name and computing qs manually
+
+    def lookups(self, request, model_admin):
+        return (
+            ("_is_local", _("Local")),
+            ("_is_remote", _("Remote")),
+        )
+
+    def queryset(self, request, qs):
+        value = self.value()
+        if value:
+            qs = qs.filter(**{value: True})
+        return qs
+
+
 @admin.register(User)
 class UserAdmin(auth_admin.UserAdmin):
+    actions = (
+        "toggle_accepted_terms",
+        "toggle_verication",
+    )
     model = User
     add_form = UserCreationForm
     form = UserChangeForm
-    fieldsets =((None, {"fields": ("id", "username", "password")}),) + auth_admin.UserAdmin.fieldsets[1:]    
-    list_display = ["email", "id"]
-    readonly_fields = ("id",) + auth_admin.UserAdmin.readonly_fields
+    fieldsets = (
+        (None, {"fields": ["id", "auth_id", "username", "email", "password", "active_token_key"]}),
+        ("Personal Info", {"fields": ["first_name", "last_name", "role", "organization",]}),
+        ("Permissions", {"fields": ["is_active", "is_staff","is_superuser", "accepted_terms","groups", "user_permissions"] }),
+        ("Important Dates", {"fields": ["last_login", "date_joined"]}),
+        ("Safers", {"fields": ["default_aoi", "favorite_alerts", "favorite_events", "favorite_camera_medias"]}),
+    )  # yapf: disable
+    filter_horizontal = (
+        "groups",
+        "user_permissions",
+        "favorite_alerts",
+        "favorite_events",
+        "favorite_camera_medias",
+    )
+    list_display = [
+        "email",
+        "id",
+        "is_verified_for_list_display",
+        "accepted_terms",
+        "role",
+        "organization",
+        "get_authentication_type_for_list_display",
+    ]
+    list_filter = (
+        LocalOrRemoteFilter,
+        "role",
+        "organization",
+    ) + auth_admin.UserAdmin.list_filter
+    readonly_fields = (
+        "id",
+        "auth_id",
+        "active_token_key",
+    ) + auth_admin.UserAdmin.readonly_fields
 
-# class CalculatedFieldFilter(admin.SimpleListFilter):
-           
-#     lookup_values_map = {
-#         # map of qs lookup values to filter values
-#         True: ("yes", _("Yes")),
-#         False: ("no", _("No")),
-#     }
+    def toggle_accepted_terms(self, request, queryset):
+        # TODO: doing this cleverly w/ negated F expressions is not supported (https://code.djangoproject.com/ticket/16211)
+        # queryset.update(accepted_terms=not(F("accepted_terms")))
+        for obj in queryset:
+            obj.accepted_terms = not obj.accepted_terms
+            obj.save()
 
-#     def lookups(self, request, model_admin):
-#         return self.lookup_values_map.values()
+            msg = f"{obj} {'has not' if not obj.accepted_terms else 'has'} accepted terms."
+            self.message_user(request, msg)
 
-#     def queryset(self, request, qs):
-#         value = self.value()
-#         for k, v in self.lookup_values_map.items():
-#             if value == v[0]:
-#                 return qs.filter(**{self.parameter_name: k})
-#         return qs
-    
+    toggle_accepted_terms.short_description = (
+        "Toggles the term acceptance of the selected users"
+    )
 
-# class IsLocalFilter(CalculatedFieldFilter):
-#     parameter_name = title = "is_local"
+    def toggle_verication(self, request, queryset):
 
-# class IsRemoteFilter(CalculatedFieldFilter):
-#     parameter_name = title = "is_remote"
+        for obj in queryset:
+
+            emailaddress, created = obj.emailaddress_set.get_or_create(
+                user=obj, email=obj.email
+            )
+            if not emailaddress.primary:
+                emailaddress.set_as_primary(conditional=True)
+
+            emailaddress.verified = not emailaddress.verified
+            emailaddress.save()
+
+            msg = f"{emailaddress} {'created and' if created else ''} {'not' if not emailaddress.verified else ''} verified."
+            self.message_user(request, msg)
+
+    toggle_verication.short_description = (
+        "Toggles the verification of the selected users' primary email addresses"
+    )
+
+    @admin.display(boolean=True, description="IS VERIFIED")
+    def is_verified_for_list_display(self, instance):
+        return instance.is_verified
+
+    @admin.display(description="AUTHENTICATION TYPE")
+    def get_authentication_type_for_list_display(self, instance):
+        if instance.is_local:
+            return "local"
+        elif instance.is_remote:
+            return "remote"
 
 
-# class UserProfileAdminForm(ModelForm):
-#     class Meta:
-#         model = UserProfile
-#         fields = "__all__"
-
-#     def clean(self):
-#         """
-#         Check a UserProfile's constraints during cleaning
-#         """
-        
-#         cleaned_data = super().clean()
-        
-#         data = UserProfileSerializer(self.instance).data
-#         data.update(cleaned_data)
-
-#         if not bool(data["local_user"]) ^ bool(data["auth_id"]):
-#             raise ValidationError("UserProfile must have either a local user or a remote (auth_id) user.")
-
-#         return cleaned_data
-
-
-# @admin.register(UserProfile)
-# class UserProfileAdmin(admin.ModelAdmin):
-#     fields = (
-#         "auth_id",
-#         # "local_user",
-#         # "is_active",
-#     )    
-#     form = UserProfileAdminForm
-#     list_display = (
-#         # "user",
-#     )
-#     list_filter = (
-#         IsLocalFilter,
-#         IsRemoteFilter,        
-#     )
-#     readonly_fields = (
-#         "auth_id",
-#     )
+try:
+    admin.site.register(Group)
+except admin.sites.AlreadyRegistered:
+    pass
+try:
+    admin.site.register(Permission)
+except admin.sites.AlreadyRegistered:
+    pass

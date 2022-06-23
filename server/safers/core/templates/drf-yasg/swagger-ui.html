@@ -1,0 +1,12 @@
+{% extends "drf-yasg/swagger-ui.html" %}
+
+{% load i18n %}
+{% load static %}
+
+{% block favicon %}
+    <link rel="icon" type="image/png" href="{% static 'core/img/favicon-swagger.png' %}"/>
+{% endblock %}
+
+{% block extra_body %}
+    {# -- Add any header/body markup here (rendered BEFORE the swagger-ui/redoc element) -- #}
+{% endblock %}

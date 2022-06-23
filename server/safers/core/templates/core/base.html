@@ -1,0 +1,26 @@
+{% load i18n %}
+{% load static %}
+
+<html>
+
+<head>
+    <title>
+        {% block title %}
+        safers-dashboard-api
+        {% endblock %}
+    </title>
+    <link rel="icon" type="image/png" href="{% static 'core/img/favicon.png' %}" />
+</head>
+
+<body>
+    {% block content %}
+    content goes here
+    {% endblock %}
+    {% block scripts %}
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+        integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous">
+        </script>
+    {% endblock %}
+</body>
+
+</html>

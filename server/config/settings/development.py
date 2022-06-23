@@ -1,16 +1,48 @@
 from .base import *
 from .base import env
 
-DEBUG = True
+DEBUG = env("DJANGO_DEBUG", default="true") == "true"
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 
+CORS_ORIGIN_ALLOW_ALL = True
+
+#########
+# email #
+#########
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+########################
+# static & media files #
+########################
 
-###############
-# Media files #
-###############
+STATICFILES_STORAGE = "safers.core.storage.LocalStaticStorage"
+DEFAULT_FILE_STORAGE = "safers.core.storage.LocalMediaStorage"
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "_static"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = str(APP_DIR / "media")
+MEDIA_ROOT = BASE_DIR / "_media"
+
+# These next env vars aren't used in development, but they still ought
+# to be defined so that the classes in "storages.py" module can load...
+
+STATIC_LOCATION = ""
+STATIC_DEFAULT_ACL = ""
+PUBLIC_MEDIA_LOCATION = ""
+PUBLIC_MEDIA_DEFAULT_ACL = ""
+PRIVATE_MEDIA_LOCATION = ""
+PRIVATE_MEDIA_DEFAULT_ACL = ""
+
+#############
+# profiling #
+#############
+
+MIDDLEWARE += [
+    "silk.middleware.SilkyMiddleware",
+    "django_cprofile_middleware.middleware.ProfilerMiddleware",
+]
+
+DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False

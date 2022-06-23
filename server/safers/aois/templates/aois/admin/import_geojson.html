@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+
+{# TODO: SHOULD PROBABLY MOVE THIS TO "CORE" #}
+
+{% load static %}
+
+{% block extrastyle %}
+<!-- extra style goes here -->
+{% endblock %}
+
+{% block content %}
+
+<h1>
+    Please select the GeoJSON file to import for the object: '{{ obj }}'
+</h1>
+
+<form action="." method="POST" enctype="multipart/form-data">
+
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <p>
+        <input type="submit" name="apply" value="Import" />
+    </p>
+
+</form>
+
+{% endblock %}

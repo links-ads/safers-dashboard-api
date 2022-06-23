@@ -1,0 +1,39 @@
+.date-range-filter .button, .date-range-filter input[type=submit], .date-range-filter input[type=reset] {
+    /* make all the buttons the same size */
+    padding: 4px 5px;
+    border: none;
+    border-radius: 4px;
+}
+.date-range-filter {
+    /* indent stuff horizontally */
+    padding-left: 15px;
+}
+.date-range-filter p {
+    /* don't indent stuff vertically */
+    padding-left: 0px;
+    line-height: 0;
+}
+.date-range-filter .datetimeshortcuts {
+    /* hide text & float icons */
+    font-size: 0;
+    float: right;
+    position: absolute;
+    padding-top: 4px;
+}
+.date-range-filter a {
+    /* pad stuff a bit */
+    position: absolute;
+    padding-top: 3px;
+    padding-left: 4px;
+}
+@media (min-width: 768px) {
+    .calendarbox {
+        margin-left: -16em !important;
+        margin-top: 9em !important;
+    }
+}
+@media (max-width: 767px) {
+    .calendarbox {
+        overflow: visible;
+    }
+}

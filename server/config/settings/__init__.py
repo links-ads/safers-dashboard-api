@@ -42,4 +42,7 @@ from .base import *
 exec(f"from {environment_settings_module} import *") in globals()
 
 import django_on_heroku
-django_on_heroku.settings(locals())
+
+# django_on_heroku updates some features I've customised (such as S3 Storage and "postgis" database;
+# I can prevent that by adding kwargs as per https://github.com/pkrefta/django-on-heroku#enabling-functionality
+django_on_heroku.settings(locals(), geodjango=True, staticfiles=False)

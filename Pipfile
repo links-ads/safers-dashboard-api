@@ -8,21 +8,42 @@ django = "<4.0"
 django-on-heroku = "*"
 gunicorn = "*"
 argon2-cffi = "*"  
-celery = "*"  
-django-celery-beat = "*"
-django-celery-results = "*"
+boto3 = "*"
+dj-database-url = "*"
+dj-rest-auth = {extras = ["with_social"], version = "*"}
+django-anymail = {extras = ["mailgun", "sendgrid", "sparkpost"], version = "*"}
+django-cors-headers = "*"
 django-environ = "*"
+django-filter = "*"
+django-oauth-toolkit = "*"
+django-rest-knox = "*"
+django-storages = "*"
 djangorestframework = "*"
 djangorestframework-gis = "*"
 djangorestframework-simplejwt = "*"
 drf-yasg = "*"
+drf-social-oauth2 = "*"
 fusionauth-client = "*"
+geopandas = "*"
+kombu = "*"
+pandas = "*"
+pika = "*"
+pillow = "*"
 psycopg2-binary = "*"
+# even though these are used for development
+# they are referenced in code and so must be installed in deployment 
+django-cprofile-middleware = "*"
+django-silk = "*"
+snakeviz = "*"
+
 
 [dev-packages]
 factory-boy = "*"
 pytest = "*"
+pytest-django = "*"
 pytest-html = "*"
+pytest-sugar = "*"
+yapf = "*"
 
 [requires]
 python_version = "3.8"

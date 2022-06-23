@@ -1,0 +1,22 @@
+{% load i18n %}
+
+{# used by safers.core.admin.IncludeExcludeListFilter #}
+
+<h3>
+    {% blocktranslate with filter_title=title %} By {{ filter_title }} {% endblocktranslate %}
+</h3>
+<ul>
+    {% for choice in choices %}
+    <li {% if choice.selected %} class="selected" {% endif %}>
+        {% if not choice.include_query_string and not choice.exclude_query_string %}
+        <a href="{{ choice.query_string|iriencode }}">{{ choice.display }}</a>
+        {% elif choice.include_query_string and not choice.selected %}
+        <a href="{{ choice.include_query_string|iriencode }}" title="include {{choice.display}}">{{ choice.display
+            }}</a>
+        {% elif choice.exclude_query_string and choice.selected %}
+        <a href="{{ choice.exclude_query_string|iriencode }}" title="exclude {{choice.display}}">{{ choice.display
+            }}</a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
