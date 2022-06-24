@@ -29,8 +29,17 @@ class RegisterViewSerializer(serializers.Serializer):
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     password = serializers.CharField(style={"input_type": "password"})
-    role = serializers.SlugRelatedField(slug_field="name", queryset=Role.objects.active(), required=True)
-    organization = serializers.SlugRelatedField(slug_field="name", queryset=Organization.objects.active(), required=False, allow_null=True)
+    role = serializers.SlugRelatedField(
+        slug_field="name",
+        queryset=Role.objects.active(),
+        required=True,
+    )
+    organization = serializers.SlugRelatedField(
+        slug_field="name",
+        queryset=Organization.objects.active(),
+        required=False,
+        allow_null=True,
+    )
     agreed_terms = serializers.BooleanField()
 
     def validate_email(self, value):
