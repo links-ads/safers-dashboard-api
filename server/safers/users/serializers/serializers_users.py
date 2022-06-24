@@ -31,7 +31,6 @@ class UserSerializerLite(serializers.ModelSerializer):
             "email",
             "accepted_terms",
             "is_verified",
-            "accepted_terms",
             "last_login",
             "is_local",
             "is_remote",

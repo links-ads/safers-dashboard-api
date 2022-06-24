@@ -84,7 +84,7 @@ admin.site.index_title = settings.ADMIN_INDEX_TITLE
 
 api_schema_view = get_schema_view(
     openapi.Info(
-        title=f"{settings.PROJECT_NAME} API",
+        title=f"{settings.PROJECT_NAME}",
         default_version='v1',
     ),
     public=True,
