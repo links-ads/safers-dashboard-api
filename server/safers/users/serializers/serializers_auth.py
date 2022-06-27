@@ -144,11 +144,16 @@ class RegisterSerializer(serializers.Serializer):
     password = serializers.CharField(
         write_only=True, style={"input_type": "password"}
     )
-    role = serializers.PrimaryKeyRelatedField(
-        queryset=Role.objects.all(), required=True
+    role = serializers.SlugRelatedField(
+        slug_field="name",
+        queryset=Role.objects.active(),
+        required=True,
     )
-    organization = serializers.PrimaryKeyRelatedField(
-        queryset=Organization.objects.all(), required=False, allow_null=True
+    organization = serializers.SlugRelatedField(
+        slug_field="name",
+        queryset=Organization.objects.active(),
+        required=False,
+        allow_null=True,
     )
     accepted_terms = serializers.BooleanField()
 
