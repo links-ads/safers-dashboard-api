@@ -7,7 +7,8 @@ from django.conf import settings
 from django.utils import timezone
 
 from rest_framework import status, views
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from drf_yasg import openapi
@@ -25,18 +26,21 @@ _data_layer_schema = openapi.Schema(
     example={
         "id": "1",
         "text": "Weather forecast",
+        "source": None,
         "info": "whatever",
         "info_url": None,
         "children": [
           {
             "id": "1.1",
             "text": "Short term",
+            "source": None,
             "info": "whatever",
             "info_url": None,
             "children": [
               {
                 "id": "1.1.1",
                 "text": "Temperature at 2m",
+                "source": "RISC",
                 "info": "whatever",
                 "info_url": None,
                 "children": [
@@ -63,6 +67,11 @@ _data_layer_schema = openapi.Schema(
 
 _data_layer_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=_data_layer_schema
+)  # yapf: disable
+
+
+_data_layer_sources_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
 )  # yapf: disable
 
 
@@ -166,11 +175,13 @@ class DataLayerView(views.APIView):
         metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}"
 
         data_type_info = {"None": None}
-        data_type_info.update(
-            {(data_type.datatype_id or data_type.subgroup or
-              data_type.group).upper(): data_type.info or data_type.description
-             for data_type in DataType.objects.all()}
-        )
+        data_type_sources = {"None": None}
+        for data_type in DataType.objects.all():
+            data_type_key = (
+                data_type.datatype_id or data_type.subgroup or data_type.group
+            ).upper()
+            data_type_info[data_type_key] = data_type.info or data_type.description  # yapf: disable
+            data_type_sources[data_type_key] = data_type.source
 
         content = response.json()
 
@@ -178,18 +189,21 @@ class DataLayerView(views.APIView):
           {
             "id": f"{i}",
             "text": group["group"],
+            "source": data_type_sources.get(group["group"].upper()),
             "info": data_type_info.get(group["group"].upper()),
             "info_url": None,
             "children": [
               {
                 "id": f"{i}.{j}",
                 "text": sub_group["subGroup"],
+                "source": data_type_sources.get(sub_group["subGroup"].upper()),
                 "info": data_type_info.get(sub_group["subGroup"].upper()),
                 "info_url": None,
                 "children": [
                   {
                     "id": f"{i}.{j}.{k}",
                     "text": layer["name"],
+                    "source": data_type_sources.get(str(layer.get("dataTypeId"))),
                     "info": data_type_info.get(str(layer.get("dataTypeId"))),
                     "info_url": None,
                     "children": [
@@ -230,6 +244,21 @@ class DataLayerView(views.APIView):
         ]  # yapf: disable
 
         return Response(data)
+
+
+@swagger_auto_schema(
+    responses={status.HTTP_200_OK: _data_layer_sources_schema}, method="get"
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def data_layer_sources_view(request):
+    """
+    Returns the list of possible DataLayer sources.
+    """
+    data_type_sources = DataType.objects.only("source").exclude(
+        source__isnull=True
+    ).order_by("source").values_list("source", flat=True).distinct()
+    return Response(data_type_sources, status=status.HTTP_200_OK)
 
 
 """
