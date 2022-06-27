@@ -40,7 +40,7 @@ class RegisterViewSerializer(serializers.Serializer):
         required=False,
         allow_null=True,
     )
-    agreed_terms = serializers.BooleanField()
+    accepted_terms = serializers.BooleanField()
 
     def validate_email(self, value):
         if get_user_model().objects.filter(email=value).exists():
@@ -56,7 +56,7 @@ class RegisterViewSerializer(serializers.Serializer):
             raise serializers.ValidationError(e.messages)
         return value
 
-    def validate_agreed_terms(self, value):
+    def validate_accepted_terms(self, value):
         if value is not True:
-            raise serializers.ValidationError("Terms must be agreed")
+            raise serializers.ValidationError("Terms must be accepted")
         return value
