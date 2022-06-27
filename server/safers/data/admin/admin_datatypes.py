@@ -89,6 +89,7 @@ class DataTypeAdmin(admin.ModelAdmin):
             "Format": "format",
             "Data Description": "description",
             "Info (short description )for frontend": "info",
+            "Responsible": "source",
             # "Responsible":
             # "Update frequency": "update_frequency",
             # "Comments":
