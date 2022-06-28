@@ -114,10 +114,10 @@ class DataLayerView(views.APIView):
             default_bbox = user.default_aoi.geometry.extent
             data["bbox"] = ",".join(map(str, default_bbox))
 
-        if data.pop("default_start") and "start" not in data:
+        default_date = data.pop("default_date")
+        if default_date and "start" not in data:
             data["start"] = timezone.now() - timedelta(days=3)
-
-        if data.pop("default_end") and "end" not in data:
+        if default_date and "end" not in data:
             data["end"] = timezone.now()
 
         return data

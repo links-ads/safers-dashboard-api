@@ -96,7 +96,7 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         field_name="start_date", lookup_expr="date__lte"
     )
     default_date = filters.BooleanFilter(
-        initial=True,
+        initial=False,
         help_text=_(
             "If default_date is True and no end_date is provided then the current date will be used and if no start_date is provided then 3 days previous will be used; "
             "If default_date is False and no end_date or start_date is used then no date filters will be passed to the API."

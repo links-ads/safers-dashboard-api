@@ -106,7 +106,6 @@ class ReportViewSerializer(serializers.Serializer):
     )
 
     default_date = serializers.BooleanField(
-        # default=True,
         default=False,
         required=False,
         help_text=_(
