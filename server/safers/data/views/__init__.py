@@ -1,2 +1,2 @@
-from .views_datalayers import DataLayerView
+from .views_datalayers import DataLayerView, data_layer_domains_view, data_layer_sources_view
 from .views_metadata import DataLayerMetadataView

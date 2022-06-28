@@ -4,6 +4,8 @@ from rest_framework import routers
 
 from safers.data.views import (
     DataLayerView,
+    data_layer_domains_view,
+    data_layer_sources_view,
     DataLayerMetadataView,
 )
 
@@ -14,6 +16,16 @@ api_urlpatterns = [
         "data/layers",
         DataLayerView.as_view(),
         name="data-layers-list",
+    ),
+    path(
+        "data/layers/domains",
+        data_layer_domains_view,
+        name="data-layers-domains-list"
+    ),
+    path(
+        "data/layers/sources",
+        data_layer_sources_view,
+        name="data-layers-sources-list"
     ),
     path(
         "data/layers/metadata/<slug:metadata_id>",
