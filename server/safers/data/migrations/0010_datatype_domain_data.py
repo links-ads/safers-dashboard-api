@@ -9,9 +9,8 @@ def add_data_type_domains(apps, schema_editor):
 
     for data_type in DataTypeModel.objects.all():
         data_type_group = data_type.group
-        if data_type_group:
-            data_type_domain = data_type_group.title()
-            data_type.domain = data_type_domain
+        if data_type_group is not None and data_type.domain is None:
+            data_type.domain = data_type_group.title()
             data_type.save()
 
 

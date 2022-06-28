@@ -11,7 +11,7 @@ def add_data_type_sources(apps, schema_editor):
         data_type_extra_info = data_type.extra_info
         if data_type_extra_info:
             data_type_source = data_type_extra_info.get("Responsible", None)
-            if data_type_source is not None:
+            if data_type_source is not None and data_type.source is None:
                 data_type.source = data_type_source.upper()
                 data_type.save()
 
