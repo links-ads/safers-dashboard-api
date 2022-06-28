@@ -86,6 +86,7 @@ class DataType(models.Model):
     group = models.CharField(max_length=128, blank=True, null=True)
     subgroup = models.CharField(max_length=128, blank=True, null=True)
     format = models.CharField(max_length=128, blank=True, null=True)
+    domain = models.CharField(max_length=64, blank=True, null=True)
     source = models.CharField(max_length=64, blank=True, null=True)
     extra_info = models.JSONField(blank=True, null=True)
 
