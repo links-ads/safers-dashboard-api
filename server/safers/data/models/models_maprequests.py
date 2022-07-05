@@ -6,6 +6,9 @@ from django.db import models, transaction
 from django.contrib.gis.db import models as gis_models
 from django.utils.translation import gettext_lazy as _
 
+from rest_framework.utils.encoders import JSONEncoder
+
+from safers.rmq import RMQ, RMQ_USER
 from safers.rmq.exceptions import RMQException
 
 ###########
@@ -81,6 +84,8 @@ class MapRequest(gis_models.Model):
         help_text=_("User that issued the MapRequest")
     )
 
+    title = models.CharField(max_length=255)
+
     status = models.CharField(
         blank=False,
         null=False,
@@ -113,6 +118,24 @@ class MapRequest(gis_models.Model):
     # RMQ interaction #
     ###################
 
+    def publish(self):
+        try:
+
+            rmq = RMQ()
+            routing_key = f"propagator.start.{RMQ_USER}.{self.request_id}"
+
+            # TODO:
+            # message_body=whatever
+            # rmq.publish(
+            #     json.dumps(message_body, cls=JSONEncoder),
+            #     routing_key,
+            #     message_id,
+            # )
+
+        except Exception as e:
+            msg = f"unable to publish message: {e}"
+            raise RMQException(msg)
+
     @classmethod
     def process_message(cls, message_body, **kwargs):
 
@@ -122,5 +145,5 @@ class MapRequest(gis_models.Model):
             with transaction.atomic():
                 pass
         except Exception as e:
-            msg = f"unable to process_message: {e}"
+            msg = f"unable to process message: {e}"
             raise RMQException(msg)

@@ -10,4 +10,4 @@
 
 # interface w/ safers RabbitMQ
 
-from .rmq import RMQ
+from .rmq import RMQ, RMQ_USER

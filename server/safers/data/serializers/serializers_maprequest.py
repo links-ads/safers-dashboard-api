@@ -1,10 +1,11 @@
 from itertools import groupby
 
+from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from drf_yasg.utils import swagger_serializer_method
-
+from safers.core.serializers import SwaggerCurrentUserDefault
 from safers.data.models import MapRequest, DataType
 
 
@@ -40,8 +41,10 @@ class MapRequestSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "request_id",
+            "title",
             "timestamp",
             "status",
+            "user",
             "category",
             "parameters",
             "geometry",
@@ -60,7 +63,11 @@ class MapRequestSerializer(serializers.ModelSerializer):
         queryset=DataType.objects.all(),
     )
 
-    @swagger_serializer_method(serializer_or_field=serializers.CharField)
+    user = serializers.PrimaryKeyRelatedField(
+        default=SwaggerCurrentUserDefault(),
+        queryset=get_user_model().objects.all(),
+    )
+
     def get_category(self, obj):
         groups = obj.data_types.values_list("group", flat=True)
         group = group = groups.distinct().first()

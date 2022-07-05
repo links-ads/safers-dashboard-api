@@ -19,6 +19,7 @@ class MapRequestAdminForm(ModelForm):
     class Meta:
         model = MapRequest
         fields = (
+            "title",
             "status",
             "data_types",
             "parameters",
