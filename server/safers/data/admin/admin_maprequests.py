@@ -14,6 +14,7 @@ from safers.data.models import MapRequest, DataType
 class MapRequestAdminForm(ModelForm):
     """
     Using a custom form to constrain the data_types M2M relationship targets
+    and prevent geometry_wkt from being manually edited
     """
     class Meta:
         model = MapRequest
