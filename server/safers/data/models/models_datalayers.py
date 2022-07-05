@@ -62,15 +62,6 @@ class DataLayer(HashableMixin, gis_models.Model):
                 self.bounding_box = self.geometry.envelope
         return super().save(*args, **kwargs)
 
-    @classmethod
-    def process_message(cls, message_body, **kwargs):
-        message_properties = kwargs.get("properties", {})
-        try:
-            print("I AM HERE", flush=True)
-        except Exception as e:
-            msg = f"unable to process_message: {e}"
-            raise RMQException(msg)
-
 
 ##########################
 # sample message payload #

@@ -7,9 +7,13 @@ from safers.data.views import (
     data_layer_domains_view,
     data_layer_sources_view,
     DataLayerMetadataView,
+    MapRequestViewSet,
 )
 
 api_router = routers.DefaultRouter()
+api_router.register(
+    "data/maprequests", MapRequestViewSet, basename="map_requests"
+)
 api_urlpatterns = [
     path("", include(api_router.urls)),
     path(
