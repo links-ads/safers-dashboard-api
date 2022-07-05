@@ -275,7 +275,7 @@ class AlertViewSet(
             max_favorites = settings.SAFERS_MAX_FAVORITE_ALERTS
             if user.favorite_alerts.count() >= max_favorites:
                 raise ValidationError(
-                    f"cannot have more than {max_favorites} events."
+                    f"cannot have more than {max_favorites} alerts."
                 )
             user.favorite_alerts.add(obj)
         else:
