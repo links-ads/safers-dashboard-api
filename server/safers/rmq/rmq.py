@@ -66,6 +66,8 @@ def import_callable(path_or_callable):
 # config #
 ##########
 
+RMQ_USER = "astro"
+
 
 @dataclass
 class RMQConf:

@@ -31,6 +31,9 @@ class DataTypeQuerySet(models.QuerySet):
     def inactive(self):
         return self.filter(is_active=False)
 
+    def on_demand(self):
+        return self.filter(is_on_demand=True)
+
 
 class DataType(models.Model):
     """
@@ -88,6 +91,7 @@ class DataType(models.Model):
     format = models.CharField(max_length=128, blank=True, null=True)
     domain = models.CharField(max_length=64, blank=True, null=True)
     source = models.CharField(max_length=64, blank=True, null=True)
+    is_on_demand = models.BooleanField(default=False)
     extra_info = models.JSONField(blank=True, null=True)
 
     def __str__(self):
