@@ -23,12 +23,19 @@ class MapRequestListSerializer(serializers.ListSerializer):
             {
                 "key": f"{i}",
                 "category": key,
-                "children": [
+                "requests": [
                     dict(
                         key=f"{i}.{j}",
-                        **g
+                        layers=[
+                            dict(
+                                key=f"{i}.{j}.{k}",
+                                **layer,
+                            )
+                            for k, layer in enumerate(group_member.pop("layers"), start=1)
+                        ],
+                        **group_member,
                     )
-                    for j, g in enumerate(group, start=1)
+                    for j, group_member in enumerate(group, start=1)
                 ],
             }
             for i, (key, group) in enumerate(grouped_representation, start=1)
@@ -49,24 +56,30 @@ class MapRequestSerializer(serializers.ModelSerializer):
             "parameters",
             "geometry",
             "data_types",
+            "layers",
         )
         list_serializer_class = MapRequestListSerializer
 
     category = serializers.SerializerMethodField()
+    layers = serializers.SerializerMethodField()
     geometry = gis_serializers.GeometryField(precision=MapRequest.PRECISION)
     timestamp = serializers.DateTimeField(source="created", read_only=True)
 
     data_types = serializers.SlugRelatedField(
         slug_field="datatype_id",
-        # write_only=True,
+        write_only=True,
         many=True,
-        queryset=DataType.objects.all(),
+        queryset=DataType.objects.on_demand(),
     )
 
     user = serializers.PrimaryKeyRelatedField(
         default=SwaggerCurrentUserDefault(),
         queryset=get_user_model().objects.all(),
     )
+
+    def get_layers(self, obj):
+        # TODO:
+        return [{} for layer in obj.data_types.all()]
 
     def get_category(self, obj):
         groups = obj.data_types.values_list("group", flat=True)
@@ -81,5 +94,3 @@ class MapRequestSerializer(serializers.ModelSerializer):
             )
 
         return values
-
-    # TODO: ENSURE create IS AN ATOMIC TRANSACTION TO PREVENT RACE CONDITIONS WHEN SETTING request_id

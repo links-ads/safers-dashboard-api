@@ -30,7 +30,12 @@ _map_request_schema = openapi.Schema(
         "category": "Post Event Monitoring",
         "parameters": {},
         "geometry": None,
-        "data_types": ["a", "b", "c"],
+        "layers": [
+            {
+                "key": "1.1.1",
+                "url": "whatever",
+            }
+        ]
     }
 )  # yapf: disable
 
@@ -42,7 +47,7 @@ _map_request_list_schema = openapi.Schema(
             ("key", openapi.Schema(type=openapi.TYPE_STRING, example="1")),
             ("category", openapi.Schema(type=openapi.TYPE_STRING, example="Post Event Monitoring")),
             # TODO: REPLACE _map_request_schema w/ MapRequestSerializer (as per https://github.com/axnsan12/drf-yasg/issues/88)
-            ("children", openapi.Schema(type=openapi.TYPE_ARRAY, items=_map_request_schema)),
+            ("requests", openapi.Schema(type=openapi.TYPE_ARRAY, items=_map_request_schema)),
         ))
     )
 )  # yapf: disable
@@ -53,8 +58,16 @@ _map_request_list_schema = openapi.Schema(
 
 
 @method_decorator(
+    swagger_auto_schema(responses={status.HTTP_200_OK: _map_request_schema}),
+    name="create",
+)
+@method_decorator(
+    swagger_auto_schema(responses={status.HTTP_200_OK: _map_request_schema}),
+    name="retrieve",
+)
+@method_decorator(
     swagger_auto_schema(
-        responses={status.HTTP_200_OK: _map_request_list_schema},
+        responses={status.HTTP_200_OK: _map_request_list_schema}
     ),
     name="list",
 )
@@ -82,3 +95,22 @@ class MapRequestViewSet(
         """
         current_user = self.request.user
         return current_user.map_requests.prefetch_related("data_types").all()
+
+    # TODO: ENSURE create IS AN ATOMIC TRANSACTION TO PREVENT RACE CONDITIONS WHEN SETTING request_id
+
+    def perform_create(self, serializer):
+        """
+        When a MapRequest is created, publish a corresponding message to 
+        RMQ in order to trigger the creation of the MapRequest's data
+        """
+        map_request = serializer.save()
+        map_request.invoke()
+        return map_request
+
+    def perform_destroy(self, instance):
+        """
+        When a MapRequest is destroyed, publish a corresponding message to
+        RMQ in order to trigger the destruction of the MapRequest's data
+        """
+        instance.revoke()
+        instance.delete()

@@ -118,9 +118,34 @@ class MapRequest(gis_models.Model):
     # RMQ interaction #
     ###################
 
-    def publish(self):
+    def invoke(self):
+        """
+        publish a message to RMQ in order to trigger the creation of this MapRequest's data
+        (called from MapRequestViewSet.perform_create)
+        """
         try:
 
+            rmq = RMQ()
+            routing_key = f"propagator.start.{RMQ_USER}.{self.request_id}"
+
+            # TODO:
+            # message_body=whatever
+            # rmq.publish(
+            #     json.dumps(message_body, cls=JSONEncoder),
+            #     routing_key,
+            #     message_id,
+            # )
+
+        except Exception as e:
+            msg = f"unable to publish message: {e}"
+            raise RMQException(msg)
+
+    def revoke(self):
+        """
+        publish a message to RMQ in order to trigger the destruction of this MapRequest's data
+        (called from MapRequestViewSet.perform_destroy)
+        """
+        try:
             rmq = RMQ()
             routing_key = f"propagator.start.{RMQ_USER}.{self.request_id}"
 
