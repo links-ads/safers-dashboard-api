@@ -1,8 +1,8 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.gis import admin as gis_admin
 from django.core.exceptions import ValidationError
-from django.db.models import JSONField, Q
-from django.forms import ModelForm, CharField, Textarea
+from django.db.models import JSONField
+from django.forms import ModelForm
 
 from safers.aois.constants import NAMED_AOIS
 
@@ -48,7 +48,11 @@ class MapRequestAdminForm(ModelForm):
 
 @admin.register(MapRequest)
 class MapRequestAdmin(gis_admin.GeoModelAdmin):
-
+    actions = (
+        "invoke",
+        "revoke",
+    )
+    date_hierarchy = "created"
     form = MapRequestAdminForm
     formfield_overrides = {
         JSONField: {
@@ -57,9 +61,11 @@ class MapRequestAdmin(gis_admin.GeoModelAdmin):
     }
     list_display = (
         "request_id",
+        "created",
         "status",
     )
     list_filter = ("status", )
+    ordering = ("-created", )
     readonly_fields = (
         "id",
         "request_id",
@@ -70,3 +76,29 @@ class MapRequestAdmin(gis_admin.GeoModelAdmin):
     default_lat = NAMED_AOIS["rome"].latitude
     default_lon = NAMED_AOIS["rome"].longitude
     default_zoom = point_zoom = 5
+
+    @admin.display(description="Invoke MapRequest")
+    def invoke(self, request, queryset):
+        for map_request in queryset:
+            try:
+                map_request.invoke()
+            except Exception as e:
+                msg = f"unable to invoke map_request '{map_request.request_id}': {e}"
+                self.message_user(request, msg, messages.ERROR)
+                continue
+
+            msg = f"invoked map_request '{map_request.request_id}'"
+            self.message_user(request, msg, messages.INFO)
+
+    @admin.display(description="Revoke MapRequest")
+    def revoke(self, request, queryset):
+        for map_request in queryset:
+            try:
+                map_request.revoke()
+            except Exception as e:
+                msg = f"unable to revoke map_request '{map_request.request_id}': {e}"
+                self.message_user(request, msg, messages.ERROR)
+                continue
+
+            msg = f"revoked map_request '{map_request.request_id}'"
+            self.message_user(request, msg, messages.INFO)
