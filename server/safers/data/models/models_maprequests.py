@@ -2,7 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
-from django.contrib.gis.db import models as gis_modelsq
+from django.contrib.gis.db import models as gis_models
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
