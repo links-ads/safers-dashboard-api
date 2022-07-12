@@ -106,7 +106,7 @@ class ReportListView(ReportView):
             if k in view_serializer.ProxyFieldMapping
         }  # yapf: disable
         if "bbox" in proxy_params:
-            min_x, min_y, max_x, max_y = proxy_params.pop("bbox")
+            min_y, min_x, max_y, max_x = proxy_params.pop("bbox")
             proxy_params["NorthEastBoundary.Latitude"] = max_x
             proxy_params["NorthEastBoundary.Longitude"] = max_y
             proxy_params["SouthWestBoundary.Latitude"] = min_x
