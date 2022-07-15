@@ -154,6 +154,7 @@ class MapRequestAdmin(gis_admin.GeoModelAdmin):
     inlines = (MapRequestDataTypeInline, )
     list_display = (
         "request_id",
+        "title",
         "created",
         "get_statuses_for_list_view",
     )
