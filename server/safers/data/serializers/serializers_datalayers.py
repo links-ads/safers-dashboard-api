@@ -8,39 +8,12 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, ISO_8601
 from rest_framework_gis import serializers as gis_serializers
 
+from safers.core.fields import UnderspecifiedDateTimeField
 from safers.core.serializers import ContextVariableDefault
 
 DataLayerSerializerDateTimeFormats = [
     ISO_8601, "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d"
 ]
-
-
-class DataLayerTimeField(serializers.Field):
-    # TODO: COPE WITH TIME RANGES AS PER https://docs.geoserver.org/latest/en/user/services/wms/time.html#wms-time
-
-    def to_representation(self, value):
-        # python to json
-        return value
-
-    def to_internal_value(self, data):
-
-        parsed_datetime = None
-        for format in DataLayerSerializerDateTimeFormats:
-            if format == ISO_8601:
-                try:
-                    parsed_datetime = parse_datetime(data)
-                except (ValueError, TypeError):
-                    pass
-            else:
-                try:
-                    parsed_datetime = datetime.strptime(data, format)
-                except (ValueError, TypeError):
-                    pass
-
-        if not parsed_datetime:
-            raise serializers.ValidationError("invalid timestamp")
-
-        return parsed_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class DataLayerSerializer(serializers.Serializer):
@@ -68,12 +41,22 @@ class DataLayerSerializer(serializers.Serializer):
 
     bbox = serializers.CharField(required=False)
 
-    start = serializers.DateTimeField(
-        input_formats=DataLayerSerializerDateTimeFormats, required=False
+    start = UnderspecifiedDateTimeField(
+        input_formats=DataLayerSerializerDateTimeFormats,
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
     )
-    end = serializers.DateTimeField(
-        input_formats=DataLayerSerializerDateTimeFormats, required=False
+
+    end = UnderspecifiedDateTimeField(
+        input_formats=DataLayerSerializerDateTimeFormats,
+        hour=23,
+        minute=59,
+        second=59,
+        microsecond=999999,
     )
+
     order = serializers.ChoiceField(choices=OrderType.choices, required=False)
 
     default_date = serializers.BooleanField(

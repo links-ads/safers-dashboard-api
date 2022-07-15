@@ -41,6 +41,17 @@ class MapRequestListSerializer(serializers.ListSerializer):
             for i, (key, group) in enumerate(grouped_representation, start=1)
         ] # yapf: disable
 
+class MapRequestDataTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MapRequest.data_types.through
+        fields = (
+            "datatype_id",
+            "status",
+            "url",
+        )
+
+    datatype_id = serializers.CharField(source="data_type.datatype_id")
+
 
 class MapRequestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,18 +61,20 @@ class MapRequestSerializer(serializers.ModelSerializer):
             "request_id",
             "title",
             "timestamp",
-            "status",
             "user",
             "category",
             "parameters",
             "geometry",
-            "data_types",
-            "layers",
+            "layers",  # (read)
+            "data_types",  # (write)
         )
         list_serializer_class = MapRequestListSerializer
 
+    request_id = serializers.CharField(read_only=True)
     category = serializers.SerializerMethodField()
-    layers = serializers.SerializerMethodField()
+    layers = MapRequestDataTypeSerializer(
+        many=True, read_only=True, source="map_request_data_types"
+    )
     geometry = gis_serializers.GeometryField(precision=MapRequest.PRECISION)
     timestamp = serializers.DateTimeField(source="created", read_only=True)
 
@@ -77,17 +90,20 @@ class MapRequestSerializer(serializers.ModelSerializer):
         queryset=get_user_model().objects.all(),
     )
 
-    def get_layers(self, obj):
-        # TODO:
-        return [{} for layer in obj.data_types.all()]
-
     def get_category(self, obj):
         groups = obj.data_types.values_list("group", flat=True)
         group = group = groups.distinct().first()
-        return group.title()
+        if group:
+            return group.title()
 
     def validate_data_types(self, values):
         data_types_groups = set([v.group for v in values])
+
+        if not values:
+            raise serializers.ValidationError(
+                "A MapRequest must have at least one DataType"
+            )
+
         if len(data_types_groups) != 1:
             raise serializers.ValidationError(
                 "All DataTypes in a single MapRequest must belong to the same category."

@@ -120,6 +120,13 @@ class DataLayerView(views.APIView):
         if default_date and "end" not in data:
             data["end"] = timezone.now()
 
+        # as per https://stackoverflow.com/a/42777551/1060339, DateTimeField doesn't
+        # automatically output "Z" for UTC timezone; so put it in explicitly
+        if "start" in data:
+            data["start"] = data["start"].strftime('%Y-%m-%dT%H:%M:%SZ')
+        if "end" in data:
+            data["end"] = data["end"].strftime('%Y-%m-%dT%H:%M:%SZ')
+
         return data
 
     @swagger_auto_schema(

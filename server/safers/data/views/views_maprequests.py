@@ -26,13 +26,13 @@ _map_request_schema = openapi.Schema(
         "id": "0736d0dd-6dd4-48dd-8a3c-586ec8ab61b2",
         "request_id": "string",
         "timestamp": "2022-07-04T14:09:31.618887Z",
-        "status": "PROCESSING",
         "category": "Post Event Monitoring",
         "parameters": {},
         "geometry": None,
         "layers": [
             {
                 "key": "1.1.1",
+                "status": "PROCESSING",
                 "url": "whatever",
             }
         ]
@@ -94,7 +94,9 @@ class MapRequestViewSet(
         return all MapRequests owned by this user
         """
         current_user = self.request.user
-        return current_user.map_requests.prefetch_related("data_types").all()
+        return current_user.map_requests.prefetch_related(
+            "map_request_data_types"
+        ).all()
 
     # TODO: ENSURE create IS AN ATOMIC TRANSACTION TO PREVENT RACE CONDITIONS WHEN SETTING request_id
 
