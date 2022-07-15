@@ -15,21 +15,28 @@ import ssl
 
 logger = logging.getLogger(__name__)
 
+RMQ_USER = "astro"
+
 #################
 # routing table #
 #################
 
 BINDING_KEYS = {
     # a map of routing_key patterns to handlers
-    "status.test.*": (),
+    f"alert.sem.{RMQ_USER}": ("safers.alerts.models.Alert", ),
+    "event.camera.#": ("safers.cameras.utils.process_messages", ),
     "event.social.wildfire": ("safers.social.models.SocialEvent", ),
+    "newexternaldata.*": ("safers.data.models.Data", ),
+    f"notification.sem.{RMQ_USER}": (
+        "safers.notifications.models.Notification",
+    ),  # TODO: WHY DO I HAVE TO HARD-CODE THE APP_ID FOR THE NEXT 3 KEYS (INSTEAD OF USING "*") ?
+    f"status.brn.*.{RMQ_USER}.#": ("safers.data.models.MapRequest", ),
+    f"status.pwm.*.{RMQ_USER}.#": ("safers.data.models.MapRequest", ),
+    f"status.propagator.*.{RMQ_USER}.#": ("safers.data.models.MapRequest", ),
+    "status.test.*": (),
     # "mm.communication.*": ("safers.chatbot.models.Communication",),
     # "mm.mission.*": ("safers.chatbot.models.Mission",),
     # "mm.report.*": ("safers.chatbot.models.Report", ),
-    "newexternaldata.*": ("safers.data.models.Data", ),
-    "alert.sem.astro": ("safers.alerts.models.Alert", ),
-    "notification.sem.astro": ("safers.notifications.models.Notification", ),
-    "event.camera.#": ("safers.cameras.utils.process_messages", ),
 }
 
 
@@ -66,15 +73,13 @@ def import_callable(path_or_callable):
 # config #
 ##########
 
-RMQ_USER = "astro"
-
 
 @dataclass
 class RMQConf:
     username: str
     password: str
     host: str
-    queue: str = "qastro.test"
+    queue: str
     exchange: str = "safers.b2b"
     port: str = "5672"
     vhost: str = None
@@ -151,6 +156,10 @@ class RMQ(object):
 
     def publish(self, message, routing_key, message_id):
 
+        logger.info(f"[{datetime.now()}] Received {routing_key}:")
+        logger.info("message: ")
+        logger.info(message)
+
         with pika.BlockingConnection(parameters=self.params) as connection:
             # create channel to the broker
             channel = connection.channel()
@@ -192,7 +201,9 @@ class RMQ(object):
                     try:
                         callable = import_callable(handler)
                         result = callable(
-                            json.loads(body), properties=properties
+                            json.loads(body),
+                            method=method,
+                            properties=properties
                         )
                         if result:
                             logger.info(result)

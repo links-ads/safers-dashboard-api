@@ -1,3 +1,5 @@
+import json
+import re
 import uuid
 
 from django.conf import settings
@@ -5,11 +7,14 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.gis.db import models as gis_models
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework.utils.encoders import JSONEncoder
 
 from sequences import Sequence
+
+from safers.data.models import DataType
 
 from safers.rmq import RMQ, RMQ_USER
 from safers.rmq.exceptions import RMQException
@@ -21,6 +26,10 @@ from safers.rmq.exceptions import RMQException
 REQUEST_ID_GENERATOR = Sequence("map_requests")
 
 REQUEST_ID_SEPARATOR = "-"
+
+REQUEST_ROUTING_KEY_REGEX = re.compile(
+    f"status\.(\w+)\.(\d+)\.{RMQ_USER}\.(.+)"
+)
 
 
 def get_next_request_id():
@@ -53,7 +62,75 @@ class MapRequestManager(models.Manager):
 
 
 class MapRequestQuerySet(models.QuerySet):
-    pass
+    def any_layers_processing(self):
+        return self.filter(
+            Q(map_request_data_types__status=MapRequestStatus.PROCESSING),
+        ).distinct()
+
+    def any_layers_failed(self):
+        return self.filter(
+            Q(map_request_data_types__status=MapRequestStatus.FAILED),
+        ).distinct()
+
+    def any_layers_available(self):
+        return self.filter(
+            Q(map_request_data_types__status=MapRequestStatus.AVAILABLE),
+        ).distinct()
+
+    def any_layers_none(self):
+        return self.filter(Q(map_request_data_types__status__is_null=True
+                            ), ).distinct()
+
+    def none_layers_processing(self):
+        return self.filter(
+            ~Q(map_request_data_types__status=MapRequestStatus.PROCESSING),
+        ).distinct()
+
+    def none_layers_failed(self):
+        return self.filter(
+            ~Q(map_request_data_types__status=MapRequestStatus.FAILED),
+        ).distinct()
+
+    def none_layers_available(self):
+        return self.filter(
+            ~Q(map_request_data_types__status=MapRequestStatus.AVAILABLE),
+        ).distinct()
+
+    def none_layers_none(self):
+        return self.filter(~Q(map_request_data_types__status__isnull=True
+                             ), ).distinct()
+
+    def all_layers_processing(self):
+        return self.filter(
+            Q(map_request_data_types__status=MapRequestStatus.PROCESSING),
+            ~Q(map_request_data_types__status=MapRequestStatus.FAILED),
+            ~Q(map_request_data_types__status=MapRequestStatus.AVAILABLE),
+            ~Q(map_request_data_types__status__isnull=True),
+        ).distinct()
+
+    def all_layers_failed(self):
+        return self.filter(
+            Q(map_request_data_types__status=MapRequestStatus.FAILED),
+            ~Q(map_request_data_types__status=MapRequestStatus.PROCESSING),
+            ~Q(map_request_data_types__status=MapRequestStatus.AVAILABLE),
+            ~Q(map_request_data_types__status__isnull=True),
+        ).distinct()
+
+    def all_layers_available(self):
+        return self.filter(
+            Q(map_request_data_types__status=MapRequestStatus.AVAILABLE),
+            ~Q(map_request_data_types__status=MapRequestStatus.PROCESSING),
+            ~Q(map_request_data_types__status=MapRequestStatus.FAILED),
+            ~Q(map_request_data_types__status__isnull=True),
+        ).distinct()
+
+    def all_layers_none(self):
+        return self.filter(
+            Q(map_request_data_types__status__isnull=True),
+            ~Q(map_request_data_types__status=MapRequestStatus.PROCESSING),
+            ~Q(map_request_data_types__status=MapRequestStatus.FAILED),
+            ~Q(map_request_data_types__status=MapRequestStatus.AVAILABLE),
+        ).distinct()
 
 
 ###########
@@ -95,15 +172,10 @@ class MapRequest(gis_models.Model):
 
     title = models.CharField(max_length=255)
 
-    status = models.CharField(
-        blank=False,
-        null=False,
-        default=MapRequestStatus.PROCESSING,
-        max_length=64,
-    )
-
     data_types = models.ManyToManyField(
-        "data.DataType", related_name="map_requests"
+        DataType,
+        related_name="map_requests",
+        through="MapRequestDataType",
     )
 
     parameters = models.JSONField(blank=True, default=dict)
@@ -141,17 +213,23 @@ class MapRequest(gis_models.Model):
         """
         rmq = RMQ()
 
+        message_body = self.parameters
+        if self.geometry:
+            message_body["geometry"] = json.loads(self.geometry.geojson)
+
         try:
+
             for data_type in self.data_types.all():
                 routing_key = f"request.{data_type.datatype_id}.{RMQ_USER}.{self.request_id}"
 
-                # TODO:
-                # message_body=whatever
-                # rmq.publish(
-                #     json.dumps(message_body, cls=JSONEncoder),
-                #     routing_key,
-                #     message_id,
-                # )
+                message_body["datatype_id"] = data_type.datatype_id
+
+                rmq.publish(
+                    json.dumps(message_body, cls=JSONEncoder),
+                    routing_key,
+                    # str(self.id),
+                    self.request_id,
+                )
 
         except Exception as e:
             msg = f"unable to publish message: {e}"
@@ -168,11 +246,61 @@ class MapRequest(gis_models.Model):
     @classmethod
     def process_message(cls, message_body, **kwargs):
 
-        message_properties = kwargs.get("properties", {})
+        method = kwargs.get("method", None)
+        properties = kwargs.get("properties", {})
 
         try:
+            routing_key = method.routing_key
+            (
+                app_id,
+                datatype_id,
+                request_id,
+            ) = re.match(REQUEST_ROUTING_KEY_REGEX, routing_key).groups()
+
             with transaction.atomic():
-                pass
+                data_type = DataType.objects.get(datatype_id=datatype_id)
+                map_request = MapRequest.objects.get(request_id=request_id)
+                map_request_data_type = MapRequestDataType(
+                    data_type=data_type, map_request=map_request
+                )
+                # assert data_type in map_request.data_types.all()
+
+                message_type = message_body.get("type")
+                if map_request_data_type == "start":
+                    map_request.status = MapRequestStatus.PROCESSING
+                elif message_type == "end":
+                    map_request_data_type.status = MapRequestStatus.AVAILABLE
+
+                if message_body.get("status_code") != 200:
+                    map_request_data_type.status = MapRequestStatus.FAILED
+
+                map_request_data_type.save()
+
         except Exception as e:
             msg = f"unable to process message: {e}"
             raise RMQException(msg)
+
+
+class MapRequestDataType(models.Model):
+    """
+    a "through" model to add some extra fields to the relationship betweeen a DataType and a MapRequest
+    """
+
+    map_request = models.ForeignKey(
+        MapRequest,
+        on_delete=models.CASCADE,
+        related_name="map_request_data_types"
+    )
+    data_type = models.ForeignKey(
+        DataType,
+        on_delete=models.CASCADE,
+        related_name="map_request_data_types"
+    )
+
+    url = models.CharField(max_length=512, blank=True, null=True)
+    status = models.CharField(
+        max_length=64,
+        choices=MapRequestStatus.choices,
+        blank=True,
+        null=True,
+    )

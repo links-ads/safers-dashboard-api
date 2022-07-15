@@ -99,14 +99,12 @@ class DataType(models.Model):
 
     @property
     def name(self):
-        name = ""
-        if self.datatype_id:
-            name = str(self.datatype_id) + " " + name
-        if self.subgroup:
-            name = self.subgroup + " " + name
-        if self.group:
-            name = self.group + " " + name
-        return name
+        PLACEHOLDER = "-"
+        return " : ".join([
+            self.group or PLACEHOLDER,
+            self.subgroup or PLACEHOLDER,
+            self.datatype_id or PLACEHOLDER
+        ])
 
     def natural_key(self):
         return (
