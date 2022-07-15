@@ -70,6 +70,7 @@ class MapRequestSerializer(serializers.ModelSerializer):
         )
         list_serializer_class = MapRequestListSerializer
 
+    request_id = serializers.CharField(read_only=True)
     category = serializers.SerializerMethodField()
     layers = MapRequestDataTypeSerializer(
         many=True, read_only=True, source="map_request_data_types"
@@ -97,6 +98,12 @@ class MapRequestSerializer(serializers.ModelSerializer):
 
     def validate_data_types(self, values):
         data_types_groups = set([v.group for v in values])
+
+        if not values:
+            raise serializers.ValidationError(
+                "A MapRequest must have at least one DataType"
+            )
+
         if len(data_types_groups) != 1:
             raise serializers.ValidationError(
                 "All DataTypes in a single MapRequest must belong to the same category."

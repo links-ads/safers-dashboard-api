@@ -76,6 +76,11 @@ class MapRequestDataTypeAdminFormSet(BaseInlineFormSet):
             if form.is_valid() and not form.cleaned_data.get("DELETE"):
                 data_types.append(form.cleaned_data["data_type"])
 
+        if len(data_types) == 0:
+            raise ValidationError(
+                "A MapRequest must have at least one DataType."
+            )
+
         if len(data_types) != len(set(data_types)):
             raise ValidationError(
                 "A single MapRequest cannot have duplicate DataTypes"
