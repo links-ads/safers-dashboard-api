@@ -227,7 +227,6 @@ class MapRequest(gis_models.Model):
                 rmq.publish(
                     json.dumps(message_body, cls=JSONEncoder),
                     routing_key,
-                    # str(self.id),
                     self.request_id,
                 )
 
@@ -263,7 +262,6 @@ class MapRequest(gis_models.Model):
                 map_request_data_type = MapRequestDataType(
                     data_type=data_type, map_request=map_request
                 )
-                # assert data_type in map_request.data_types.all()
 
                 message_type = message_body.get("type")
                 if map_request_data_type == "start":

@@ -26,6 +26,9 @@ BINDING_KEYS = {
     f"alert.sem.{RMQ_USER}": ("safers.alerts.models.Alert", ),
     "event.camera.#": ("safers.cameras.utils.process_messages", ),
     "event.social.wildfire": ("safers.social.models.SocialEvent", ),
+    # "mm.communication.*": ("safers.chatbot.models.Communication",),
+    # "mm.mission.*": ("safers.chatbot.models.Mission",),
+    # "mm.report.*": ("safers.chatbot.models.Report", ),
     "newexternaldata.*": ("safers.data.models.Data", ),
     f"notification.sem.{RMQ_USER}": (
         "safers.notifications.models.Notification",
@@ -34,9 +37,6 @@ BINDING_KEYS = {
     f"status.pwm.*.{RMQ_USER}.#": ("safers.data.models.MapRequest", ),
     f"status.propagator.*.{RMQ_USER}.#": ("safers.data.models.MapRequest", ),
     "status.test.*": (),
-    # "mm.communication.*": ("safers.chatbot.models.Communication",),
-    # "mm.mission.*": ("safers.chatbot.models.Mission",),
-    # "mm.report.*": ("safers.chatbot.models.Report", ),
 }
 
 
