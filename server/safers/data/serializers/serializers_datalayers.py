@@ -28,6 +28,7 @@ class DataLayerSerializer(serializers.Serializer):
         "bbox": "Bbox",
         "start": "Start",
         "end": "End",
+        "include_map_requests": "InclueMapRequests",
     }
 
     n_layers = serializers.IntegerField(
@@ -55,6 +56,15 @@ class DataLayerSerializer(serializers.Serializer):
         minute=59,
         second=59,
         microsecond=999999,
+    )
+
+    include_map_requests = serializers.BooleanField(
+        default=False,
+        required=False,
+        help_text=_(
+            "Whether or not to include on-demand MapRequests.  "
+            "This ought to be 'False' to distinguish this API from the 'api/data/map_requests' API."
+        ),
     )
 
     order = serializers.ChoiceField(choices=OrderType.choices, required=False)
