@@ -28,7 +28,7 @@ class DataLayerSerializer(serializers.Serializer):
         "bbox": "Bbox",
         "start": "Start",
         "end": "End",
-        "include_map_requests": "InclueMapRequests",
+        "include_map_requests": "IncludeMapRequests",
     }
 
     n_layers = serializers.IntegerField(
