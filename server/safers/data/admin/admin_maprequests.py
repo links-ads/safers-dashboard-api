@@ -101,7 +101,6 @@ class MapRequestDataTypeAdminForm(ModelForm):
         fields = (
             "data_type",
             "status",
-            "url",
         )
 
     def __init__(self, *args, **kwargs):
@@ -114,6 +113,10 @@ class MapRequestDataTypeInline(admin.TabularInline):
     model = MapRequest.data_types.through
     form = MapRequestDataTypeAdminForm
     formset = MapRequestDataTypeAdminFormSet
+    readonly_fields = (
+        "created",
+        "modified",
+    )
     extra = 0
 
 
