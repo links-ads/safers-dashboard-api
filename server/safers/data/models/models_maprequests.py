@@ -259,13 +259,13 @@ class MapRequest(gis_models.Model):
             with transaction.atomic():
                 data_type = DataType.objects.get(datatype_id=datatype_id)
                 map_request = MapRequest.objects.get(request_id=request_id)
-                map_request_data_type = MapRequestDataType(
+                map_request_data_type = MapRequestDataType.objects.get(
                     data_type=data_type, map_request=map_request
                 )
 
                 message_type = message_body.get("type")
-                if map_request_data_type == "start":
-                    map_request.status = MapRequestStatus.PROCESSING
+                if message_type == "start":
+                    map_request_data_type.status = MapRequestStatus.PROCESSING
                 elif message_type == "end":
                     map_request_data_type.status = MapRequestStatus.AVAILABLE
 
@@ -294,6 +294,9 @@ class MapRequestDataType(models.Model):
         on_delete=models.CASCADE,
         related_name="map_request_data_types"
     )
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
 
     url = models.CharField(max_length=512, blank=True, null=True)
     status = models.CharField(

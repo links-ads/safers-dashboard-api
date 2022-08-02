@@ -25,9 +25,9 @@ class DataTypeFactory(factory.django.DjangoModelFactory):
     description = optional_declaration(FactoryFaker("text"), chance=50)
     info = optional_declaration(FactoryFaker("text"), chance=50)
 
-    @factory.lazy_attribute_sequence
-    def datatype_id(self, n):
-        return f"data_type_{n}"
+    @factory.sequence
+    def datatype_id(n):
+        return f"{n}"
 
 
 class MapRequestFactory(factory.django.DjangoModelFactory):
@@ -36,7 +36,6 @@ class MapRequestFactory(factory.django.DjangoModelFactory):
 
     user = None  # user is set in tests as needed
     title = FactoryFaker("sentence")
-    # status = MapRequestStatus.PROCESSING
     parameters = FactoryFaker(
         "pydict", nb_elements=4, value_types=["str", "int", "bool"]
     )
