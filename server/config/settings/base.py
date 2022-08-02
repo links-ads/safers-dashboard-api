@@ -174,7 +174,6 @@ DATABASES = {
     # (see the note in "./_init_.py" about django_on_heroku not recognising postgis)
     "default": dj_database_url.config(conn_max_age=0)
 }
-DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
 
 #############
 # Passwords #
