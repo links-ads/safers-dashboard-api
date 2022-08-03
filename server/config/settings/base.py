@@ -428,32 +428,41 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"  # dja
 # safers-specific settings #
 ############################
 
-SAFERS_ALLOW_REGISTRATION = DynamicSetting(
-    "core.SafersSettings.allow_registration", True
+SAFERS_ALLOW_SIGNUP = DynamicSetting(
+    "core.SafersSettings.allow_signup",
+    True,
 )
 SAFERS_REQUIRE_VERIFICATION = DynamicSetting(
-    "core.SafersSettings.require_verification", True
+    "core.SafersSettings.require_verification",
+    True,
 )
 SAFERS_REQUIRE_TERMS_ACCEPTANCE = DynamicSetting(
-    "core.SafersSettings.require_terms_acceptance", True
+    "core.SafersSettings.require_terms_acceptance",
+    True,
 )
 SAFERS_DEFAULT_TIMERANGE = DynamicSetting(
-    "core.SafersSettings.default_timerange", timedelta(days=3)
+    "core.SafersSettings.default_timerange",
+    timedelta(days=3),
 )
 SAFERS_POSSIBLE_EVENT_DISTANCE = DynamicSetting(
-    "core.SafersSettings.possible_event_distance", 10
+    "core.SafersSettings.possible_event_distance",
+    10,
 )
 SAFERS_POSSIBLE_EVENT_TIMERANGE = DynamicSetting(
-    "core.SafersSettings.possible_event_timerange", 72
+    "core.SafersSettings.possible_event_timerange",
+    72,
 )
 SAFERS_MAX_FAVORITE_ALERTS = DynamicSetting(
-    "core.SafersSettings.max_favorite_alerts", 3
+    "core.SafersSettings.max_favorite_alerts",
+    3,
 )
 SAFERS_MAX_FAVORITE_EVENTS = DynamicSetting(
-    "core.SafersSettings.max_favorite_events", 3
+    "core.SafersSettings.max_favorite_events",
+    3,
 )
 SAFERS_MAX_FAVORITE_CAMERA_MEDIA = DynamicSetting(
-    "core.SafersSettings.max_favorite_camera_media", 3
+    "core.SafersSettings.max_favorite_camera_media",
+    3,
 )
 
 SAFERS_GATEWAY_API_URL = env(

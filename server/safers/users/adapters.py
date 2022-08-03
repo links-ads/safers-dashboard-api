@@ -23,7 +23,7 @@ class AccountAdapter(DefaultAccountAdapter):
     custom tweaks to django-allauth
     """
     def is_open_for_signup(self, request):
-        return settings.SAFERS_ALLOW_REGISTRATION
+        return settings.SAFERS_ALLOW_SIGNUP
 
     def check_user(self, user, **kwargs):
         """
