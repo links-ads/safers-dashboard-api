@@ -11,6 +11,16 @@ class SafersSettings(SingletonMixin, models.Model):
         verbose_name = "Safers Settings"
         verbose_name_plural = "Safers Settings"
 
+    allow_local_users = models.BooleanField(
+        default=False,
+        help_text=_("Allow users to signin locally."),
+    )
+
+    allow_remote_users = models.BooleanField(
+        default=True,
+        help_text=_("Allow users to signin remotely (via SSO)."),
+    )
+
     allow_registration = models.BooleanField(
         default=True,
         help_text=_("Allow users to register w/ Safers."),
