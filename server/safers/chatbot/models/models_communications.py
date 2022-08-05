@@ -22,6 +22,7 @@ class CommunicationRestrictionTypes(models.TextChoices):
     CITIZEN = "Citizen", _("Citizen"),
     PROFESSIONAL = "Professional", _("Professional"),
     ORGANIZATION = "Organization", _("Organization"),
+    NONE = "None", _("None"),
 
 
 class Communication(gis_models.Model):
@@ -62,8 +63,7 @@ class Communication(gis_models.Model):
     restriction = models.CharField(
         max_length=64,
         choices=CommunicationRestrictionTypes.choices,
-        blank=True,
-        null=True,
+        default=CommunicationRestrictionTypes.NONE,
     )
     target_organizations = models.ManyToManyField(
         "users.organization",
@@ -80,10 +80,11 @@ class Communication(gis_models.Model):
 
     @property
     def status(self):
-        now = timezone.now()
-        if self.end_inclusive and self.end >= now:
+        now = timezone.now().date()
+        end = self.end.date()
+        if self.end_inclusive and end >= now:
             return CommunicationStatusTypes.ONGOING
-        elif (not self.end_inclusive) and self.end > now:
+        elif (not self.end_inclusive) and end > now:
             return CommunicationStatusTypes.ONGOING
         else:
             return CommunicationStatusTypes.EXPIRED
