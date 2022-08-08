@@ -1,0 +1,2540 @@
+[
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": null,
+    "is_active": true,
+    "description": null,
+    "info": "It includes map layers regarding environmental conditions and land cover, e.g. fire and soil conditions, critical infrastructure, fire propagation forecasts.",
+    "group": "environment",
+    "subgroup": null,
+    "format": null,
+    "domain": "Environment",
+    "source": null,
+    "is_on_demand": false,
+    "extra_info": null
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": null,
+    "is_active": true,
+    "description": null,
+    "info": "It includes map layers regarding weather forecasts with different lead times (short-term, medium-range, and subseasonal)",
+    "group": "weather",
+    "subgroup": null,
+    "format": null,
+    "domain": "Weather",
+    "source": null,
+    "is_on_demand": false,
+    "extra_info": null
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": null,
+    "is_active": true,
+    "description": "",
+    "info": "It includes map layers regarding  forecasts, either in the early warning (e.g. Fire Weather Index, Fire risk) or response phase (Fire spread forecast)",
+    "group": null,
+    "subgroup": "forecast",
+    "format": null,
+    "domain": null,
+    "source": null,
+    "is_on_demand": false,
+    "extra_info": null
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": null,
+    "is_active": true,
+    "description": null,
+    "info": "It includes map layers that are relevant in the response phase (fire ongoing)",
+    "group": null,
+    "subgroup": "response",
+    "format": null,
+    "domain": null,
+    "source": null,
+    "is_on_demand": false,
+    "extra_info": null
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": null,
+    "is_active": true,
+    "description": null,
+    "info": "It includes map layers that are relevant in the response phase (after fire phase)",
+    "group": null,
+    "subgroup": "recovery",
+    "format": null,
+    "domain": null,
+    "source": null,
+    "is_on_demand": false,
+    "extra_info": null
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": null,
+    "is_active": true,
+    "description": null,
+    "info": "Deterministic high resolution forecast from ECMWF processed at FMI for several variables.",
+    "group": null,
+    "subgroup": "short term",
+    "format": null,
+    "domain": null,
+    "source": null,
+    "is_on_demand": false,
+    "extra_info": null
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": null,
+    "is_active": true,
+    "description": null,
+    "info": "Ensemble forecast from ECMWF processed at FMI for several variables.",
+    "group": null,
+    "subgroup": "medium range",
+    "format": null,
+    "domain": null,
+    "source": null,
+    "is_on_demand": false,
+    "extra_info": null
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": null,
+    "is_active": true,
+    "description": null,
+    "info": "Extended range ensemble forecast from ECMWF processed at FMI for several variables.",
+    "group": null,
+    "subgroup": "subseasonal",
+    "format": null,
+    "domain": null,
+    "source": null,
+    "is_on_demand": false,
+    "extra_info": null
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "32101",
+    "is_active": true,
+    "description": "Fire Weather Index (FWI)",
+    "info": "European Forest Fire Information System (EFFIS) daily wildfire monitoring",
+    "group": "environment",
+    "subgroup": "forecast",
+    "format": "NetCDF",
+    "domain": "Environment",
+    "source": "RISC",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "European Forest Fire Information System (EFFIS) daily wildfire monitoring",
+      "Style": "https://effis.jrc.ec.europa.eu/about-effis/technical-background/fire-danger-forecast",
+      "group": "environment",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "forecast",
+      "Responsible": "RISC",
+      "datatype_id": 32101,
+      "description": "Fire Weather Index (FWI)",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "32005",
+    "is_active": true,
+    "description": "Get critical points of infrastructure, e.g. airports, motorways, hospitals, etc.",
+    "info": "Critical points of infrastructure, e.g. airports, motorways, hospitals, etc.",
+    "group": "environment",
+    "subgroup": "response",
+    "format": "GeoJSON",
+    "domain": "Environment",
+    "source": "RISC",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": "Critical points of infrastructure, e.g. airports, motorways, hospitals, etc.",
+      "Style": null,
+      "group": "environment",
+      "format": "GeoJSON",
+      "Comments": null,
+      "subgroup": "response",
+      "Responsible": "RISC",
+      "datatype_id": 32005,
+      "description": "Get critical points of infrastructure, e.g. airports, motorways, hospitals, etc.",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "not available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "37002",
+    "is_active": true,
+    "description": "Generate burn severity map (dNBR)",
+    "info": "",
+    "group": "post event monitoring",
+    "subgroup": "recovery",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "RISC",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "response",
+      "Responsible": "RISC",
+      "datatype_id": 37002,
+      "description": "Generate burn severity map (dNBR)",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "not available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "37003",
+    "is_active": true,
+    "description": "Generate soil recovery map (Vegetation Index)",
+    "info": "",
+    "group": "post event monitoring",
+    "subgroup": "recovery",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "RISC",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "recovery",
+      "Responsible": "RISC",
+      "datatype_id": 37003,
+      "description": "Generate soil recovery map (Vegetation Index)",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "not available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "37004",
+    "is_active": true,
+    "description": "Provide landslide susceptibility information",
+    "info": "",
+    "group": "post event monitoring",
+    "subgroup": "response",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "RISC",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "response",
+      "Responsible": "RISC",
+      "datatype_id": 37004,
+      "description": "Provide landslide susceptibility information",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "not available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "37005",
+    "is_active": true,
+    "description": "Generate historical severity map (dNBR)",
+    "info": "",
+    "group": "post event monitoring",
+    "subgroup": "recovery",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "RISC",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "recovery",
+      "Responsible": "RISC",
+      "datatype_id": 37005,
+      "description": "Generate historical severity map (dNBR)",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "not available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "37006",
+    "is_active": true,
+    "description": "Generate vegetation recovery map",
+    "info": "",
+    "group": "post event monitoring",
+    "subgroup": "recovery",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "RISC",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "recovery",
+      "Responsible": "RISC",
+      "datatype_id": 37006,
+      "description": "Generate vegetation recovery map",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "not available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "36001",
+    "is_active": true,
+    "description": "Burned area delineation map",
+    "info": "Delineation of the burned area",
+    "group": "fire and burned area",
+    "subgroup": "recovery",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "LINKS",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": "Delineation of the burned area ",
+      "Style": "0 transparent\n1. dark red ",
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "recovery",
+      "Responsible": "LINKS",
+      "datatype_id": 36001,
+      "description": "Burned area delineation map",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "36002",
+    "is_active": true,
+    "description": "Burned area severity map",
+    "info": "Severity grading of the burned area",
+    "group": "fire and burned area",
+    "subgroup": "recovery",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "LINKS",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": "Severity grading of the burned area",
+      "Style": "0,1,2,3,4 from white to black (red)",
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "recovery",
+      "Responsible": "LINKS",
+      "datatype_id": 36002,
+      "description": "Burned area severity map ",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "36003",
+    "is_active": true,
+    "description": "Burned area geospatial image",
+    "info": "Satellite imagery of the Area of Interest",
+    "group": "fire and burned area",
+    "subgroup": "recovery",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "LINKS",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": "Satellite imagery of the Area of Interest",
+      "Style": "RGB",
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "recovery",
+      "Responsible": "LINKS",
+      "datatype_id": 36003,
+      "description": "Burned area geospatial image",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "36005",
+    "is_active": true,
+    "description": "Fire front and smoke",
+    "info": "Detection and delineation of smoke and fire fronts",
+    "group": "fire and burned area",
+    "subgroup": "response",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "LINKS",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": "Detection and delineation of smoke and fire fronts",
+      "Style": "0.trasparent\n1.red\n2.blue ",
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "response",
+      "Responsible": "LINKS",
+      "datatype_id": 36005,
+      "description": "Fire front and smoke",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "36004",
+    "is_active": true,
+    "description": "Impact quantification",
+    "info": "Wildfire impacts (affected land cover types, population, and infrastructures)",
+    "group": "fire and burned area",
+    "subgroup": "response",
+    "format": "GeoJSON",
+    "domain": "Environment",
+    "source": "LINKS",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": "Wildfire impacts (affected land cover types, population, and infrastructures)",
+      "Style": null,
+      "group": "environment",
+      "format": "GeoJSON",
+      "Comments": null,
+      "subgroup": "response",
+      "Responsible": "LINKS",
+      "datatype_id": 36004,
+      "description": "Impact quantification",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "35007",
+    "is_active": true,
+    "description": "Fire perimeter simulation as isochrones maps",
+    "info": "",
+    "group": "wildfire simulation",
+    "subgroup": "forecast",
+    "format": "GeoJSON",
+    "domain": "Environment",
+    "source": "CIMA",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "environment",
+      "format": "GeoJSON",
+      "Comments": null,
+      "subgroup": "forecast",
+      "Responsible": "CIMA",
+      "datatype_id": 35007,
+      "description": "Fire perimeter simulation as isochrones maps",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "35008",
+    "is_active": true,
+    "description": "Mean fireline intensity",
+    "info": "",
+    "group": "wildfire simulation",
+    "subgroup": "forecast",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "CIMA",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "forecast",
+      "Responsible": "CIMA",
+      "datatype_id": 35008,
+      "description": "Mean fireline intensity",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "35009",
+    "is_active": true,
+    "description": "Max fireline intensity",
+    "info": "",
+    "group": "wildfire simulation",
+    "subgroup": "forecast",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "CIMA",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "forecast",
+      "Responsible": "CIMA",
+      "datatype_id": 35009,
+      "description": "Max fireline intensity",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "35010",
+    "is_active": true,
+    "description": "Mean rate of spread",
+    "info": "",
+    "group": "wildfire simulation",
+    "subgroup": "forecast",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "CIMA",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "forecast",
+      "Responsible": "CIMA",
+      "datatype_id": 35010,
+      "description": "Mean rate of spread",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "35011",
+    "is_active": true,
+    "description": "Max rate of spread",
+    "info": "",
+    "group": "wildfire simulation",
+    "subgroup": "forecast",
+    "format": "GeoTIFF",
+    "domain": "Environment",
+    "source": "CIMA",
+    "is_on_demand": true,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "environment",
+      "format": "GeoTIFF",
+      "Comments": null,
+      "subgroup": "forecast",
+      "Responsible": "CIMA",
+      "datatype_id": 35011,
+      "description": "Max rate of spread",
+      "Data example": null,
+      "Update frequency": "on demand",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33101",
+    "is_active": true,
+    "description": "Temperature at 2m",
+    "info": "Temperature in the atmosphere",
+    "group": "weather",
+    "subgroup": "short term",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Temperature in the atmosphere",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "short term",
+      "Responsible": "FMI",
+      "datatype_id": 33101,
+      "description": "Temperature at 2m",
+      "Data example": null,
+      "Update frequency": "6 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33103",
+    "is_active": true,
+    "description": "Total precipitation",
+    "info": "Accumulated liquid and frozen water, comprising rain and snow, that falls to the Earth's surface",
+    "group": "weather",
+    "subgroup": "short term",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Accumulated liquid and frozen water, comprising rain and snow, that falls to the Earth's surface",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "short term",
+      "Responsible": "FMI",
+      "datatype_id": 33103,
+      "description": "Total precipitation",
+      "Data example": null,
+      "Update frequency": "6 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33104",
+    "is_active": true,
+    "description": "Relative humidity",
+    "info": "Water vapour pressure as a percentage of the value at which the air becomes saturated",
+    "group": "weather",
+    "subgroup": "short term",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Water vapour pressure as a percentage of the value at which the air becomes saturated",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "short term",
+      "Responsible": "FMI",
+      "datatype_id": 33104,
+      "description": "Relative humidity",
+      "Data example": null,
+      "Update frequency": "6 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33105",
+    "is_active": true,
+    "description": "2m dewpoint temperature",
+    "info": "Temperature to which the air, at 2 metres above the surface of the Earth, would have to be cooled for saturation to occur.",
+    "group": "weather",
+    "subgroup": "short term",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Temperature to which the air, at 2 metres above the surface of the Earth, would have to be cooled for saturation to occur.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "short term",
+      "Responsible": "FMI",
+      "datatype_id": 33105,
+      "description": "2m dewpoint temperature",
+      "Data example": null,
+      "Update frequency": "6 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33110",
+    "is_active": true,
+    "description": "Wind (speed and direction)",
+    "info": "Speed and direction of horizontal air movement",
+    "group": "weather",
+    "subgroup": "short term",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Speed and direction of horizontal air movement",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "short term",
+      "Responsible": "FMI",
+      "datatype_id": 33110,
+      "description": "Wind (speed and direction)",
+      "Data example": null,
+      "Update frequency": "6 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33106",
+    "is_active": true,
+    "description": "Convective Available Potential Energy (CAPE) ",
+    "info": "Indication of the instability (or stability) of the atmosphere and can be used to assess the potential for the development of convection, which can lead to heavy rainfall, thunderstorms and other severe weather.",
+    "group": "weather",
+    "subgroup": "short term",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Indication of the instability (or stability) of the atmosphere and can be used to assess the potential for the development of convection, which can lead to heavy rainfall, thunderstorms and other severe weather.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "short term",
+      "Responsible": "FMI",
+      "datatype_id": 33106,
+      "description": "Convective Available Potential Energy (CAPE) ",
+      "Data example": null,
+      "Update frequency": "6 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33201",
+    "is_active": true,
+    "description": "Temperature at 2m height",
+    "info": "Temperature in the atmosphere",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Temperature in the atmosphere",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "t2m",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33201,
+      "description": "Temperature at 2m height",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33202",
+    "is_active": true,
+    "description": "Relative humidity",
+    "info": "Water vapour pressure as a percentage of the value at which the air becomes saturated",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Water vapour pressure as a percentage of the value at which the air becomes saturated",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "r2",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33202,
+      "description": "Relative humidity",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33203",
+    "is_active": true,
+    "description": "2m dewpoint temperature",
+    "info": "Temperature to which the air, at 2 metres above the surface of the Earth, would have to be cooled for saturation to occur.",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Temperature to which the air, at 2 metres above the surface of the Earth, would have to be cooled for saturation to occur.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "d2m",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33203,
+      "description": "2m dewpoint temperature",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33204",
+    "is_active": true,
+    "description": "Total precipitation",
+    "info": "Accumulated liquid and frozen water, comprising rain and snow, that falls to the Earth's surface",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Accumulated liquid and frozen water, comprising rain and snow, that falls to the Earth's surface",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "tp",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33204,
+      "description": "Total precipitation",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33206",
+    "is_active": true,
+    "description": "Solar net radiation",
+    "info": "Amount of solar radiation (also known as shortwave radiation) that reaches a horizontal plane at the surface of the Earth (both direct and diffuse) minus the amount reflected by the Earth's surface (which is governed by the albedo).",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Amount of solar radiation (also known as shortwave radiation) that reaches a horizontal plane at the surface of the Earth (both direct and diffuse) minus the amount reflected by the Earth's surface (which is governed by the albedo).",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "ssr",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33206,
+      "description": "Solar net radiation",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33207",
+    "is_active": true,
+    "description": "Minimum temperature at 2 metres in the last 6 hours",
+    "info": "The lowest value of 2 metre temperature in the previous 6 hour period.",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "The lowest value of 2 metre temperature in the previous 6 hour period.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "mn2t6",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33207,
+      "description": "Minimum temperature at 2 metres in the last 6 hours",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33208",
+    "is_active": true,
+    "description": "Maximum temperature at 2 metres in the last 6 hours",
+    "info": "The highest value of 2 metre temperature in the previous 6 hour period.",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "The highest value of 2 metre temperature in the previous 6 hour period.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "mx2t6",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33208,
+      "description": "Maximum temperature at 2 metres in the last 6 hours",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33209",
+    "is_active": true,
+    "description": "Volumetric soil water layer 1",
+    "info": "This parameter is the volume of water in soil layer 1 (0 - 7cm, the surface is at 0cm).",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "This parameter is the volume of water in soil layer 1 (0 - 7cm, the surface is at 0cm).",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "swvl1",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33209,
+      "description": "Volumetric soil water layer 1",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33210",
+    "is_active": true,
+    "description": "Volumetric soil water layer 2",
+    "info": "This parameter is the volume of water in soil layer 2 (7 - 28cm, the surface is at 0cm).",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "This parameter is the volume of water in soil layer 2 (7 - 28cm, the surface is at 0cm).",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "swvl2",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33210,
+      "description": "Volumetric soil water layer 2",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33230",
+    "is_active": true,
+    "description": "Wind (speed and direction)",
+    "info": "Speed and direction of horizontal air movement",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Speed and direction of horizontal air movement",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "v10, u10",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33230,
+      "description": "Wind (speed and direction)",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33221",
+    "is_active": true,
+    "description": "Mean sea level pressure",
+    "info": "Pressure (force per unit area) of the atmosphere adjusted to the height of mean sea level.",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Pressure (force per unit area) of the atmosphere adjusted to the height of mean sea level.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "msl",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33221,
+      "description": "Mean sea level pressure",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33222",
+    "is_active": true,
+    "description": "Convective available potential energy",
+    "info": "Indication of the instability (or stability) of the atmosphere and can be used to assess the potential for the development of convection, which can lead to heavy rainfall, thunderstorms and other severe weather.",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Indication of the instability (or stability) of the atmosphere and can be used to assess the potential for the development of convection, which can lead to heavy rainfall, thunderstorms and other severe weather.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "cape",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33222,
+      "description": "Convective available potential energy",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33223",
+    "is_active": true,
+    "description": "Averaged total lightning flash density in the last hour",
+    "info": "Averaged total (cloud-to-cloud and cloud-to-ground) lightning flash density in the last hour.",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Averaged total (cloud-to-cloud and cloud-to-ground) lightning flash density in the last hour.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "litota",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33223,
+      "description": "Averaged total lightning flash density in the last hour",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33224",
+    "is_active": true,
+    "description": "10 metre wind gust since previous post-processing",
+    "info": "Maximum 3 second wind at 10 m height as defined by WMO.",
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Maximum 3 second wind at 10 m height as defined by WMO.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "fg10",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33224,
+      "description": "10 metre wind gust since previous post-processing",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33211",
+    "is_active": true,
+    "description": "Temperature at 2m height - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33211,
+      "description": "Temperature at 2m height - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33212",
+    "is_active": true,
+    "description": "Relative humidity - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33212,
+      "description": "Relative humidity - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33213",
+    "is_active": true,
+    "description": "2m dewpoint temperature - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33213,
+      "description": "2m dewpoint temperature - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33214",
+    "is_active": true,
+    "description": "Total precipitation - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33214,
+      "description": "Total precipitation - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33215",
+    "is_active": true,
+    "description": "Max gust - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33215,
+      "description": "Max gust - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33216",
+    "is_active": true,
+    "description": "Solar net radiation - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33216,
+      "description": "Solar net radiation - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33217",
+    "is_active": true,
+    "description": "Minimum temperature at 2 metres in the last 6 hours - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33217,
+      "description": "Minimum temperature at 2 metres in the last 6 hours - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33218",
+    "is_active": true,
+    "description": "Maximum temperature at 2 metres in the last 6 hours - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33218,
+      "description": "Maximum temperature at 2 metres in the last 6 hours - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33219",
+    "is_active": true,
+    "description": "Volumetric soil water layer 1 - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33219,
+      "description": "Volumetric soil water layer 1 - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33220",
+    "is_active": true,
+    "description": "Volumetric soil water layer 2 - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33220,
+      "description": "Volumetric soil water layer 2 - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33240",
+    "is_active": true,
+    "description": "Wind v10 - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33240,
+      "description": "Wind v10 - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33241",
+    "is_active": true,
+    "description": "Wind u10 - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33241,
+      "description": "Wind u10 - std dev",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33231",
+    "is_active": true,
+    "description": "Mean sea level pressure - std dev ",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33231,
+      "description": "Mean sea level pressure - std dev ",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33232",
+    "is_active": true,
+    "description": "Convective available potential energy - std dev ",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33232,
+      "description": "Convective available potential energy - std dev ",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33233",
+    "is_active": true,
+    "description": "Averaged total lightning flash density in the last hour - std dev ",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33233,
+      "description": "Averaged total lightning flash density in the last hour - std dev ",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33234",
+    "is_active": true,
+    "description": "10 metre wind gust since previous post-processing - std dev ",
+    "info": null,
+    "group": "weather",
+    "subgroup": "medium range",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "medium-range",
+      "Responsible": "FMI",
+      "datatype_id": 33234,
+      "description": "10 metre wind gust since previous post-processing - std dev ",
+      "Data example": null,
+      "Update frequency": "12 hours",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33301",
+    "is_active": true,
+    "description": "Temperature at 2m height",
+    "info": "Temperature in the atmosphere",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Temperature in the atmosphere",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33301,
+      "description": "Temperature at 2m height",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33302",
+    "is_active": true,
+    "description": "Relative humidity",
+    "info": "Water vapour pressure as a percentage of the value at which the air becomes saturated",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Water vapour pressure as a percentage of the value at which the air becomes saturated",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33302,
+      "description": "Relative humidity",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33303",
+    "is_active": true,
+    "description": "2m dewpoint temperature",
+    "info": "Temperature to which the air, at 2 metres above the surface of the Earth, would have to be cooled for saturation to occur.",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Temperature to which the air, at 2 metres above the surface of the Earth, would have to be cooled for saturation to occur.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33303,
+      "description": "2m dewpoint temperature",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33304",
+    "is_active": true,
+    "description": "Total precipitation",
+    "info": "Accumulated liquid and frozen water, comprising rain and snow, that falls to the Earth's surface",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Accumulated liquid and frozen water, comprising rain and snow, that falls to the Earth's surface",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33304,
+      "description": "Total precipitation",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33306",
+    "is_active": true,
+    "description": "Solar net radiation",
+    "info": "Amount of solar radiation (also known as shortwave radiation) that reaches a horizontal plane at the surface of the Earth (both direct and diffuse) minus the amount reflected by the Earth's surface (which is governed by the albedo).",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Amount of solar radiation (also known as shortwave radiation) that reaches a horizontal plane at the surface of the Earth (both direct and diffuse) minus the amount reflected by the Earth's surface (which is governed by the albedo).",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33306,
+      "description": "Solar net radiation",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33307",
+    "is_active": true,
+    "description": "Volumetric soil water layer 1",
+    "info": "This parameter is the volume of water in soil layer 1 (0 - 7cm, the surface is at 0cm).",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "This parameter is the volume of water in soil layer 1 (0 - 7cm, the surface is at 0cm).",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33307,
+      "description": "Volumetric soil water layer 1",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33308",
+    "is_active": true,
+    "description": "Volumetric soil water layer 2",
+    "info": "This parameter is the volume of water in soil layer 2 (7 - 28cm, the surface is at 0cm).",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "This parameter is the volume of water in soil layer 2 (7 - 28cm, the surface is at 0cm).",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33308,
+      "description": "Volumetric soil water layer 2",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33320",
+    "is_active": true,
+    "description": "Wind (speed and direction)",
+    "info": "Speed and direction of horizontal air movement",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Speed and direction of horizontal air movement",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": null,
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33320,
+      "description": "Wind (speed and direction)",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33322",
+    "is_active": true,
+    "description": "Minimum temperature at 2 metres in the last 6 hours",
+    "info": "The lowest value of 2 metre temperature in the previous 6 hour period.",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "The lowest value of 2 metre temperature in the previous 6 hour period.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "mn2t6",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33322,
+      "description": "Minimum temperature at 2 metres in the last 6 hours",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33323",
+    "is_active": true,
+    "description": "Maximum temperature at 2 metres in the last 6 hours",
+    "info": "The highest value of 2 metre temperature in the previous 6 hour period.",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "The highest value of 2 metre temperature in the previous 6 hour period.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "mx2t6",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33323,
+      "description": "Maximum temperature at 2 metres in the last 6 hours",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33324",
+    "is_active": true,
+    "description": "Mean sea level pressure",
+    "info": "Pressure (force per unit area) of the atmosphere adjusted to the height of mean sea level.",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Pressure (force per unit area) of the atmosphere adjusted to the height of mean sea level.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "msl",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33324,
+      "description": "Mean sea level pressure",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33325",
+    "is_active": true,
+    "description": "10 metre wind gust in the last 6 hours",
+    "info": "Maximum wind gust in the last 6 hours at a height of ten metres above the surface of the Earth.",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Maximum wind gust in the last 6 hours at a height of ten metres above the surface of the Earth.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "p10fg6",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33325,
+      "description": "10 metre wind gust in the last 6 hours",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33326",
+    "is_active": true,
+    "description": "Convective available potential energy",
+    "info": "Indication of the instability (or stability) of the atmosphere and can be used to assess the potential for the development of convection, which can lead to heavy rainfall, thunderstorms and other severe weather.",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Indication of the instability (or stability) of the atmosphere and can be used to assess the potential for the development of convection, which can lead to heavy rainfall, thunderstorms and other severe weather.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "cape",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33326,
+      "description": "Convective available potential energy",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33327",
+    "is_active": true,
+    "description": "Averaged total lightning flash density in the last 6 hours",
+    "info": "Averaged total (cloud-to-cloud and cloud-to-ground) lightning flash density in the last 6 hours.",
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": "Averaged total (cloud-to-cloud and cloud-to-ground) lightning flash density in the last 6 hours.",
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "litota6",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33327,
+      "description": "Averaged total lightning flash density in the last 6 hours",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33311",
+    "is_active": true,
+    "description": "Temperature at 2m height - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33311,
+      "description": "Temperature at 2m height - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33312",
+    "is_active": true,
+    "description": "Relative humidity - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33312,
+      "description": "Relative humidity - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33313",
+    "is_active": true,
+    "description": "2m dewpoint temperature - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33313,
+      "description": "2m dewpoint temperature - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33314",
+    "is_active": true,
+    "description": "Total precipitation - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33314,
+      "description": "Total precipitation - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33316",
+    "is_active": true,
+    "description": "Solar net radiation - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33316,
+      "description": "Solar net radiation - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33317",
+    "is_active": true,
+    "description": "Volumetric soil water layer 1 - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33317,
+      "description": "Volumetric soil water layer 1 - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33318",
+    "is_active": true,
+    "description": "Volumetric soil water layer 2 - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33318,
+      "description": "Volumetric soil water layer 2 - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33330",
+    "is_active": true,
+    "description": "Wind v10 - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33330,
+      "description": "Wind v10 - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33331",
+    "is_active": true,
+    "description": "Wind u10 - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33331,
+      "description": "Wind u10 - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33332",
+    "is_active": true,
+    "description": "Minimum temperature at 2 metres in the last 6 hours - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33332,
+      "description": "Minimum temperature at 2 metres in the last 6 hours - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33333",
+    "is_active": true,
+    "description": "Maximum temperature at 2 metres in the last 6 hours - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33333,
+      "description": "Maximum temperature at 2 metres in the last 6 hours - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33334",
+    "is_active": true,
+    "description": "Mean sea level pressure - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33334,
+      "description": "Mean sea level pressure - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33335",
+    "is_active": true,
+    "description": "10 metre wind gust in the last 6 hours - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33335,
+      "description": "10 metre wind gust in the last 6 hours - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33336",
+    "is_active": true,
+    "description": "Convective available potential energy - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33336,
+      "description": "Convective available potential energy - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "33337",
+    "is_active": true,
+    "description": "Averaged total lightning flash density in the last 6 hours - std dev",
+    "info": null,
+    "group": "weather",
+    "subgroup": "subseasonal",
+    "format": "NetCDF",
+    "domain": "Weather",
+    "source": "FMI",
+    "is_on_demand": false,
+    "extra_info": {
+      "info": null,
+      "Style": null,
+      "group": "weather",
+      "format": "NetCDF",
+      "Comments": "not to be displayed as layer",
+      "subgroup": "subseasonal",
+      "Responsible": "FMI",
+      "datatype_id": 33337,
+      "description": "Averaged total lightning flash density in the last 6 hours - std dev",
+      "Data example": null,
+      "Update frequency": "daily",
+      "When available? [ETA]": "available"
+    }
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": null,
+    "is_active": true,
+    "description": "",
+    "info": "",
+    "group": "weather forecast",
+    "subgroup": null,
+    "format": null,
+    "domain": "Weather",
+    "source": null,
+    "is_on_demand": false,
+    "extra_info": null
+  }
+},
+{
+  "model": "data.datatype",
+  "fields": {
+    "datatype_id": "35006",
+    "is_active": true,
+    "description": "Fire Simulation",
+    "info": "",
+    "group": "wildfire simulation",
+    "subgroup": "forecast",
+    "format": "multiple",
+    "domain": "Environment",
+    "source": "CIMA",
+    "is_on_demand": true,
+    "extra_info": null
+  }
+}
+]
