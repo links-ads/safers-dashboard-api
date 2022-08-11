@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from safers.core.tests.providers import GeometryProvider
 
-from safers.chatbot.models import Communication
+from safers.chatbot.models import Communication, Action
 
 fake = Faker()
 
@@ -54,4 +54,22 @@ class CommunicationFactory(factory.django.DjangoModelFactory):
 
     @factory.lazy_attribute_sequence
     def communication_id(self, n):
+        return f"{n}"
+
+
+class ActionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Action
+
+    timestamp = FactoryFaker("date_time_this_month")
+    activity = FactoryFaker("word")
+    status = FactoryFaker("word")
+    username = FactoryFaker("word")
+    organization = FactoryFaker("word")
+    # source
+
+    geometry = FactoryFaker("point")
+
+    @factory.lazy_attribute_sequence
+    def action_id(self, n):
         return f"{n}"
