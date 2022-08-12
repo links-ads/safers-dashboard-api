@@ -8,6 +8,13 @@ class ActionSourceTypes(models.TextChoices):
     CHATBOT = "Chatbot", _("Chatbot"),
 
 
+class ActionStatusTypes(models.TextChoices):
+    OFF = "Off", _("Off")
+    READY = "Ready", _("Ready")
+    MOVING = "Moving", _("Moving")
+    ACTIVE = "Active", _("Active")
+
+
 class Action(gis_models.Model):
     class Meta:
         verbose_name = "Action"
@@ -21,10 +28,15 @@ class Action(gis_models.Model):
 
     timestamp = models.DateTimeField(blank=True, null=True)
 
-    activity = models.CharField(max_length=128, blank=True, null=True)
-    status = models.CharField(max_length=128, blank=True, null=True)
     username = models.CharField(max_length=128, blank=True, null=True)
     organization = models.CharField(max_length=128, blank=True, null=True)
+    activity = models.CharField(max_length=128, blank=True, null=True)
+    status = models.CharField(
+        max_length=64,
+        choices=ActionStatusTypes.choices,
+        blank=True,
+        null=True,
+    )
     source = models.CharField(
         max_length=64,
         choices=ActionSourceTypes.choices,
