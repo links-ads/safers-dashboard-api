@@ -15,6 +15,10 @@ class ActionStatusTypes(models.TextChoices):
     ACTIVE = "Active", _("Active")
 
 
+class ActionActivityTypes(models.TextChoices):
+    pass
+
+
 class Action(gis_models.Model):
     class Meta:
         verbose_name = "Action"
@@ -30,7 +34,12 @@ class Action(gis_models.Model):
 
     username = models.CharField(max_length=128, blank=True, null=True)
     organization = models.CharField(max_length=128, blank=True, null=True)
-    activity = models.CharField(max_length=128, blank=True, null=True)
+    activity = models.CharField(
+        max_length=128,
+        choices=ActionActivityTypes.choices,
+        blank=True,
+        null=True,
+    )
     status = models.CharField(
         max_length=64,
         choices=ActionStatusTypes.choices,

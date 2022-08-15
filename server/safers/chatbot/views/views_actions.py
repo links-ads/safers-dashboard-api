@@ -6,11 +6,14 @@ from django.conf import settings
 from django.contrib.gis import geos
 
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.chatbot.models import Action
+from safers.chatbot.models import Action, ActionActivityTypes, ActionStatusTypes
 from safers.chatbot.serializers import ActionSerializer, ActionViewSerializer
 from .views_base import ChatbotView
 
@@ -62,3 +65,37 @@ class ActionListView(ActionView):
         )
 
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
+
+
+_action_activities_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
+)
+
+
+@swagger_auto_schema(
+    responses={status.HTTP_200_OK: _action_activities_schema}, method="get"
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def action_activities_view(request):
+    """
+    Returns the list of possible Action activities.
+    """
+    return Response(ActionActivityTypes.values, status=status.HTTP_200_OK)
+
+
+_action_statuses_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
+)
+
+
+@swagger_auto_schema(
+    responses={status.HTTP_200_OK: _action_statuses_schema}, method="get"
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def action_statuses_view(request):
+    """
+    Returns the list of possible Action statuses.
+    """
+    return Response(ActionStatusTypes.values, status=status.HTTP_200_OK)
