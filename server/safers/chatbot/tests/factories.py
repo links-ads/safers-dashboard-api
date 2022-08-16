@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from safers.core.tests.providers import GeometryProvider
 
-from safers.chatbot.models import Communication, Action, ActionStatusTypes
+from safers.chatbot.models import Action, ActionStatusTypes, Communication, Mission, MissionStatusTypes
 
 fake = Faker()
 
@@ -22,14 +22,8 @@ class CommunicationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Communication
 
-    # source_organization
-
     start_inclusive = FactoryFaker("pybool")
     end_inclusive = FactoryFaker("pybool")
-
-    # scope
-    # restriction
-    # target_organizations
 
     message = FactoryFaker("sentence")
 
@@ -65,7 +59,6 @@ class ActionFactory(factory.django.DjangoModelFactory):
     activity = FactoryFaker("word")
     username = FactoryFaker("word")
     organization = FactoryFaker("word")
-    # source
 
     status = FactoryFaker(
         "random_element", elements=ActionStatusTypes.values + [None]
@@ -82,3 +75,49 @@ class ActionFactory(factory.django.DjangoModelFactory):
         # only set an activity if status is ACTIVE
         if self.status == ActionStatusTypes.ACTIVE:
             return fake.word()
+
+
+class MissionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Mission
+
+    description = FactoryFaker("sentence")
+    username = FactoryFaker("word")
+    organization = FactoryFaker("word")
+    start_inclusive = FactoryFaker("pybool")
+    end_inclusive = FactoryFaker("pybool")
+
+    status = FactoryFaker(
+        "random_element", elements=MissionStatusTypes.values + [None]
+    )
+
+    geometry = FactoryFaker("point")
+
+    @factory.lazy_attribute_sequence
+    def mission_id(self, n):
+        return f"{n}"
+
+    @factory.lazy_attribute
+    def start(self):
+        # random date last month
+        delta = timedelta(days=31)
+        return fake.date_time_this_month() - delta
+
+    @factory.lazy_attribute
+    def end(self):
+        # random date either before or after now
+        now = timezone.now()
+        delta = timedelta(days=1)
+        ongoing = randint(0, 1)
+        if ongoing:
+            return now + delta
+        else:
+            return now - delta
+
+    @factory.lazy_attribute
+    def reports(self):
+        report_ids = [i for i in range(fake.pyint(min_value=1, max_value=10))]
+        return [{
+            "id": str(report_id),
+            "name": f"Report {report_id}",
+        } for report_id in report_ids]
