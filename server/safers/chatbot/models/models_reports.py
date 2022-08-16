@@ -86,6 +86,10 @@ class Report(gis_models.Model):
 
     PRECISION = 12
 
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False
+    )  # TODO: figure out how to remove this field w/out generating 'ProgrammingError: cannot cast type uuid to bigint'
+
     report_id = models.CharField(
         max_length=128, unique=True, blank=False, null=False
     )

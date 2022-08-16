@@ -14,26 +14,47 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='report',
             name='hazard',
-            field=models.CharField(blank=True, choices=[('Avalanche', 'Avalanche'), ('Earthquake', 'Earthquake'), ('Fire', 'Fire'), ('Flood', 'Flood'), ('Landslide', 'Landslide'), ('Storm', 'Storm'), ('Weather', 'Weather'), ('Subsidence', 'Subsidence')], default='Fire', max_length=128, null=True),
-        ),
-        migrations.AlterField(
-            model_name='report',
-            name='id',
-            field=models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
+            field=models.CharField(
+                blank=True,
+                choices=[('Avalanche', 'Avalanche'),
+                         ('Earthquake', 'Earthquake'), ('Fire', 'Fire'),
+                         ('Flood', 'Flood'), ('Landslide', 'Landslide'),
+                         ('Storm', 'Storm'), ('Weather', 'Weather'),
+                         ('Subsidence', 'Subsidence')],
+                default='Fire',
+                max_length=128,
+                null=True
+            ),
         ),
         migrations.AlterField(
             model_name='report',
             name='media',
-            field=models.JSONField(default=list, validators=[safers.chatbot.models.models_reports.validate_media]),
+            field=models.JSONField(
+                default=list,
+                validators=[
+                    safers.chatbot.models.models_reports.validate_media
+                ]
+            ),
         ),
         migrations.AlterField(
             model_name='report',
             name='reporter',
-            field=models.JSONField(default=dict, validators=[safers.chatbot.models.models_reports.validate_reporter]),
+            field=models.JSONField(
+                default=dict,
+                validators=[
+                    safers.chatbot.models.models_reports.validate_reporter
+                ]
+            ),
         ),
         migrations.AlterField(
             model_name='report',
             name='source',
-            field=models.CharField(blank=True, choices=[('Chatbot', 'Chatbot')], default='Chatbot', max_length=64, null=True),
+            field=models.CharField(
+                blank=True,
+                choices=[('Chatbot', 'Chatbot')],
+                default='Chatbot',
+                max_length=64,
+                null=True
+            ),
         ),
     ]
