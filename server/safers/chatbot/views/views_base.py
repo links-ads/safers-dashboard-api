@@ -73,7 +73,8 @@ class ChatbotView(views.APIView):
                 proxy_url,
                 auth=ProxyAuthentication(request.user),
                 params=proxy_params,
-            )
+                timeout=4,  # 4 seconds as per https://requests.readthedocs.io/en/stable/user/advanced/#timeouts
+            )  # yapf: disable
             response.raise_for_status()
         except Exception as e:
             raise APIException(e)

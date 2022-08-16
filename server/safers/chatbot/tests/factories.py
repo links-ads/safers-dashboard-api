@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from safers.core.tests.providers import GeometryProvider
 
-from safers.chatbot.models import Communication
+from safers.chatbot.models import Communication, Action, ActionStatusTypes
 
 fake = Faker()
 
@@ -55,3 +55,30 @@ class CommunicationFactory(factory.django.DjangoModelFactory):
     @factory.lazy_attribute_sequence
     def communication_id(self, n):
         return f"{n}"
+
+
+class ActionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Action
+
+    timestamp = FactoryFaker("date_time_this_month")
+    activity = FactoryFaker("word")
+    username = FactoryFaker("word")
+    organization = FactoryFaker("word")
+    # source
+
+    status = FactoryFaker(
+        "random_element", elements=ActionStatusTypes.values + [None]
+    )
+
+    geometry = FactoryFaker("point")
+
+    @factory.lazy_attribute_sequence
+    def action_id(self, n):
+        return f"{n}"
+
+    @factory.lazy_attribute
+    def activity(self):
+        # only set an activity if status is ACTIVE
+        if self.status == ActionStatusTypes.ACTIVE:
+            return fake.word()
