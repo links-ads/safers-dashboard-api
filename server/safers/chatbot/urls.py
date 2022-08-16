@@ -7,6 +7,8 @@ from safers.chatbot.views import (
     action_activities_view,
     action_statuses_view,
     CommunicationListView,
+    MissionListView,
+    mission_statuses_view,
     ReportListView,
     ReportDetailView,
 )
@@ -33,6 +35,16 @@ api_urlpatterns = [
         "chatbot/communications",
         CommunicationListView.as_view(),
         name="communications-list",
+    ),
+    path(
+        "chatbot/missions",
+        MissionListView.as_view(),
+        name="missions-list",
+    ),
+    path(
+        "chatbot/missions/statuses",
+        mission_statuses_view,
+        name="mission-statuses-list",
     ),
     path(
         "chatbot/reports",

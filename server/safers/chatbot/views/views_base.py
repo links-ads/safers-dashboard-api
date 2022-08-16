@@ -36,7 +36,7 @@ class ChatbotView(views.APIView):
 
         default_date = data.pop("default_date")
         if default_date and "start" not in data:
-            data["start"] = timezone.now() - settings.SAFERS_DEFAULT_TIMEZONE
+            data["start"] = timezone.now() - settings.SAFERS_DEFAULT_TIMERANGE
         if default_date and "end" not in data:
             data["end"] = timezone.now()
 
