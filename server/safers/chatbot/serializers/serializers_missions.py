@@ -22,8 +22,6 @@ class MissionViewSerializer(ChatbotViewSerializer):
         required=False,
     )
 
-    # TODO: ActivityIds
-
 
 class MissionSerializer(serializers.ModelSerializer):
     """

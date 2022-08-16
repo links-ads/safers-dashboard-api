@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from datetime import datetime
 from urllib.parse import urljoin
 
@@ -16,6 +17,34 @@ from safers.chatbot.models import Mission, MissionStatusTypes
 from safers.chatbot.serializers import MissionSerializer, MissionViewSerializer
 from .views_base import ChatbotView
 
+_mission_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties=OrderedDict((
+        ("id", openapi.Schema(type=openapi.TYPE_STRING)),
+        ("name", openapi.Schema(type=openapi.TYPE_STRING)),
+        ("description", openapi.Schema(type=openapi.TYPE_STRING)),
+        ("username", openapi.Schema(type=openapi.TYPE_STRING)),
+        ("organization", openapi.Schema(type=openapi.TYPE_STRING)),
+        ("start", openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME)),
+        ("end", openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME)),
+        ("status", openapi.Schema(type=openapi.TYPE_STRING, example="Created")),
+        ("source", openapi.Schema(type=openapi.TYPE_STRING, example="Chatbot")),
+        ("reports", openapi.Schema(type=openapi.TYPE_OBJECT, example=[
+            {"name": "Report N", "id": "N"}
+        ])),
+        ("geometry", openapi.Schema(type=openapi.TYPE_OBJECT, example={
+            "type": "Point",
+            "coordinates": [1,2]
+        })),
+        ("location", openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_NUMBER), example=[1, 2])),
+    ))
+)  # yapf: disable
+
+
+_mission_list_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=_mission_schema
+)
+
 
 class MissionView(ChatbotView):
 
@@ -29,7 +58,7 @@ class MissionListView(MissionView):
 
     @swagger_auto_schema(
         query_serializer=MissionViewSerializer,
-        responses={status.HTTP_200_OK: MissionSerializer},
+        responses={status.HTTP_200_OK: _mission_list_schema},
     )
     def get(self, request, *args, **kwargs):
 
