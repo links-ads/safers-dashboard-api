@@ -4,73 +4,30 @@ from rest_framework import serializers, ISO_8601
 from rest_framework_gis import serializers as gis_serializers
 
 from safers.chatbot.models import Report, ReportHazardTypes, ReportStatusTypes, ReportContentTypes, ReportVisabilityTypes
+from .serializers_base import ChatbotViewSerializer
 
 ReportSerializerDateTimeFormats = [ISO_8601, "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d"]
 
-# class ReportMediaSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = ReportMedia
-#         fields = (
-#             "type",
-#             "url",
-#             "thumbnail",
-#         )
 
-
-class ReportSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Report
-        fields = (
-            "name",
-            "report_id",
-            "mission_id",
-            "timestamp",
-            "source",
-            "hazard",
-            "status",
-            "content",
-            "visibility",
-            "description",
-            "reporter",
-            "media",
-            "geometry",
-            "location",
-        )
-
-    # media = ReportMediaSerializer(many=True)
-
-    geometry = gis_serializers.GeometryField(
-        precision=Report.PRECISION, remove_duplicates=True
-    )
-
-    location = serializers.SerializerMethodField()
-
-    def get_location(self, obj):
-        if obj.geometry:
-            return obj.geometry.coords
-
-
-class ReportViewSerializer(serializers.Serializer):
+class ReportViewSerializer(ChatbotViewSerializer):
     """
-    Note that this isn't a ModelSerializer; it's just 
-    used for query_param validation in ReportView
+    serializer to use when validating the incoming query_params for the proxy API
+    (this adds a few custom fields to the default chatbot serializer)
     """
 
     ProxyFieldMapping = {
-        # fields to pass onto proxy
-        # "hazards": "Hazards",
-        # "status": "Status",
-        # "content": "Contents",
-        "visibility": "Visibility",
-        "start": "StartDate",
-        "end": "EndDate",
-        "max_results": "MaxResultCount",
-        "bbox": "bbox",  # bbox will need further processing in View
-    }
+        **ChatbotViewSerializer.ProxyFieldMapping,
+        **{
+            # "hazards": "Hazards",
+            # "status": "Status",
+            # "content": "Contents",
+            "visibility": "Visibility",
+        }
+    }  # yapf: disable
 
     hazards = serializers.MultipleChoiceField(
         choices=ReportHazardTypes.choices,
-        default=[ReportHazardTypes.FIRE],  # required=False,
+        default=[ReportHazardTypes.FIRE],
     )
 
     status = serializers.MultipleChoiceField(
@@ -90,78 +47,42 @@ class ReportViewSerializer(serializers.Serializer):
 
     visibility = serializers.ChoiceField(
         choices=ReportVisabilityTypes.choices,
-        default=ReportVisabilityTypes.ALL.value,
+        default=ReportVisabilityTypes.ALL,
         required=False,
     )
 
-    max_results = serializers.IntegerField(required=False, default=1000)
 
-    bbox = serializers.CharField(required=False)
-
-    start = serializers.DateTimeField(
-        input_formats=ReportSerializerDateTimeFormats, required=False
-    )
-    end = serializers.DateTimeField(
-        input_formats=ReportSerializerDateTimeFormats, required=False
-    )
-
-    default_date = serializers.BooleanField(
-        default=False,
-        required=False,
-        help_text=_(
-            "If default_date is True and no start/end is provided the default start (now) and end (3 days prior to now) will be used; "
-            "If default_date is False and no start/end is provided then no date filter will be passed to the API"
+class ReportSerializer(serializers.ModelSerializer):
+    """
+    serializer to use when converting the output of the proxy API to a response for the dashboard frontend
+    """
+    class Meta:
+        model = Report
+        fields = (
+            "report_id",
+            "name",
+            "mission_id",
+            "timestamp",
+            "source",
+            "hazard",
+            "status",
+            "content",
+            "visibility",
+            "description",
+            "reporter",
+            "media",
+            "geometry",
+            "location",
         )
-    )
-    default_bbox = serializers.BooleanField(
-        # default=True,
-        default=False,
-        required=False,
-        help_text=_(
-            "If default_bbox is True and no bbox is provided the user's default_aoi bbox will be used; "
-            "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
-        )
+
+    # id = serializers.CharField(source="report_id")
+
+    geometry = gis_serializers.GeometryField(
+        precision=Report.PRECISION, remove_duplicates=True
     )
 
-    def validate_max_results(self, value):
-        if value <= 0 or value > 1000:
-            raise serializers.ValidationError(
-                "max_results must be between 1 and 1000"
-            )
-        return value
+    location = serializers.SerializerMethodField()
 
-    def validate_bbox(self, value):
-        try:
-            bbox = list(map(float, value.split(",")))
-            assert len(bbox) == 4, "bbox must contain 4 values"
-        except Exception as e:
-            raise serializers.ValidationError(e)
-        return bbox
-
-    def validate_start(self, value):
-        if value:
-            # move start to the start of the day
-            start_time_kwargs = {
-                "hour": 0, "minute": 0, "second": 0, "microsecond": 0
-            }
-            return value.replace(**start_time_kwargs)
-
-    def validate_end(self, value):
-        if value:
-            # move end to end of the day
-            end_time_kwargs = {
-                "hour": 23, "minute": 59, "second": 59, "microsecond": 999999
-            }
-            return value.replace(**end_time_kwargs)
-
-    def validate(self, data):
-
-        validated_data = super().validate(data)
-
-        # check timestamps...
-        start = validated_data.get("start")
-        end = validated_data.get("end")
-        if start and end and start >= end:
-            raise serializers.ValidationError("end must occur after start")
-
-        return validated_data
+    def get_location(self, obj):
+        if obj.geometry:
+            return obj.geometry.coords
