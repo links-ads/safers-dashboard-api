@@ -11,11 +11,47 @@ from django.utils import timezone
 
 from safers.core.tests.providers import GeometryProvider
 
-from safers.chatbot.models import Action, ActionStatusTypes, Communication, Mission, MissionStatusTypes
+from safers.chatbot.models import Action, ActionStatusTypes, Communication, Mission, MissionStatusTypes, Report, ReportContentTypes,  ReportStatusTypes
 
 fake = Faker()
 
 FactoryFaker.add_provider(GeometryProvider)
+
+
+class ReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Report
+
+    timestamp = FactoryFaker("date_time_this_month")
+    status = FactoryFaker("random_element", elements=ReportStatusTypes.values)
+    content = FactoryFaker("random_element", elements=ReportContentTypes.values)
+
+    is_public = FactoryFaker("pybool")
+    description = FactoryFaker("sentence")
+    geometry = FactoryFaker("point")
+
+    @factory.lazy_attribute_sequence
+    def report_id(self, n):
+        return f"{n}"
+
+    @factory.lazy_attribute
+    def mission_id(self):
+        return str(fake.pyint(min_value=1, max_value=10))
+
+    @factory.lazy_attribute
+    def media(self):
+        return [{
+            "url": fake.url(),
+            "thumbnail": fake.url(),
+            "type": "Image",
+        } for _ in range(fake.pyint(min_value=0, max_value=4))]
+
+    @factory.lazy_attribute
+    def reporter(self):
+        return {
+            "name": fake.first_name(),
+            "organization": fake.word(),
+        }
 
 
 class CommunicationFactory(factory.django.DjangoModelFactory):

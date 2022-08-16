@@ -3,21 +3,20 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.gis import geos
-from django.utils import timezone
 
-from rest_framework import status, views
+from rest_framework import status
 from rest_framework.exceptions import APIException
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from safers.users.authentication import ProxyAuthentication
-from safers.users.permissions import IsRemote
 
 from safers.chatbot.models import Report
 from safers.chatbot.serializers import ReportSerializer, ReportViewSerializer
+from .views_base import ChatbotView
 
 _report_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -54,73 +53,31 @@ _report_schema = openapi.Schema(
 
 _report_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=_report_schema
-)  # yapf: disable
+)
 
-class ReportView(views.APIView):
 
-    permission_classes = [IsAuthenticated, IsRemote]
+class ReportView(ChatbotView):
 
-    def get_serializer_context(self):
-        return {
-            'request': self.request, 'format': self.format_kwarg, 'view': self
-        }
+    view_serializer_class = ReportViewSerializer
+    model_serializer_class = ReportSerializer
 
 
 class ReportListView(ReportView):
-    def update_default_data(self, data):
 
-        default_date = data.pop("default_date")
-        if default_date and "start" not in data:
-            data["start"] = timezone.now() - settings.SAFERS_DEFAULT_TIMEZONE
-        if default_date and "end" not in data:
-            data["end"] = timezone.now()
-
-        default_bbox = data.pop("default_bbox")
-        if default_bbox and "bbox" not in data:
-            user = self.request.user
-            data["bbox"] = user.default_aoi.geometry.extent
-
-        return data
+    GATEWAY_URL_PATH = "/api/services/app/Reports/GetReports"
 
     @swagger_auto_schema(
         query_serializer=ReportViewSerializer,
         responses={status.HTTP_200_OK: _report_list_schema},
     )
     def get(self, request, *args, **kwargs):
-        """
-        Return all reports
-        """
 
-        GATEWAY_URL_PATH = "/api/services/app/Reports/GetReports"
-
-        view_serializer = ReportViewSerializer(
-            data=request.query_params,
-            context=self.get_serializer_context(),
+        proxy_data = self.get_proxy_list_data(
+            request,
+            proxy_url=urljoin(
+                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_PATH
+            ),
         )
-        view_serializer.is_valid(raise_exception=True)
-
-        updated_data = self.update_default_data(view_serializer.validated_data)
-        proxy_params = {
-            view_serializer.ProxyFieldMapping[k]: v
-            for k, v in updated_data.items()
-            if k in view_serializer.ProxyFieldMapping
-        }  # yapf: disable
-        if "bbox" in proxy_params:
-            min_x, min_y, max_x, max_y = proxy_params.pop("bbox")
-            proxy_params["NorthEastBoundary.Latitude"] = max_y
-            proxy_params["NorthEastBoundary.Longitude"] = max_x
-            proxy_params["SouthWestBoundary.Latitude"] = min_y
-            proxy_params["SouthWestBoundary.Longitude"] = min_x
-
-        try:
-            response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, GATEWAY_URL_PATH),
-                auth=ProxyAuthentication(request.user),
-                params=proxy_params,
-            )
-            response.raise_for_status()
-        except Exception as e:
-            raise APIException(e)
 
         reports = [
             Report(
@@ -145,9 +102,10 @@ class ReportListView(ReportView):
                     "name": data.get("username"),
                     "organization": data.get("organizationName"),
                 },
-            ) for data in response.json()["data"]
+            ) for data in proxy_data
         ]
-        model_serializer = ReportSerializer(
+
+        model_serializer = self.model_serializer_class(
             reports, context=self.get_serializer_context(), many=True
         )
 
@@ -155,16 +113,14 @@ class ReportListView(ReportView):
 
 
 class ReportDetailView(ReportView):
+
+    GATEWAY_URL_PATH = "/api/services/app/Reports/GetReportById"
+
     @swagger_auto_schema(
         query_serializer=ReportViewSerializer,
         responses={status.HTTP_200_OK: _report_schema},
     )
     def get(self, request, *args, **kwargs):
-        """
-        Return all reports
-        """
-
-        GATEWAY_URL_PATH = "/api/services/app/Reports/GetReportById"
 
         proxy_params = {
             "Id": kwargs["report_id"],
@@ -172,17 +128,18 @@ class ReportDetailView(ReportView):
         }
 
         try:
-
             response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, GATEWAY_URL_PATH),
+                urljoin(settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_PATH),
                 auth=ProxyAuthentication(request.user),
                 params=proxy_params,
-            )
+                timeout=4,  # 4 seconds as per https://requests.readthedocs.io/en/stable/user/advanced/#timeouts
+            )  # yapf: disable
             response.raise_for_status()
+            proxy_data = response.json()
         except Exception as e:
             raise APIException(e)
 
-        feature = response.json()["feature"]
+        feature = proxy_data["feature"]
         geometry = feature.get("geometry", None)
         properties = feature.get("properties", {})
 
@@ -207,7 +164,7 @@ class ReportDetailView(ReportView):
                 "organization": properties.get("organizationName"),
             },
         )
-        model_serializer = ReportSerializer(
+        model_serializer = self.model_serializer_class(
             report, context=self.get_serializer_context(), many=False
         )
 
