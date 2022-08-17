@@ -40,7 +40,14 @@ class Command(BaseCommand):
             "--skip-cameras",
             dest="load_cameras",
             action="store_false",
-            help="Whether or not to skip the Camer fixtures.",
+            help="Whether or not to skip the Camera fixtures.",
+        )
+
+        parser.add_argument(
+            "--skip-countries",
+            dest="load_countries",
+            action="store_false",
+            help="Whether or not to skip the Country fixtures.",
         )
 
         parser.add_argument(
@@ -85,6 +92,12 @@ class Command(BaseCommand):
                 load_fixture(
                     apps.get_app_config("cameras"),
                     "cameras_fixture.json",
+                )
+
+            if options["load_countries"]:
+                load_fixture(
+                    apps.get_app_config("core"),
+                    "countries_fixture.json",
                 )
 
             if options["load_data"]:
