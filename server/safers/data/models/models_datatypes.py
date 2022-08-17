@@ -31,6 +31,9 @@ class DataTypeQuerySet(models.QuerySet):
     def inactive(self):
         return self.filter(is_active=False)
 
+    def on_demand(self):
+        return self.filter(is_on_demand=True)
+
 
 class DataType(models.Model):
     """
@@ -86,6 +89,9 @@ class DataType(models.Model):
     group = models.CharField(max_length=128, blank=True, null=True)
     subgroup = models.CharField(max_length=128, blank=True, null=True)
     format = models.CharField(max_length=128, blank=True, null=True)
+    domain = models.CharField(max_length=64, blank=True, null=True)
+    source = models.CharField(max_length=64, blank=True, null=True)
+    is_on_demand = models.BooleanField(default=False)
     extra_info = models.JSONField(blank=True, null=True)
 
     def __str__(self):
@@ -93,14 +99,12 @@ class DataType(models.Model):
 
     @property
     def name(self):
-        name = ""
-        if self.datatype_id:
-            name = str(self.datatype_id) + " " + name
-        if self.subgroup:
-            name = self.subgroup + " " + name
-        if self.group:
-            name = self.group + " " + name
-        return name
+        PLACEHOLDER = "-"
+        return " : ".join([
+            self.group or PLACEHOLDER,
+            self.subgroup or PLACEHOLDER,
+            self.datatype_id or PLACEHOLDER
+        ])
 
     def natural_key(self):
         return (

@@ -24,11 +24,46 @@ Pika
 
 AWS S3
 
+## config
+
+several environment variables are required for **safers-dashboard-api**:
+
+* DJANGO_SECRET_KEY
+* DATABASE_URL="postgis://safers_user:safers_pwd@db:5432/safers_db"
+* ACCOUNT_CONFIRM_EMAIL_CLIENT_URL="http://localhost:3000/auth/confirm-email/{key}"
+* ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL="http://localhost:3000/auth/password/reset/{key}/{uid}"
+* CLIENT_HOST="http://localhost:3000"
+* FUSION_AUTH_API_KEY
+* FUSION_AUTH_CLIENT_ID
+* FUSION_AUTH_CLIENT_SECRET
+* FUSION_AUTH_TENANT_ID
+* FUSION_AUTH_TENANT_NAME
+* FUSION_AUTH_EXTERNAL_BASE_URL="https://auth.safers-project.cloud"
+* FUSION_AUTH_INTERNAL_BASE_URL="https://auth.safers-project.cloud"
+* DJANGO_RMQ_TRANSPORT="amqp"
+* DJANGO_RMQ_HOST="bus.safers-project.cloud"
+* DJANGO_RMQ_PORT=5674
+* DJANGO_RMQ_EXCHANGE="safers.b2b"
+* DJANGO_RMQ_VHOST
+* DJANGO_RMQ_QUEUE
+* DJANGO_RMQ_USERNAME
+* DJANGO_RMQ_PASSWORD
+* DJANGO_RMQ_APP_ID="dsh"
+
+In addition, in order to ensure uniqueness among message ids, a `SiteProfile` should be configured.  This can be done in the Django Admin; simply ensure the profiles `code` is a unique string value.
+
+Finally, several fixtures are used to bootstrap the application:
+* ./server/safers/users/fixtures/roles_fixture.json
+* ./server/safers/users/fixtures/organizations_fixture.json
+* ./server/safers/data/fixtures/datatypes_fixtures.json
+* ./server/safers/aois/fixtures/aois_fixture.json
+* ./server/safers/cameras/fixtures/cameras_fixture.json
+
 ## details
 
 Users can authenticate locally or remotely (via FusionAuth).  Note that only remote users can interact w/ the SAFERS API - so there's really not much point in using the Dashboard as a local user.
 
-The RMQ app uses `pika` to monitor the SAFERS Message Queue.  Upon receipt of a message with a registered routing_key the handlers defined in `rmq.py#BINDING_KEYS` are called.  This typically creates one or more model instances in the Dashboard DB.
+The RMQ app uses `pika` to monitor the SAFERS Message Queue.  Upon receipt of a message with a registered routing_key the handlers defined in `rmq.py#BINDING_KEYS` are called. 
 
 ## profiling
 

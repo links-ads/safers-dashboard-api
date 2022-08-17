@@ -56,10 +56,10 @@ class TweetView(views.APIView):
 
     def update_default_data(self, data):
 
-        if data.pop("default_start") and "start" not in data:
+        default_date = data.pop("default_date")
+        if default_date and "start" not in data:
             data["start"] = timezone.now() - settings.SAFERS_DEFAULT_TIMERANGE
-
-        if data.pop("default_end") and "end" not in data:
+        if default_date and "end" not in data:
             data["end"] = timezone.now()
 
         if data.pop("default_bbox") and "bbox" not in data:

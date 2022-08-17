@@ -29,6 +29,9 @@ class DataTypeAdmin(admin.ModelAdmin):
         "group",
         "subgroup",
         "format",
+        "source",
+        "domain",
+        "is_on_demand",
         "extra_info",
     )
     formfield_overrides = {
@@ -40,6 +43,7 @@ class DataTypeAdmin(admin.ModelAdmin):
         "datatype_id",
         "group",
         "subgroup",
+        "is_on_demand",
         "get_description_for_list_display",
     )
     list_filter = (
@@ -47,6 +51,9 @@ class DataTypeAdmin(admin.ModelAdmin):
         "subgroup",
         ("group", admin.EmptyFieldListFilter),
         ("subgroup", admin.EmptyFieldListFilter),
+        "source",
+        "domain",
+        "is_on_demand",
     )
     readonly_fields = ("id", )
     search_fields = (
@@ -87,7 +94,8 @@ class DataTypeAdmin(admin.ModelAdmin):
             "Format": "format",
             "Data Description": "description",
             "Info (short description )for frontend": "info",
-            # "Responsible":
+            "Responsible": "source",
+            "Domain": "domain",
             # "Update frequency": "update_frequency",
             # "Comments":
             # "Data example":

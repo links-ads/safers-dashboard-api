@@ -1,1 +1,4 @@
+from .serializers_actions import ActionSerializer, ActionViewSerializer
+from .serializers_communications import CommunicationSerializer, CommunicationViewSerializer
+from .serializers_missions import MissionSerializer, MissionViewSerializer
 from .serializers_reports import ReportSerializer, ReportViewSerializer

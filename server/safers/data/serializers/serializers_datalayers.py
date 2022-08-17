@@ -8,39 +8,12 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, ISO_8601
 from rest_framework_gis import serializers as gis_serializers
 
+from safers.core.fields import UnderspecifiedDateTimeField
 from safers.core.serializers import ContextVariableDefault
 
 DataLayerSerializerDateTimeFormats = [
     ISO_8601, "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d"
 ]
-
-
-class DataLayerTimeField(serializers.Field):
-    # TODO: COPE WITH TIME RANGES AS PER https://docs.geoserver.org/latest/en/user/services/wms/time.html#wms-time
-
-    def to_representation(self, value):
-        # python to json
-        return value
-
-    def to_internal_value(self, data):
-
-        parsed_datetime = None
-        for format in DataLayerSerializerDateTimeFormats:
-            if format == ISO_8601:
-                try:
-                    parsed_datetime = parse_datetime(data)
-                except (ValueError, TypeError):
-                    pass
-            else:
-                try:
-                    parsed_datetime = datetime.strptime(data, format)
-                except (ValueError, TypeError):
-                    pass
-
-        if not parsed_datetime:
-            raise serializers.ValidationError("invalid timestamp")
-
-        return parsed_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class DataLayerSerializer(serializers.Serializer):
@@ -55,6 +28,7 @@ class DataLayerSerializer(serializers.Serializer):
         "bbox": "Bbox",
         "start": "Start",
         "end": "End",
+        "include_map_requests": "IncludeMapRequests",
     }
 
     n_layers = serializers.IntegerField(
@@ -68,30 +42,42 @@ class DataLayerSerializer(serializers.Serializer):
 
     bbox = serializers.CharField(required=False)
 
-    start = serializers.DateTimeField(
-        input_formats=DataLayerSerializerDateTimeFormats, required=False
+    start = UnderspecifiedDateTimeField(
+        input_formats=DataLayerSerializerDateTimeFormats,
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
     )
-    end = serializers.DateTimeField(
-        input_formats=DataLayerSerializerDateTimeFormats, required=False
+
+    end = UnderspecifiedDateTimeField(
+        input_formats=DataLayerSerializerDateTimeFormats,
+        hour=23,
+        minute=59,
+        second=59,
+        microsecond=999999,
     )
+
+    include_map_requests = serializers.BooleanField(
+        default=False,
+        required=False,
+        help_text=_(
+            "Whether or not to include on-demand MapRequests.  "
+            "This ought to be 'False' to distinguish this API from the 'api/data/map_requests' API."
+        ),
+    )
+
     order = serializers.ChoiceField(choices=OrderType.choices, required=False)
 
-    default_start = serializers.BooleanField(
-        default=True,
+    default_date = serializers.BooleanField(
+        default=False,
         required=False,
         help_text=_(
-            "If default_start is True and no start is provided the default start (now) will be used; "
-            "If default_start is False and no start is provided then no start filter will be passed to the API"
+            "If default_date is True and no start/end is provided the default start/end (now / 3 days prior) will be used; "
+            "If default_date is False and no start/end is provided then no start/end filters will be passed to the API"
         )
     )
-    default_end = serializers.BooleanField(
-        default=True,
-        required=False,
-        help_text=_(
-            "If default_end is True and no end is provided the default start (3 days prior to now) will be used; "
-            "If default_end is False and no end is provided then no end filter will be passed to the API"
-        )
-    )
+
     default_bbox = serializers.BooleanField(
         default=True,
         required=False,

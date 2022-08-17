@@ -4,8 +4,48 @@ from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.utils.translation import gettext_lazy as _
 
-from safers.core.mixins import HashableMixin
-from safers.rmq.exceptions import RMQException
+from safers.core.utils import validate_schema
+
+
+def validate_media(value):
+    """
+    A simple validator that ensures report.media is a list of correctly-formatted objects
+    """
+
+    media_schema = {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "url": {"type": "string"},
+                "thumbnail": {"type": "string"},
+                "type": {"type": "string"}
+            },
+            "required": ["url"],
+        }
+    }  # yapf: disable
+
+    return validate_schema(value, media_schema)
+
+
+def validate_reporter(value):
+    """
+    A simple validator that ensures report.reporter is a correctly-formatted object
+    """
+
+    reporter_schema = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "organization": {"type": "string"}
+        },
+    }  # yapf: disable
+
+    return validate_schema(value, reporter_schema)
+
+
+class ReportSourceTypes(models.TextChoices):
+    CHATBOT = "Chatbot", _("Chatbot"),
 
 
 class ReportHazardTypes(models.TextChoices):
@@ -39,25 +79,6 @@ class ReportVisabilityTypes(models.TextChoices):
     ALL = "All", _("All"),
 
 
-# class ReportMedia(models.Model):
-
-#     id = models.UUIDField(
-#         primary_key=True,
-#         default=uuid.uuid4,
-#         editable=False,
-#     )
-
-#     type = models.CharField(max_length=128, blank=True, null=True)
-#     url = models.URLField(blank=True, null=True)
-#     thumbnail = models.URLField(blank=True, null=True)
-
-#     report = models.ForeignKey(
-#         "report",
-#         on_delete=models.CASCADE,
-#         related_name="media",
-#     )
-
-
 class Report(gis_models.Model):
     class Meta:
         verbose_name = "Report"
@@ -66,10 +87,8 @@ class Report(gis_models.Model):
     PRECISION = 12
 
     id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
+        primary_key=True, default=uuid.uuid4, editable=False
+    )  # TODO: figure out how to remove this field w/out generating 'ProgrammingError: cannot cast type uuid to bigint'
 
     report_id = models.CharField(
         max_length=128, unique=True, blank=False, null=False
@@ -78,13 +97,19 @@ class Report(gis_models.Model):
     mission_id = models.CharField(max_length=128, blank=True, null=True)
 
     timestamp = models.DateTimeField(blank=True, null=True)
-
-    source = models.CharField(max_length=128, blank=True, null=True)
+    source = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        choices=ReportSourceTypes.choices,
+        default=ReportSourceTypes.CHATBOT,
+    )
     hazard = models.CharField(
         max_length=128,
         blank=True,
         null=True,
-        choices=ReportHazardTypes.choices
+        choices=ReportHazardTypes.choices,
+        default=ReportHazardTypes.FIRE,
     )
     status = models.CharField(
         max_length=128,
@@ -100,12 +125,8 @@ class Report(gis_models.Model):
     )
     is_public = models.BooleanField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-
-    # TODO: THESE FIELDS SHOULD BE A REVERSE FK, BUT AS I DON'T SAVE THESE MODELS
-    # TODO: THOSE RELATIONSHIPS CAN BE SET - IS THERE ANY WAY AROUND THAT?
-    media = models.JSONField(default=list)
-    reporter = models.JSONField(default=dict)
-
+    media = models.JSONField(validators=[validate_media], default=list)
+    reporter = models.JSONField(validators=[validate_reporter], default=dict)
     geometry = gis_models.GeometryField(blank=False, null=False)
 
     def __str__(self):
@@ -120,6 +141,11 @@ class Report(gis_models.Model):
         if self.is_public:
             return ReportVisabilityTypes.PUBLIC
         return ReportVisabilityTypes.PRIVATE
+
+    def save(self, *args, **kwargs):
+        raise NotImplementedError(
+            "Report is not stored in the db and therefore cannot be saved."
+        )
 
 
 ##########################

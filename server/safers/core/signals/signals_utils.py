@@ -1,7 +1,7 @@
 from django.dispatch import Signal, receiver
 
-# signal that geometries send to parents when their geometry updates
-# in order to allow parents to update their center & bounding_box
+# generic signal that geometries send to parents when their geometry updates
+# in order to allow parents to update their center & bounding_box & etc.
 
 geometry_updated = Signal(providing_args=["geometry", "parent"])
 

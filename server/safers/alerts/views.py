@@ -107,7 +107,7 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         field_name="timestamp", lookup_expr="date__lte"
     )
     default_date = filters.BooleanFilter(
-        initial=True,
+        initial=False,
         help_text=_(
             "If default_date is True and no end_date is provided then the current date will be used and if no start_date is provided then 3 days previous will be used; "
             "If default_date is False and no end_date or start_date is used then no date filters will be passed to the API."
@@ -275,7 +275,7 @@ class AlertViewSet(
             max_favorites = settings.SAFERS_MAX_FAVORITE_ALERTS
             if user.favorite_alerts.count() >= max_favorites:
                 raise ValidationError(
-                    f"cannot have more than {max_favorites} events."
+                    f"cannot have more than {max_favorites} alerts."
                 )
             user.favorite_alerts.add(obj)
         else:

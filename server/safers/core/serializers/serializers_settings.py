@@ -7,7 +7,9 @@ class SafersSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = SafersSettings
         fields = (
-            "allow_registration",
+            "allow_local_signin",
+            "allow_remote_signin",
+            "allow_signup",
             "require_verification",
             "require_terms_acceptance",
             "polling_frequency",
