@@ -188,9 +188,10 @@ class DataLayerView(views.APIView):
                 "service": "WMS",
                 "request": "GetLegendGraphic",
                 "srs": "EPSG:4326",
-                "width": 256,
+                "width": 512,
                 "height": 256,
                 "format": "image/png",
+                "LEGEND_OPTIONS": "fontsize:80;dpi=72"
             },
             safe="{}",
         )
