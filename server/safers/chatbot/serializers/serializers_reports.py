@@ -92,4 +92,5 @@ class ReportSerializer(serializers.ModelSerializer):
 
     def get_categories(self, obj):
         # only returning the category_group
-        return [category["group"] for category in obj.categories]
+        category_groups = [category["group"] for category in obj.categories]
+        return set(category_groups)
