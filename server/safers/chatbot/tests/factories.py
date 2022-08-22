@@ -53,6 +53,14 @@ class ReportFactory(factory.django.DjangoModelFactory):
             "organization": fake.word(),
         }
 
+    @factory.lazy_attribute
+    def categories(self):
+        return [{
+            "name": fake.word(),
+            "group": fake.word(),
+            "sub_group": fake.word(),
+        } for _ in range(fake.pyint(min_value=0, max_value=4))]
+
 
 class CommunicationFactory(factory.django.DjangoModelFactory):
     class Meta:

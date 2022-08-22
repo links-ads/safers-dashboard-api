@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.gis import geos
 
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -14,7 +15,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from safers.users.authentication import ProxyAuthentication
 
-from safers.chatbot.models import Report
+from safers.chatbot.models import Report, ReportCategory
 from safers.chatbot.serializers import ReportSerializer, ReportViewSerializer
 from .views_base import ChatbotView
 
@@ -41,6 +42,9 @@ _report_schema = openapi.Schema(
                 "thumbnail": "https://safersblobstoragetest.blob.core.windows.net/thumbnails/000019/113b8271-30b1-4987-a5d0-6ebac839bae2.jpeg",
                 "type": "Image",
             },
+        ],
+        "categories": [
+            "Measurements"
         ],
         "geometry": {
             "type": "Point",
@@ -79,6 +83,18 @@ class ReportListView(ReportView):
             ),
         )
 
+        report_categories = {
+            # hitting the db once outside of the list comprehension below
+            # instead of hitting it for every report in proxy_data
+            report_category.pop("category_id"): report_category
+            for report_category in ReportCategory.objects.values(
+                "category_id",
+                "name",
+                "group",
+                "sub_group",
+            )
+        }
+
         reports = [
             Report(
                 report_id=data.get("id"),
@@ -102,8 +118,16 @@ class ReportListView(ReportView):
                     "name": data.get("username"),
                     "organization": data.get("organizationName"),
                 },
+                categories=[
+                    v
+                    for k, v in report_categories.items()
+                    if k in [
+                        extension.get("categoryId")
+                        for extension in data.get("extensionData", [])
+                    ]
+                ]
             ) for data in proxy_data
-        ]
+        ]  # yapf: disable
 
         model_serializer = self.model_serializer_class(
             reports, context=self.get_serializer_context(), many=True
@@ -143,6 +167,15 @@ class ReportDetailView(ReportView):
         geometry = feature.get("geometry", None)
         properties = feature.get("properties", {})
 
+        report_categories = {
+            report_category.pop("category_id"): report_category
+            for report_category in ReportCategory.objects.values(
+                "category_id",
+                "name",
+                "group",
+                "sub_group",
+            )
+        }
         report = Report(
             report_id=properties.get("id"),
             mission_id=properties.get("relativeMissionId"),
@@ -163,12 +196,40 @@ class ReportDetailView(ReportView):
                 "name": properties.get("username"),
                 "organization": properties.get("organizationName"),
             },
-        )
+            categories=[
+                v
+                for k, v in report_categories.items()
+                if k in [
+                    extension.get("categoryId")
+                    for extension in properties.get("extensionData", [])
+                ]
+            ]
+        )  # yapf: disable
         model_serializer = self.model_serializer_class(
             report, context=self.get_serializer_context(), many=False
         )
 
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
+
+
+_report_categories_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
+)
+
+
+@swagger_auto_schema(
+    responses={status.HTTP_200_OK: _report_categories_schema}, method="get"
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def report_categories_view(request):
+    """
+    Returns the list of possible Report categories.
+    """
+    report_categories_groups = ReportCategory.objects.values_list(
+        "group", flat=True
+    ).distinct()
+    return Response(report_categories_groups, status=status.HTTP_200_OK)
 
 
 """

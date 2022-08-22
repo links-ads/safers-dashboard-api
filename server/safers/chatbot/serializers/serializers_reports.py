@@ -66,6 +66,7 @@ class ReportSerializer(serializers.ModelSerializer):
             "source",
             "hazard",
             "status",
+            "categories",
             "content",
             "visibility",
             "description",
@@ -83,6 +84,12 @@ class ReportSerializer(serializers.ModelSerializer):
 
     location = serializers.SerializerMethodField()
 
+    categories = serializers.SerializerMethodField()
+
     def get_location(self, obj):
         if obj.geometry:
             return obj.geometry.coords
+
+    def get_categories(self, obj):
+        # only returning the category_group
+        return [category["group"] for category in obj.categories]
