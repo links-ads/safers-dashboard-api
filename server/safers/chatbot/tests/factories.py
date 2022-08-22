@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from safers.core.tests.providers import GeometryProvider
 
-from safers.chatbot.models import Action, ActionStatusTypes, Communication, Mission, MissionStatusTypes, Report, ReportContentTypes,  ReportStatusTypes
+from safers.chatbot.models import Action, ActionActivityTypes, ActionStatusTypes, Communication, Mission, MissionStatusTypes, Report, ReportContentTypes,  ReportStatusTypes
 
 fake = Faker()
 
@@ -110,7 +110,7 @@ class ActionFactory(factory.django.DjangoModelFactory):
     def activity(self):
         # only set an activity if status is ACTIVE
         if self.status == ActionStatusTypes.ACTIVE:
-            return fake.word()
+            return fake.random_element(elements=ActionActivityTypes.values)
 
 
 class MissionFactory(factory.django.DjangoModelFactory):
