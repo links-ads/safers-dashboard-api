@@ -86,6 +86,12 @@ class CommunicationFactory(factory.django.DjangoModelFactory):
     def communication_id(self, n):
         return f"{n}"
 
+    @factory.lazy_attribute
+    def assigned_to(self):
+        return [
+            fake.word() for _ in range(fake.pyint(min_value=0, max_value=4))
+        ]
+
 
 class ActionFactory(factory.django.DjangoModelFactory):
     class Meta:

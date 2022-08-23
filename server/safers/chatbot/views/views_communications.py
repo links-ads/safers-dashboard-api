@@ -56,13 +56,16 @@ class CommunicationListView(CommunicationView):
                 # source= (source has a default value so no need to parse from proxy_data)
                 scope=data.get("scope"),
                 restriction=data.get("restriction"),
-                # TODO: target_organizations=...
+                # TODO: SHOULD REALLY REPLACE assigned_to W/ target_organizations BUT HAVE TO WAIT
+                # TODO: UNTIL I'VE LINKED FUSIONAUTH ORGANIZATIONS W/ DJANGO ORGANIZATIONS
+                # target_organizations=
+                assigned_to=[data.get("organizationName")] if data.get("organizationName") else [],
                 message=data.get("message"),
                 geometry=geos.Point(
                     data["centroid"]["longitude"], data["centroid"]["latitude"]
                 ) if data.get("centroid") else None,
             ) for data in proxy_data
-        ]
+        ]  # yapf: disable
 
         model_serializer = self.model_serializer_class(
             communications, context=self.get_serializer_context(), many=True
