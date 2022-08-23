@@ -27,6 +27,7 @@ class CommunicationSerializer(serializers.ModelSerializer):
             "end",
             "source",
             "message",
+            "assigned_to",
             "geometry",
             "location",
         )
