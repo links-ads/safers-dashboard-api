@@ -42,12 +42,8 @@ class DataLayerMetadataView(views.APIView):
             raise APIException(e)
 
         metadata = response.json()
-        metadata_notes = metadata.get("notes")
-        metadata_title = metadata.get("title")
 
-        info = metadata_title or metadata_notes
-
-        return Response(data=info, status=status.HTTP_200_OK)
+        return Response(data=metadata, status=status.HTTP_200_OK)
 
 
 """
