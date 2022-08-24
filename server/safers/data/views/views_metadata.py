@@ -1,4 +1,3 @@
-from xml.dom import ValidationErr
 import requests
 from urllib.parse import urljoin
 
