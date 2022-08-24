@@ -55,7 +55,8 @@ _data_layer_schema = openapi.Schema(
                     "id": "1.1.1.1",
                     "text": "2022-04-28T12:15:20Z",
                     "info": None,
-                    "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5",
+                    "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=text",
+                    "metadata_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=json",
                     "legend_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetLegendGraphic&srs=EPSG%3A4326&width=256&height=256&format=image%2Fpng",
                     "urls": {
                       "2022-04-28T12:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
@@ -197,7 +198,7 @@ class DataLayerView(views.APIView):
         )
         geoserver_legend_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_legend_query_params}"
 
-        metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}"
+        metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}?metadata_format={{metadata_format}}"
 
         data_type_info = {"None": None}
         data_type_sources = {"None": None}
@@ -242,8 +243,17 @@ class DataLayerView(views.APIView):
                         "id": f"{i}.{j}.{k}.{l}",
                         "text": detail["created_At"],
                         "info": None,
-                        "info_url": metadata_url.format(metadata_id=detail.get("metadata_Id")),
-                        "legend_url": geoserver_legend_url.format(name=quote_plus(detail["name"])),
+                        "info_url": metadata_url.format(
+                            metadata_id=detail.get("metadata_Id"),
+                            metadata_format="text",
+                        ),
+                        "metadata_url": metadata_url.format(
+                            metadata_id=detail.get("metadata_Id"),
+                            metadata_format="json",
+                        ),
+                        "legend_url": geoserver_legend_url.format(
+                            name=quote_plus(detail["name"]),
+                        ),
                         "urls": OrderedDict(
                           [
                             (

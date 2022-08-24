@@ -1,10 +1,11 @@
+from xml.dom import ValidationErr
 import requests
 from urllib.parse import urljoin
 
 from django.conf import settings
 
 from rest_framework import status, views
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -14,12 +15,23 @@ from drf_yasg.utils import swagger_auto_schema
 from safers.users.authentication import ProxyAuthentication
 from safers.users.permissions import IsRemote
 
+METADATA_FORMAT_TYPES = ["json", "text"]
+
 
 class DataLayerMetadataView(views.APIView):
 
     permission_classes = [IsAuthenticated, IsRemote]
 
     @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "metadata_format",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                enum=METADATA_FORMAT_TYPES,
+                required=False,
+            )
+        ],
         responses={
             status.HTTP_200_OK: openapi.Schema(type=openapi.TYPE_STRING)
         }
@@ -43,7 +55,20 @@ class DataLayerMetadataView(views.APIView):
 
         metadata = response.json()
 
-        return Response(data=metadata, status=status.HTTP_200_OK)
+        metadata_format = self.request.query_params.get(
+            "metadata_format", "json"
+        )
+        if metadata_format.lower() == "json":
+            data = metadata
+        elif metadata_format.lower() == "text":
+            data = metadata.get("notes") or metadata.get("title")
+        else:
+            raise ValidationError({
+                "metadata_format":
+                    f"must be one of {', '.join(METADATA_FORMAT_TYPES)}"
+            })
+
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 """
