@@ -58,6 +58,8 @@ _data_layer_schema = openapi.Schema(
                     "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=text",
                     "metadata_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=json",
                     "legend_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetLegendGraphic&srs=EPSG%3A4326&width=256&height=256&format=image%2Fpng",
+                    "pixel_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GetFeatureInfo...",
+                    "timeseries_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
                     "urls": {
                       "2022-04-28T12:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
                       "2022-04-28T13:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T13%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
@@ -198,6 +200,40 @@ class DataLayerView(views.APIView):
         )
         geoserver_legend_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_legend_query_params}"
 
+        geoserver_pixel_query_params = urlencode(
+            {
+                "service": "WMS",
+                "version": "1.1.0",
+                "request": "GetFeatureInfo",
+                "srs": "EPSG:4326",
+                "info_format": "application/json",
+                "layers": "{name}",
+                "x": "{{x}}",
+                "y": "{{y}}",
+            },
+            safe="{}",
+        )
+        geoserver_pixel_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_pixel_query_params}"
+
+        geoserver_timeseries_query_params = urlencode(
+            {
+                "service": "WMS",
+                "version": "1.1.0",
+                "request": "GetTimeSeries",
+                "srs": "EPSG:4326",
+                "format":
+                    "text/csv",  # "image/png" or "image/jpg" or "text/csv"
+                "time": "{time}",
+                "layers": "{name}",
+                "query_layers": "{name}",
+                "x": "{{x}}",
+                "y": "{{y}}",
+                "bbox": "{{bbox}}",
+            },
+            safe="{}",
+        )
+        geoserver_timeseries_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_timeseries_query_params}"
+
         metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}?metadata_format={{metadata_format}}"
 
         data_type_info = {"None": None}
@@ -254,6 +290,13 @@ class DataLayerView(views.APIView):
                         "legend_url": geoserver_legend_url.format(
                             name=quote_plus(detail["name"]),
                         ),
+                        "pixel_url": geoserver_pixel_url.format(
+                            name=quote_plus(detail["name"]),
+                        ),
+                        "timeseries_url": geoserver_timeseries_url.format(
+                            name=quote_plus(detail["name"]),
+                            time=quote_plus(",".join(detail["timestamps"])),
+                        ) if len(detail.get("timestamps", [])) > 0 else None,
                         "urls": OrderedDict(
                           [
                             (
