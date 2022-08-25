@@ -287,7 +287,6 @@ class DataLayerView(views.APIView):
                             metadata_id=detail.get("metadata_Id"),
                             metadata_format="json",
                         ),
-
                         "legend_url": geoserver_legend_url.format(
                             name=quote_plus(detail["name"]),
                         ),
