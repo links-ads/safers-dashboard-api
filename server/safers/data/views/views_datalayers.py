@@ -176,7 +176,8 @@ class DataLayerView(views.APIView):
                 "service": "WMS",
                 "request": "GetMap",
                 "srs": "EPSG:4326",
-                "bbox": "{bbox}",
+                "bbox": "{{bbox}}",
+                "transparent": True,
                 "width": 256,
                 "height": 256,
                 "format": "image/png",
@@ -304,7 +305,6 @@ class DataLayerView(views.APIView):
                                 geoserver_layer_url.format(
                                   name=quote_plus(detail["name"]),
                                   time=quote_plus(timestamp),
-                                  bbox="{bbox}",
                                 )
                             )
                             for timestamp in detail.get("timestamps", [])
