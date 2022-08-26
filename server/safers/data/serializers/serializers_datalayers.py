@@ -48,6 +48,7 @@ class DataLayerSerializer(serializers.Serializer):
         minute=0,
         second=0,
         microsecond=0,
+        required=False,
     )
 
     end = UnderspecifiedDateTimeField(
@@ -56,6 +57,7 @@ class DataLayerSerializer(serializers.Serializer):
         minute=59,
         second=59,
         microsecond=999999,
+        required=False,
     )
 
     include_map_requests = serializers.BooleanField(
