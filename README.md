@@ -58,6 +58,8 @@ Finally, several fixtures are used to bootstrap the application:
 * ./server/safers/data/fixtures/datatypes_fixtures.json
 * ./server/safers/aois/fixtures/aois_fixture.json
 * ./server/safers/cameras/fixtures/cameras_fixture.json
+* ./server/safers/chatbot/fixtures/chatbot_categories_fixture.json
+these can all be added by running: `manage.py configure`
 
 ## details
 
