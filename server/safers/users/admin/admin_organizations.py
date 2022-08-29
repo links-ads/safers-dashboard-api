@@ -7,13 +7,14 @@ from safers.users.models import Organization
 class OrganizationAdmin(admin.ModelAdmin):
     fields = (
         "id",
+        "organization_id",
         "name",
         "description",
         "is_active",
     )
     list_display = (
         "name",
-        "id",
+        "organization_id",
         "is_active",
     )
     list_editable = ("is_active", )

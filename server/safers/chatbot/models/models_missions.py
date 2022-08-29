@@ -49,13 +49,14 @@ class Mission(gis_models.Model):
         max_length=128, unique=True, blank=False, null=False
     )
 
+    title = models.CharField(max_length=128, blank=True, null=True)
     username = models.CharField(max_length=128, blank=True, null=True)
     organization = models.CharField(max_length=128, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     start = models.DateTimeField()
-    start_inclusive = models.BooleanField()
+    start_inclusive = models.BooleanField(default=True)
     end = models.DateTimeField()
-    end_inclusive = models.BooleanField()
+    end_inclusive = models.BooleanField(default=True)
     source = models.CharField(
         max_length=64,
         choices=MissionSourceTypes.choices,
