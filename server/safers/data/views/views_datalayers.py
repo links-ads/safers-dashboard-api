@@ -217,6 +217,9 @@ class DataLayerView(views.APIView):
         geoserver_pixel_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_pixel_query_params}"
 
         geoserver_timeseries_query_params = urlencode(
+            # this seems unintuitive, but the GetTimeseries Geoserver API uses the bbox (not x & y)
+            # to determine the region to inspect - therefore I set height & width & x & y to constants
+            # and the frontend injects a pixel-sized bbox into the query
             {
                 "service": "WMS",
                 "version": "1.1.0",
@@ -227,8 +230,10 @@ class DataLayerView(views.APIView):
                 "time": "{time}",
                 "layers": "{name}",
                 "query_layers": "{name}",
-                "x": "{{x}}",
-                "y": "{{y}}",
+                "width": 1,
+                "height": 1,
+                "x": 1,
+                "y": 1,
                 "bbox": "{{bbox}}",
             },
             safe="{}",
