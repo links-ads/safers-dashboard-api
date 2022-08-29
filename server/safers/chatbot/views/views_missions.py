@@ -1,3 +1,5 @@
+import json
+import requests
 from collections import OrderedDict
 from datetime import datetime
 from urllib.parse import urljoin
@@ -7,14 +9,19 @@ from django.contrib.gis import geos
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import APIException
 from rest_framework.permissions import AllowAny
+from rest_framework.utils.encoders import JSONEncoder
 from rest_framework.response import Response
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from safers.users.authentication import ProxyAuthentication
+
 from safers.chatbot.models import Mission, MissionStatusTypes
-from safers.chatbot.serializers import MissionSerializer, MissionViewSerializer
+from safers.chatbot.serializers import MissionSerializer, MissionCreateSerializer, MissionViewSerializer
+
 from .views_base import ChatbotView
 
 _mission_schema = openapi.Schema(
@@ -54,7 +61,8 @@ class MissionView(ChatbotView):
 
 class MissionListView(MissionView):
 
-    GATEWAY_URL_PATH = "/api/services/app/Missions/GetMissions"
+    GATEWAY_URL_LIST_PATH = "/api/services/app/Missions/GetMissions"
+    GATEWAY_URL_CREATE_PATH = "/api/services/app/Missions/CreateOrUpdateMission"
 
     @swagger_auto_schema(
         query_serializer=MissionViewSerializer,
@@ -65,7 +73,7 @@ class MissionListView(MissionView):
         proxy_data = self.get_proxy_list_data(
             request,
             proxy_url=urljoin(
-                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_PATH
+                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_LIST_PATH
             ),
         )
 
@@ -103,6 +111,54 @@ class MissionListView(MissionView):
         )
 
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=MissionCreateSerializer,
+    )
+    def post(self, request, *args, **kwargs):
+
+        serializer = MissionCreateSerializer(
+            data=request.data,
+            context=self.get_serializer_context(),
+        )
+        serializer.is_valid(raise_exception=True)
+        instance = Mission(**serializer.validated_data)
+
+        proxy_data = serializer.to_representation(instance=instance)
+        proxy_data = {
+            "feature": {
+                "geometry":
+                    json.dumps(proxy_data.pop("geometry"), cls=JSONEncoder),
+                "properties":
+                    json.loads(
+                        json.dumps(
+                            proxy_data.pop("properties"), cls=JSONEncoder
+                        )
+                    )
+            }
+        }
+
+        proxy_url = urljoin(
+            settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_CREATE_PATH
+        )
+
+        try:
+            response = requests.post(
+                proxy_url,
+                auth=ProxyAuthentication(request.user),
+                headers={"Content-Type": "application/json"},
+                json=proxy_data,
+                timeout=4,
+            )
+            response.raise_for_status()
+
+        except Exception as e:
+            raise APIException(e)
+
+        instance.mission_id = response.json()
+        msg = f"successfully created {instance.name}."
+
+        return Response(msg, status=status.HTTP_200_OK)
 
 
 _mission_statuses_schema = openapi.Schema(
