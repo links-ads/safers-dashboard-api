@@ -209,6 +209,7 @@ class DataLayerView(views.APIView):
                 "srs": "EPSG:4326",
                 "info_format": "application/json",
                 "layers": "{name}",
+                "query_layers": "{name}",
                 "x": "{{x}}",
                 "y": "{{y}}",
             },
