@@ -52,6 +52,12 @@ _mission_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=_mission_schema
 )
 
+_mission_create_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties=OrderedDict((("msg", openapi.Schema(type=openapi.TYPE_STRING)), )
+                          )
+)
+
 
 class MissionView(ChatbotView):
 
@@ -114,6 +120,7 @@ class MissionListView(MissionView):
 
     @swagger_auto_schema(
         request_body=MissionCreateSerializer,
+        responses={status.HTTP_200_OK: _mission_create_schema}
     )
     def post(self, request, *args, **kwargs):
 
@@ -158,7 +165,7 @@ class MissionListView(MissionView):
         instance.mission_id = response.json()
         msg = f"successfully created {instance.name}."
 
-        return Response(msg, status=status.HTTP_200_OK)
+        return Response({"msg": msg}, status=status.HTTP_200_OK)
 
 
 _mission_statuses_schema = openapi.Schema(
