@@ -1,3 +1,6 @@
+import json
+import requests
+from collections import OrderedDict
 from datetime import datetime
 from urllib.parse import urljoin
 
@@ -5,13 +8,23 @@ from django.conf import settings
 from django.contrib.gis import geos
 
 from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
+from rest_framework.utils.encoders import JSONEncoder
 
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from safers.chatbot.models import Communication
-from safers.chatbot.serializers import CommunicationSerializer, CommunicationViewSerializer
+from safers.chatbot.serializers import CommunicationSerializer, CommunicationCreateSerializer, CommunicationViewSerializer
+from safers.users.authentication import ProxyAuthentication
 from .views_base import ChatbotView
+
+_communication_create_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties=OrderedDict((("msg", openapi.Schema(type=openapi.TYPE_STRING)), )
+                          )
+)
 
 
 class CommunicationView(ChatbotView):
@@ -22,7 +35,8 @@ class CommunicationView(ChatbotView):
 
 class CommunicationListView(CommunicationView):
 
-    GATEWAY_URL_PATH = "/api/services/app/Communications/GetCommunications"
+    GATEWAY_URL_LIST_PATH = "/api/services/app/Communications/GetCommunications"
+    GATEWAY_URL_CREATE_PATH = "/api/services/app/Communications/CreateOrUpdateCommunication"
 
     @swagger_auto_schema(
         query_serializer=CommunicationViewSerializer,
@@ -33,7 +47,7 @@ class CommunicationListView(CommunicationView):
         proxy_data = self.get_proxy_list_data(
             request,
             proxy_url=urljoin(
-                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_PATH
+                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_LIST_PATH
             ),
         )
 
@@ -72,3 +86,53 @@ class CommunicationListView(CommunicationView):
         )
 
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=CommunicationCreateSerializer,
+        responses={status.HTTP_200_OK: _communication_create_schema}
+    )
+    def post(self, request, *args, **kwargs):
+
+        serializer = CommunicationCreateSerializer(
+            data=request.data,
+            context=self.get_serializer_context(),
+        )
+        serializer.is_valid(raise_exception=True)
+        instance = Communication(**serializer.validated_data)
+
+        proxy_data = serializer.to_representation(instance=instance)
+        proxy_data = {
+            "feature": {
+                "geometry":
+                    json.dumps(proxy_data.pop("geometry"), cls=JSONEncoder),
+                "properties":
+                    json.loads(
+                        json.dumps(
+                            proxy_data.pop("properties"), cls=JSONEncoder
+                        )
+                    )
+            }
+        }
+
+        proxy_url = urljoin(
+            settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_CREATE_PATH
+        )
+
+        try:
+            response = requests.post(
+                proxy_url,
+                auth=ProxyAuthentication(request.user),
+                headers={"Content-Type": "application/json"},
+                json=proxy_data,
+                timeout=4,
+            )
+            response.raise_for_status()
+
+        except Exception as e:
+            raise APIException(e)
+
+        instance.communication_id = response.json(
+        )["feature"]["properties"].get("id")
+        msg = f"successfully created {instance.name}."
+
+        return Response({"msg": msg}, status=status.HTTP_200_OK)

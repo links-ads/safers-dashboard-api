@@ -62,9 +62,9 @@ class Communication(gis_models.Model):
     )
 
     start = models.DateTimeField()
-    start_inclusive = models.BooleanField()
+    start_inclusive = models.BooleanField(default=True)
     end = models.DateTimeField()
-    end_inclusive = models.BooleanField()
+    end_inclusive = models.BooleanField(default=True)
 
     source = models.CharField(
         max_length=64,

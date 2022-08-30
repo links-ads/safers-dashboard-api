@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from safers.chatbot.models import Communication
-from .serializers_base import ChatbotViewSerializer
+from .serializers_base import ChatbotViewSerializer, ChatbotDateTimeFormats
 
 
 class CommunicationViewSerializer(ChatbotViewSerializer):
@@ -43,3 +43,46 @@ class CommunicationSerializer(serializers.ModelSerializer):
     def get_location(self, obj):
         if obj.geometry:
             return obj.geometry.coords
+
+
+class CommunicationCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
+    class Meta:
+        model = Communication
+        fields = (
+            "message",
+            "start",
+            "end",
+            "organizationIdList",
+            "scope",
+            "restriction",
+            "duration",
+            "geometry",
+        )
+        geo_field = "geometry"
+        id_field = False
+
+    start = serializers.DateTimeField(
+        input_formats=ChatbotDateTimeFormats, write_only=True
+    )
+    end = serializers.DateTimeField(
+        input_formats=ChatbotDateTimeFormats, write_only=True
+    )
+
+    organizationIdList = serializers.SerializerMethodField(
+        method_name="get_organization_id_list"
+    )
+
+    duration = serializers.SerializerMethodField()
+
+    def get_duration(self, obj):
+        return {
+            "lowerBound": obj.start,
+            "upperBound": obj.end,
+            "lowerBoundIsInclusive": obj.start_inclusive,
+            "upperBoundIsInclusive": obj.end_inclusive,
+        }
+
+    def get_organization_id_list(self, obj):
+        user = self.context["request"].user
+        organization = user.organization
+        return [organization.organization_id]
