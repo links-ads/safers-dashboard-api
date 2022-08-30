@@ -210,8 +210,11 @@ class DataLayerView(views.APIView):
                 "info_format": "application/json",
                 "layers": "{name}",
                 "query_layers": "{name}",
-                "x": "{{x}}",
-                "y": "{{y}}",
+                "width": 1,
+                "height": 1,
+                "x": 1,
+                "y": 1,
+                "bbox": "{{bbox}}",
             },
             safe="{}",
         )
