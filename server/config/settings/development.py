@@ -36,6 +36,30 @@ PUBLIC_MEDIA_DEFAULT_ACL = ""
 PRIVATE_MEDIA_LOCATION = ""
 PRIVATE_MEDIA_DEFAULT_ACL = ""
 
+###########
+# logging #
+###########
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "%(asctime)s [%(levelname)s]: %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+}
+
 #############
 # profiling #
 #############
