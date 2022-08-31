@@ -366,6 +366,12 @@ SWAGGER_SETTINGS = {
 #     "drf_yasg.inspectors.CoreAPICompatInspector",
 # ]
 
+###########
+# logging #
+###########
+
+# logging is configured in development.py and/or deployment.py
+
 #######
 # RMQ #
 #######
