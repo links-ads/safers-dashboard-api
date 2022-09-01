@@ -1,12 +1,50 @@
 from itertools import groupby
 
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from safers.core.serializers import SwaggerCurrentUserDefault
 from safers.data.models import MapRequest, DataType
+
+from .serializers_base import DataViewSerializer
+
+############################
+# view serializer          #
+# (for proxy query_params) #
+############################
+
+
+class MapRequestViewSerializer(DataViewSerializer):
+    """
+    Note that this isn't a ModelSerializer; it's just being
+    used for query_param validation in the DataLayer Views
+    """
+
+    ProxyFieldMapping = {
+        # fields to pass onto proxy
+        "bbox": "Bbox",
+        "start": "Start",
+        "end": "End",
+        "include_map_requests": "IncludeMapRequests",
+    }
+
+    include_map_requests = serializers.BooleanField(
+        default=True,
+        required=False,
+        help_text=_(
+            "Whether or not to include on-demand MapRequests.  "
+            "This ought to be 'True' to distinguish this API from the 'api/data/layers' API."
+        ),
+    )
+
+
+##########################
+# model serializer       #
+# (for normal DRF stuff) #
+##########################
 
 
 class MapRequestListSerializer(serializers.ListSerializer):
@@ -65,6 +103,7 @@ class MapRequestSerializer(serializers.ModelSerializer):
             "category",
             "parameters",
             "geometry",
+            "geometry_wkt",
             "layers",  # (read)
             "data_types",  # (write)
         )

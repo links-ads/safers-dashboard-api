@@ -1,5 +1,11 @@
+import requests
 from collections import OrderedDict
+from datetime import datetime, timedelta
+from urllib.parse import quote_plus, urlencode, urljoin
 
+from django.conf import settings
+from django.contrib.gis import geos
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 
 from rest_framework import mixins, status, viewsets
@@ -11,8 +17,10 @@ from drf_yasg.utils import swagger_auto_schema
 from safers.core.decorators import swagger_fake
 
 from safers.data.models import MapRequest
-from safers.data.serializers import MapRequestSerializer
+from safers.data.serializers import MapRequestSerializer, MapRequestViewSerializer
 
+from safers.users.authentication import ProxyAuthentication
+from safers.users.exceptions import AuthenticationException
 from safers.users.permissions import IsRemote
 
 ###########
@@ -52,9 +60,13 @@ _map_request_list_schema = openapi.Schema(
     )
 )  # yapf: disable
 
+
+
 #########
 # views #
 #########
+
+PROXY_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 @method_decorator(
