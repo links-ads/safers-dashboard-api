@@ -19,7 +19,7 @@ from safers.users.exceptions import AuthenticationException
 from safers.users.permissions import IsRemote
 
 from safers.data.models import DataType
-from safers.data.serializers import DataLayerSerializer
+from safers.data.serializers import DataLayerViewSerializer
 
 ###########
 # swagger #
@@ -98,7 +98,7 @@ _data_layer_domains_schema = openapi.Schema(
 class DataLayerView(views.APIView):
 
     permission_classes = [IsAuthenticated, IsRemote]
-    serializer_class = DataLayerSerializer
+    serializer_class = DataLayerViewSerializer
 
     def get_serializer_context(self):
         """
@@ -133,7 +133,7 @@ class DataLayerView(views.APIView):
         return data
 
     @swagger_auto_schema(
-        query_serializer=DataLayerSerializer,
+        query_serializer=DataLayerViewSerializer,
         responses={status.HTTP_200_OK: _data_layer_list_schema}
     )
     def get(self, request, *args, **kwargs):
