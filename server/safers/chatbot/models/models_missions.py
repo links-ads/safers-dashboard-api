@@ -65,8 +65,7 @@ class Mission(gis_models.Model):
     status = models.CharField(
         max_length=64,
         choices=MissionStatusTypes.choices,
-        blank=True,
-        null=True,
+        default=MissionStatusTypes.CREATED,
     )
     reports = models.JSONField(
         blank=True,
