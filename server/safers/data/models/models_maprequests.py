@@ -212,11 +212,13 @@ class MapRequest(gis_models.Model):
         (called from MapRequestViewSet.perform_create)
         """
         rmq = RMQ()
-
-        message_body = self.parameters
-        if self.geometry:
-            message_body["geometry"] = json.loads(self.geometry.geojson)
-
+        message_body = {
+            **self.parameters,
+            "title":
+                self.title,
+            "geometry":
+                json.loads(self.geometry.geojson) if self.geometry else None,
+        }
         try:
 
             for data_type in self.data_types.all():
