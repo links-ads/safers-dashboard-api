@@ -4,6 +4,15 @@
 
 {% block extrastyle %}
 <!-- extra style goes here -->
+<style>
+    #description {
+        border: 2px solid #ccc;
+        display: inline-block;
+        margin-bottom: 1rem;
+        padding: 4px;
+    }
+
+</style>
 {% endblock %}
 
 {% block content %}
@@ -11,6 +20,10 @@
 <h1>
     Please select the file to import.
 </h1>
+
+<div id="description">
+    {{ description }}
+</div>
 
 <form action="." method="POST" enctype="multipart/form-data">
 
