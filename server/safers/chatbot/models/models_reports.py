@@ -5,6 +5,7 @@ from django.contrib.gis.db import models as gis_models
 from django.contrib.postgres.fields import ArrayField
 from django.utils.translation import gettext_lazy as _
 
+from safers.core.models import Country
 from safers.core.utils import validate_schema
 
 
@@ -38,7 +39,7 @@ def validate_reporter(value):
         "type": "object",
         "properties": {
             "name": {"type": "string"},
-            "organization": {"type": "string"}
+            "organization": {"type": ["string", "null"]}
         },
     }  # yapf: disable
 
@@ -159,7 +160,32 @@ class Report(gis_models.Model):
 
     @property
     def name(self):
-        return f"Report {self.report_id}"
+
+        if self.reporter.get("organization"):
+            report_scope = "PRO"  # user has organization => professional report
+        else:
+            report_scope = "CIT"  # user has no organization => citizen report
+
+        serial_number = f"S{self.report_id:0>5}"
+
+        country = Country.objects.filter(geometry__intersects=self.geometry
+                                        ).first()
+
+        return "-".join(
+            filter(
+                None,
+                map(
+                    str,
+                    [
+                        "REP",
+                        report_scope,
+                        self.timestamp.year,
+                        serial_number,
+                        country.admin_code if country else None,
+                    ]
+                )
+            )
+        )
 
     @property
     def visibility(self):

@@ -76,7 +76,7 @@ class Mission(gis_models.Model):
 
     @property
     def name(self):
-        return f"Mission {self.mission_id}"
+        return self.title or f"Mission {self.mission_id}"
 
     def save(self, *args, **kwargs):
         raise NotImplementedError(
