@@ -115,13 +115,13 @@ class Event(gis_models.Model):
     @property
     def name(self):
 
-        serial_number = f"{self.sequence_number:0>5}"
+        serial_number = f"S{self.sequence_number:0>5}"
 
         country = Country.objects.filter(
             geometry__intersects=self.geometry_collection
         ).first()
 
-        return f"WF-{self.start_date.year}-S{serial_number}-{country.admin_code if country else None}"
+        return f"WF-{'-'.join(filter(None, [self.start_date.year, serial_number, country.admin_code if country else None,]))}"
 
     @property
     def ongoing(self):

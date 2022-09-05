@@ -201,13 +201,13 @@ class Alert(models.Model):
 
         service_code = ALERT_SERVICE_CODES.get(self.source)
 
-        serial_number = f"{self.sequence_number:0>5}"
+        serial_number = f"S{self.sequence_number:0>5}"
 
         country = Country.objects.filter(
             geometry__intersects=self.geometry_collection
         ).first()
 
-        return f"ALTR-{service_code}-{self.timestamp.year}-S{serial_number}-{country.admin_code if country else None}"
+        return f"ALTR-{'-'.join(filter(None, [service_code, self.timestamp.year, serial_number, country.admin_code if country else None,]))}"
 
     def recalculate_geometries(self, force_save=True):
         """

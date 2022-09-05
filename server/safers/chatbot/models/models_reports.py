@@ -166,12 +166,12 @@ class Report(gis_models.Model):
         else:
             report_scope = "CIT"  # user has no organization => citizen report
 
-        serial_number = f"{self.report_id:0>5}"
+        serial_number = f"S{self.report_id:0>5}"
 
         country = Country.objects.filter(geometry__intersects=self.geometry
                                         ).first()
 
-        return f"REP-{report_scope}-{self.timestamp.year}-S{serial_number}-{country.admin_code if country else None}"
+        return f"REP-{'-'.join(filter(None, [report_scope, self.timestamp.year, serial_number, country.admin_code if country else None,]))}"
 
     @property
     def visibility(self):
