@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.contrib import admin, messages
 from django.core.validators import FileExtensionValidator
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import JSONField
 from django.forms import Form, FileField
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import path, reverse
+from django.utils.html import mark_safe
 
 import json
 import numpy as np
@@ -86,6 +87,13 @@ class DataTypeAdmin(admin.ModelAdmin):
 
     @admin.display(description="Import DataTypes from CSV")
     def import_csv(self, request):
+        """
+        imports the SAFERS datamapping form into the db
+        """
+
+        DESCRIPTION = mark_safe(
+            "Note that this will import all DataType <i>layers</i>.<br/>Actual <i>groups</i> and <i>subgroups</i> still have to be added manually."
+        )
 
         DATATYPE_COLUMNS = {
             "datatypeID": "datatype_id",
@@ -123,13 +131,27 @@ class DataTypeAdmin(admin.ModelAdmin):
                     assert set(DATATYPE_COLUMNS).issubset(df.columns), "Invalid columns"
                     df = df.rename(columns=DATATYPE_COLUMNS)
                     df = df.replace({np.NaN: None})
+
                     with transaction.atomic():
                         n_created = n_updated = 0
-                        for index, row in df.iterrows():
-                            data_type, created = DataType.objects.get_or_create(datatype_id=row.datatype_id, subgroup=row.subgroup, group=row.group)
+                        for _, row in df.iterrows():
+                            try:
+                                data_type, created = DataType.objects.get_or_create(datatype_id=row.datatype_id, subgroup=row.subgroup, group=row.group)
+                            except IntegrityError as e:
+                                # since this is all wrapped in a transaction.atomic() block the fn will still fail
+                                # but this will give some useful information about the (1st) failing row
+                                self.message_user(
+                                    request,
+                                    f"unable to process DataType {row.datatype_id}: {e}",
+                                    messages.WARNING,
+                                )
                             for field in DATATYPE_COLUMNS.values():
                                 setattr(data_type, field, row[field])
                             data_type.extra_info = json.loads(row.to_json())
+                            if data_type.extra_info.get(
+                                "Update frequency"
+                            ) == "on demand":
+                                data_type.is_on_demand = True
                             data_type.save()
                             if created:
                                 n_created += 1
@@ -155,5 +177,6 @@ class DataTypeAdmin(admin.ModelAdmin):
             "site_header": getattr(settings, "ADMIN_SITE_HEADER", None),
             "site_title": getattr(settings, "ADMIN_SITE_TITLE", None),
             "index_title": getattr(settings, "ADMIN_INDEX_TITLE", None),
+            "description": DESCRIPTION,
         }
         return render(request, "core/admin/import.html", context=context)
