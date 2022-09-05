@@ -7,9 +7,14 @@ from django.contrib.gis.geos import GeometryCollection
 from django.contrib.postgres.fields import ArrayField
 from django.utils.translation import gettext_lazy as _
 
+from sequences import Sequence
+
 from safers.core.mixins import HashableMixin
+from safers.core.models import Country
 from safers.core.utils import CaseInsensitiveTextChoices
 from safers.rmq.exceptions import RMQException
+
+ALERT_SEQUENCE_GENERATOR = Sequence("alerts")
 
 
 class AlertType(CaseInsensitiveTextChoices):
@@ -23,6 +28,21 @@ class AlertSource(CaseInsensitiveTextChoices):
     EFFIS_FWI = "EFFIS_FWI", _("FWI (from netCDF)")
     IN_SITU = "IN SITU CAMERAS", _("In-Situ Cameras")
 
+
+class AlertServiceCodes(models.TextChoices):
+    WEATHER_FORECAST = "WHE", _("Weather Forecast"),
+    RISK = "RSK", _("Risk"),
+    CAMERAS = "CMR", _("Cameras"),
+    CRW_SOCIAL = "SOC", _("CRW Social"),
+    DSS = "DSS", _("DSS"),
+    CHATBOT = "CHT", _("Chatbot"),
+
+
+ALERT_SERVICE_CODES = {
+    AlertSource.IN_SITU: AlertServiceCodes.CAMERAS,
+    AlertSource.EFFIS_FWI: AlertServiceCodes.DSS,
+    AlertSource.REPORT: AlertServiceCodes.DSS,
+}
 
 # TODO: AlertCategory
 # “Geo” - Geophysical (inc. landslide)
@@ -123,6 +143,8 @@ class Alert(models.Model):
         editable=False,
     )
 
+    sequence_number = models.PositiveBigIntegerField(blank=False, null=False)
+
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     type = models.CharField(
@@ -169,10 +191,23 @@ class Alert(models.Model):
 
     @property
     def title(self):
-        title = f"Alert {self.id.hex[:7]}"
+        title = self.name
         if self.category:
             title += f" [{self.category}]"
         return title
+
+    @property
+    def name(self):
+
+        service_code = ALERT_SERVICE_CODES.get(self.source)
+
+        serial_number = f"{self.sequence_number:0>5}"
+
+        country = Country.objects.filter(
+            geometry__intersects=self.geometry_collection
+        ).first()
+
+        return f"ALTR-{service_code}-{self.timestamp.year}-S{serial_number}-{country.admin_code if country else None}"
 
     def recalculate_geometries(self, force_save=True):
         """
@@ -192,6 +227,12 @@ class Alert(models.Model):
         ).envelope
         if force_save:
             self.save()
+
+    def save(self, *args, **kwargs):
+        if not self.sequence_number:
+            self.sequence_number = next(ALERT_SEQUENCE_GENERATOR)
+
+        return super().save(*args, **kwargs)
 
     def validate(self):
         from safers.events.models import Event

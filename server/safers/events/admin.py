@@ -22,6 +22,10 @@ class EventAdmin(gis_admin.GeoModelAdmin):
         "center",
     )
     filter_horizontal = ("alerts", )
+    list_display = (
+        "name",
+        "id",
+    )
     list_filter = ("favorited_users", )
     readonly_fields = (
         "id",

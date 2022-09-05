@@ -1,14 +1,40 @@
 import requests
+from datetime import datetime
 
 from django.conf import settings
 from django.utils import timezone
 
-from rest_framework import status, views
+from rest_framework import ISO_8601, views
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 
 from safers.users.authentication import ProxyAuthentication
 from safers.users.permissions import IsRemote
+
+
+def parse_none(value):
+    """
+    Many of the Proxy APIs return None as string rather than
+    a null JSON value; This lil function gets around that.
+    """
+    return None if value == "None" else value
+
+
+def parse_datetime(value):
+    """
+    DateTime format is a bit inconsistent in Proxy
+    APIs; This lil function gets around that.
+    """
+    if value:
+        ChatbotDateTimeFormats = [
+            ISO_8601, "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%d"
+        ]
+        for datetime_format in ChatbotDateTimeFormats:
+            try:
+                return datetime.strptime(value, datetime_format)
+            except ValueError as e:
+                pass
+        raise ValueError(f"Invalid datetime format for '{value}'")
 
 
 class ChatbotView(views.APIView):

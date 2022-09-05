@@ -11,7 +11,12 @@ from django.contrib.gis.geos import GeometryCollection
 from django.contrib.gis.measure import Distance as D
 from django.utils.translation import gettext_lazy as _
 
+from sequences import Sequence
+
 from safers.core.mixins import HashableMixin
+from safers.core.models import Country
+
+EVENT_SEQUENCE_GENERATOR = Sequence("events")
 
 
 class EventStatus(models.TextChoices):
@@ -79,6 +84,8 @@ class Event(gis_models.Model):
         editable=False,
     )
 
+    sequence_number = models.PositiveBigIntegerField(blank=False, null=False)
+
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -104,6 +111,17 @@ class Event(gis_models.Model):
         if alert_titles:
             title += f" [{', '.join(alert_titles)}]"
         return title
+
+    @property
+    def name(self):
+
+        serial_number = f"{self.sequence_number:0>5}"
+
+        country = Country.objects.filter(
+            geometry__intersects=self.geometry_collection
+        ).first()
+
+        return f"WF-{self.start_date.year}-S{serial_number}-{country.admin_code if country else None}"
 
     @property
     def ongoing(self):
@@ -146,3 +164,8 @@ class Event(gis_models.Model):
         self.start_date = earliest_date
         if force_save:
             self.save()
+
+    def save(self, *args, **kwargs):
+        if not self.sequence_number:
+            self.sequence_number = next(EVENT_SEQUENCE_GENERATOR)
+        return super().save(*args, **kwargs)
