@@ -16,6 +16,20 @@ from safers.rmq.exceptions import RMQException
 
 ALERT_SEQUENCE_GENERATOR = Sequence("alerts")
 
+# TODO: AlertCategory
+# “Geo” - Geophysical (inc. landslide)
+# “Met” - Meteorological (inc. flood)
+# “Safety” - General emergency and public safety
+# “Security” - Law enforcement, military, homeland and local/private security
+# “Rescue” - Rescue and recovery
+# “Fire” - Fire suppression and rescue
+# “Health” - Medical and public health
+# “Env” - Pollution and other environmental
+# “Transport” - Public and private transportation
+# “Infra” - Utility, telecommunication, other non-transport infrastructure
+# “CBRNE” – Chemical, Biological, Radiological, Nuclear or High-Yield Explosive threat or attack
+# “Other” - Other events
+
 
 class AlertType(CaseInsensitiveTextChoices):
     UNVALIDATED = "UNVALIDATED", _("Unvalidated")
@@ -38,25 +52,15 @@ class AlertServiceCodes(models.TextChoices):
     CHATBOT = "CHT", _("Chatbot"),
 
 
-ALERT_SERVICE_CODES = {
-    AlertSource.IN_SITU: AlertServiceCodes.CAMERAS,
-    AlertSource.EFFIS_FWI: AlertServiceCodes.DSS,
-    AlertSource.REPORT: AlertServiceCodes.DSS,
+ALERT_SERVICE_CODES_MAP = {
+    # maps AlertSources to AlertServiceCodes
+    AlertSource.IN_SITU:
+        AlertServiceCodes.CAMERAS,
+    AlertSource.EFFIS_FWI:
+        AlertServiceCodes.DSS,
+    AlertSource.REPORT:
+        AlertServiceCodes.DSS,
 }
-
-# TODO: AlertCategory
-# “Geo” - Geophysical (inc. landslide)
-# “Met” - Meteorological (inc. flood)
-# “Safety” - General emergency and public safety
-# “Security” - Law enforcement, military, homeland and local/private security
-# “Rescue” - Rescue and recovery
-# “Fire” - Fire suppression and rescue
-# “Health” - Medical and public health
-# “Env” - Pollution and other environmental
-# “Transport” - Public and private transportation
-# “Infra” - Utility, telecommunication, other non-transport infrastructure
-# “CBRNE” – Chemical, Biological, Radiological, Nuclear or High-Yield Explosive threat or attack
-# “Other” - Other events
 
 
 class AlertManager(models.Manager):
@@ -199,7 +203,7 @@ class Alert(models.Model):
     @property
     def name(self):
 
-        service_code = ALERT_SERVICE_CODES.get(self.source)
+        service_code = ALERT_SERVICE_CODES_MAP.get(self.source)
 
         serial_number = f"S{self.sequence_number:0>5}"
 
