@@ -18,7 +18,7 @@ from drf_yasg.utils import swagger_auto_schema
 from safers.chatbot.models import Communication
 from safers.chatbot.serializers import CommunicationSerializer, CommunicationCreateSerializer, CommunicationViewSerializer
 from safers.users.authentication import ProxyAuthentication
-from .views_base import ChatbotView
+from .views_base import ChatbotView, parse_datetime, parse_none
 
 _communication_create_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -55,15 +55,11 @@ class CommunicationListView(CommunicationView):
             Communication(
                 communication_id=data["id"],
                 # TODO: source_organization=...
-                start=datetime.fromisoformat(
-                    data["duration"]["lowerBound"].replace("Z", "+00:00")
-                ),
+                start=parse_datetime(data["duration"]["lowerBound"]),
                 start_inclusive=data["duration"].get(
                     "lowerBoundIsInclusive", False
                 ),
-                end=datetime.fromisoformat(
-                    data["duration"]["upperBound"].replace("Z", "+00:00")
-                ),
+                end=parse_datetime(data["duration"]["upperBound"]),
                 end_inclusive=data["duration"].get(
                     "upperBoundIsInclusive", False
                 ),
