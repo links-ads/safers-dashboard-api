@@ -7,6 +7,7 @@ from django.forms import Form, FileField
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import path, reverse
+from django.utils.html import mark_safe
 
 import json
 import numpy as np
@@ -89,7 +90,7 @@ class DataTypeAdmin(admin.ModelAdmin):
         """
         imports the SAFERS datamapping form into the db
         """
-        from django.utils.html import mark_safe
+
         DESCRIPTION = mark_safe(
             "Note that this will import all DataType <i>layers</i>.<br/>Actual <i>groups</i> and <i>subgroups</i> still have to be added manually."
         )
