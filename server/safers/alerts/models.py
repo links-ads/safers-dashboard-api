@@ -211,7 +211,21 @@ class Alert(models.Model):
             geometry__intersects=self.geometry_collection
         ).first()
 
-        return f"ALTR-{'-'.join(filter(None, [service_code, self.timestamp.year, serial_number, country.admin_code if country else None,]))}"
+        return "-".join(
+            filter(
+                None,
+                map(
+                    str,
+                    [
+                        "ALTR",
+                        service_code,
+                        self.timestamp.year,
+                        serial_number,
+                        country.admin_code if country else None,
+                    ]
+                )
+            )
+        )
 
     def recalculate_geometries(self, force_save=True):
         """

@@ -121,7 +121,20 @@ class Event(gis_models.Model):
             geometry__intersects=self.geometry_collection
         ).first()
 
-        return f"WF-{'-'.join(filter(None, [self.start_date.year, serial_number, country.admin_code if country else None,]))}"
+        return "-".join(
+            filter(
+                None,
+                map(
+                    str,
+                    [
+                        "WF",
+                        self.start_date.year,
+                        serial_number,
+                        country.admin_code if country else None,
+                    ]
+                )
+            )
+        )
 
     @property
     def ongoing(self):

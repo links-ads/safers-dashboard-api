@@ -171,7 +171,21 @@ class Report(gis_models.Model):
         country = Country.objects.filter(geometry__intersects=self.geometry
                                         ).first()
 
-        return f"REP-{'-'.join(filter(None, [report_scope, self.timestamp.year, serial_number, country.admin_code if country else None,]))}"
+        return "-".join(
+            filter(
+                None,
+                map(
+                    str,
+                    [
+                        "REP",
+                        report_scope,
+                        self.timestamp.year,
+                        serial_number,
+                        country.admin_code if country else None,
+                    ]
+                )
+            )
+        )
 
     @property
     def visibility(self):
