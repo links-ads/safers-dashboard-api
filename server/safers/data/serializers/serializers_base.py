@@ -11,6 +11,9 @@ DataLayerSerializerDateTimeFormats = [
     ISO_8601, "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d"
 ]
 
+## REMOVED TIMESTAMP/BBOX FILTERING AS PER https://astrosat.atlassian.net/browse/SAFB-255
+## THIS CLASS IS NO LONGER USED BY DataLayerViewSerializer
+
 
 class DataViewSerializer(serializers.Serializer):
     """

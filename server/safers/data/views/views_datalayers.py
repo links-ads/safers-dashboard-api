@@ -110,27 +110,29 @@ class DataLayerView(views.APIView):
             'request': self.request, 'format': self.format_kwarg, 'view': self
         }
 
-    def update_default_data(self, data):
-
-        if data.pop("default_bbox") and "bbox" not in data:
-            user = self.request.user
-            default_bbox = user.default_aoi.geometry.extent
-            data["bbox"] = ",".join(map(str, default_bbox))
-
-        default_date = data.pop("default_date")
-        if default_date and "start" not in data:
-            data["start"] = timezone.now() - timedelta(days=3)
-        if default_date and "end" not in data:
-            data["end"] = timezone.now()
-
-        # as per https://stackoverflow.com/a/42777551/1060339, DateTimeField doesn't
-        # automatically output "Z" for UTC timezone; so put it in explicitly
-        if "start" in data:
-            data["start"] = data["start"].strftime('%Y-%m-%dT%H:%M:%SZ')
-        if "end" in data:
-            data["end"] = data["end"].strftime('%Y-%m-%dT%H:%M:%SZ')
-
-        return data
+    ## REMOVED TIMESTAMP/BBOX FILTERING AS PER https://astrosat.atlassian.net/browse/SAFB-255
+    ##
+    ## def update_default_data(self, data):
+    ##
+    ##     if data.pop("default_bbox") and "bbox" not in data:
+    ##         user = self.request.user
+    ##         default_bbox = user.default_aoi.geometry.extent
+    ##         data["bbox"] = ",".join(map(str, default_bbox))
+    ##
+    ##     default_date = data.pop("default_date")
+    ##     if default_date and "start" not in data:
+    ##         data["start"] = timezone.now() - timedelta(days=3)
+    ##     if default_date and "end" not in data:
+    ##         data["end"] = timezone.now()
+    ##
+    ##     # as per https://stackoverflow.com/a/42777551/1060339, DateTimeField doesn't
+    ##     # automatically output "Z" for UTC timezone; so put it in explicitly
+    ##     if "start" in data:
+    ##         data["start"] = data["start"].strftime('%Y-%m-%dT%H:%M:%SZ')
+    ##     if "end" in data:
+    ##         data["end"] = data["end"].strftime('%Y-%m-%dT%H:%M:%SZ')
+    ##
+    ##     return data
 
     @swagger_auto_schema(
         query_serializer=DataLayerViewSerializer,
@@ -152,10 +154,12 @@ class DataLayerView(views.APIView):
         )
         serializer.is_valid(raise_exception=True)
 
-        updated_data = self.update_default_data(serializer.validated_data)
+        ## REMOVED TIMESTAMP/BBOX FILTERING AS PER https://astrosat.atlassian.net/browse/SAFB-255
+        ## updated_data = self.update_default_data(serializer.validated_data)
+
         proxy_params = {
             serializer.ProxyFieldMapping[k]: v
-            for k, v in updated_data.items()
+            for k, v in serializer.validated_data.items()
             if k in serializer.ProxyFieldMapping
         }  # yapf: disable
 
