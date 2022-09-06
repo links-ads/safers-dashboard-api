@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 ## REMOVED TIMESTAMP/BBOX FILTERING AS PER https://astrosat.atlassian.net/browse/SAFB-255
+##
 ## from .serializers_base import DataViewSerializer
 ##
 ## class DataLayerViewSerializer(DataViewSerializer):
@@ -66,6 +67,6 @@ class DataLayerViewSerializer(serializers.Serializer):
     def validate_n_layers(self, value):
         if value <= 0:
             raise serializers.ValidationError(
-                "n_layers must be greater thann 0."
+                "n_layers must be greater than 0."
             )
         return value
