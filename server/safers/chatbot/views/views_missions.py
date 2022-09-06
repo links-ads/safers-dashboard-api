@@ -1,7 +1,6 @@
 import json
 import requests
 from collections import OrderedDict
-from datetime import datetime
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -22,7 +21,7 @@ from safers.users.authentication import ProxyAuthentication
 from safers.chatbot.models import Mission, MissionStatusTypes
 from safers.chatbot.serializers import MissionSerializer, MissionCreateSerializer, MissionViewSerializer
 
-from .views_base import ChatbotView
+from .views_base import ChatbotView, parse_datetime, parse_none
 
 _mission_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -89,15 +88,11 @@ class MissionListView(MissionView):
                 description=data.get("description"),
                 # TODO: username=data.get(),
                 organization=data.get("organization", {}).get("name"),
-                start=datetime.fromisoformat(
-                    data["duration"]["lowerBound"].replace("Z", "+00:00")
-                ),
+                start=parse_datetime(data["duration"]["lowerBound"]),
                 start_inclusive=data["duration"].get(
                     "lowerBoundIsInclusive", False
                 ),
-                end=datetime.fromisoformat(
-                    data["duration"]["upperBound"].replace("Z", "+00:00")
-                ),
+                end=parse_datetime(data["duration"]["upperBound"]),
                 end_inclusive=data["duration"].get(
                     "upperBoundIsInclusive", False
                 ),
