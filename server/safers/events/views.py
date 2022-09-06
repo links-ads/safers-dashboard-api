@@ -43,7 +43,7 @@ _event_schema = openapi.Schema(
         "alerts": [
             {
                 "id": "739a052b-bbc5-4fe6-8b67-dd981f4eb4c0",
-                "title": "Alert 739a052 [Fire]"
+                "title": "ALRT-DSS-2022-S0001-ITA",
             }
         ],
         "status": "OPEN",
