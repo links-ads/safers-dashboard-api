@@ -29,6 +29,8 @@ class EventSerializer(serializers.ModelSerializer):
             "favorite",
         )
 
+    title = serializers.CharField(source="name")
+
     geometry = serializers.SerializerMethodField()
     center = serializers.SerializerMethodField()
     bounding_box = serializers.SerializerMethodField()
