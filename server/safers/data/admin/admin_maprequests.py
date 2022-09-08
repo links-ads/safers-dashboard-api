@@ -15,23 +15,23 @@ from safers.data.models import MapRequest, DataType
 
 class MapRequestStatusFilterTypes(models.TextChoices):
 
-    ALL_NONE = "ALL_NONE", _("All None")
-    ALL_PROCESSING = "ALL_PROCESSING", _("All Processing")
-    ALL_FAILED = "ALL_FAILED", _("All Failed")
-    ALL_AVAILABLE = "ALL_AVAILABLE", _("All Available")
-    ANY_NONE = "ANY NONE", _("Any None")
-    ANY_PROCESSING = "ANY_PROCESSING", _("Any Processing")
-    ANY_FAILED = "ANY_FAILED", _("Any Failed")
-    ANY_AVAILABLE = "ANY_AVAILABLE", _("Any Available")
-    NONE_NONE = "NONE_NONE", _("None None")
-    NONE_PROCESSING = "NONE_PROCESSING", _("None Processing")
-    NONE_FAILED = "NONE_FAILED", _("None Failed")
-    NONE_AVAILABLE = "NONE_AVAILABLE", _("None Available")
+    ALL_NONE = "ALL_NONE", _("All: None")
+    ALL_PROCESSING = "ALL_PROCESSING", _("All: Processing")
+    ALL_FAILED = "ALL_FAILED", _("All: Failed")
+    ALL_AVAILABLE = "ALL_AVAILABLE", _("All: Available")
+    ANY_NONE = "ANY NONE", _("Any: None")
+    ANY_PROCESSING = "ANY_PROCESSING", _("Any: Processing")
+    ANY_FAILED = "ANY_FAILED", _("Any: Failed")
+    ANY_AVAILABLE = "ANY_AVAILABLE", _("Any: Available")
+    NONE_NONE = "NONE_NONE", _("None: None")
+    NONE_PROCESSING = "NONE_PROCESSING", _("None: Processing")
+    NONE_FAILED = "NONE_FAILED", _("None: Failed")
+    NONE_AVAILABLE = "NONE_AVAILABLE", _("None: Available")
 
 
 class MapRequestStatusFilter(admin.SimpleListFilter):
     parameter_name = "status"
-    title = "status"
+    title = "statuses of MapRequestDataTypes"
 
     def lookups(self, request, model_admin):
         return MapRequestStatusFilterTypes.choices
