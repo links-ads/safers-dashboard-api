@@ -30,6 +30,9 @@ class TestMapRequests:
 
         assert map_request_data_type.status is None
 
+        SUCCESS_MESSAGE = "success"
+        FAILURE_MESSAGE = "failure"
+
         method = mock_method(
             routing_key=
             f"status.dsh.{data_type.datatype_id}.astro.{map_request.request_id}"
@@ -47,17 +50,21 @@ class TestMapRequests:
         message_body = {
             "type": "end",
             "status_code": 200,
+            "message": SUCCESS_MESSAGE,
         }
         MapRequest.process_message(message_body, method=method)
         assert map_request.map_request_data_types.count() == 1
         map_request_data_type.refresh_from_db()
         assert map_request_data_type.status == MapRequestStatus.AVAILABLE
+        assert map_request_data_type.message == SUCCESS_MESSAGE
 
         message_body = {
             "type": "error",
             "status_code": 500,
+            "message": FAILURE_MESSAGE,
         }
         MapRequest.process_message(message_body, method=method)
         assert map_request.map_request_data_types.count() == 1
         map_request_data_type.refresh_from_db()
         assert map_request_data_type.status == MapRequestStatus.FAILED
+        assert map_request_data_type.message == FAILURE_MESSAGE

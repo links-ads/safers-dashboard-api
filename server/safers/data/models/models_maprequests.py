@@ -274,6 +274,8 @@ class MapRequest(gis_models.Model):
                 if message_body.get("status_code") != 200:
                     map_request_data_type.status = MapRequestStatus.FAILED
 
+                map_request_data_type.message = message_body.get("message")
+
                 map_request_data_type.save()
 
         except Exception as e:
@@ -307,3 +309,18 @@ class MapRequestDataType(models.Model):
         blank=True,
         null=True,
     )
+    message = models.CharField(max_length=128, blank=True, null=True)
+
+
+#########################
+# sample status message #
+#########################
+{
+    'datatype_id': 36001,
+    'status_code': 404,
+    'type': 'end',
+    'name': '',
+    'message': 'No images found in period 2022-09-01 - 2022-09-30.',
+    'urls': ["whatever", ],
+    'metadata': None
+}
