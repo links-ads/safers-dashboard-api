@@ -101,6 +101,7 @@ class MapRequestDataTypeAdminForm(ModelForm):
         fields = (
             "data_type",
             "status",
+            "message",
         )
 
     def __init__(self, *args, **kwargs):
