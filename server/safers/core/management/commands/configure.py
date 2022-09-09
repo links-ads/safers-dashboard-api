@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core import management
 from django.core.management.base import BaseCommand, CommandError
 
+from safers.core.models import SiteProfile
+
 
 def load_fixture(app_config, fixture_name):
     fixture_path = os.path.join(app_config.path, "fixtures", fixture_name)
@@ -44,6 +46,13 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--skip-chatbot-categories",
+            dest="load_chatbot_categories",
+            action="store_false",
+            help="Whether or not to skip the chatbot.ReportCategory fixtures.",
+        )
+
+        parser.add_argument(
             "--skip-countries",
             dest="load_countries",
             action="store_false",
@@ -77,7 +86,12 @@ class Command(BaseCommand):
 
             site_code = options["site_code"]
             if site_code:
-                current_site_profile = get_current_site(None).profile
+                current_site = get_current_site(None)
+                if not current_site:
+                    raise CommandError(
+                        "Unable to assign site_code as there is no current site instance."
+                    )
+                current_site_profile, _ = SiteProfile.objects.get_or_create(site=current_site)
                 current_site_profile.code = site_code
                 current_site_profile.save()
                 self.stdout.write("updated site_profile code")
@@ -92,6 +106,12 @@ class Command(BaseCommand):
                 load_fixture(
                     apps.get_app_config("cameras"),
                     "cameras_fixture.json",
+                )
+
+            if options["load_chatbot_categories"]:
+                load_fixture(
+                    apps.get_app_config("chatbot"),
+                    "chatbot_categories_fixture.json",
                 )
 
             if options["load_countries"]:

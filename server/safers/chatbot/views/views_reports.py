@@ -4,7 +4,8 @@ from urllib.parse import urljoin
 from django.conf import settings
 from django.contrib.gis import geos
 
-from rest_framework import status
+from rest_framework import status, views
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -14,9 +15,10 @@ from drf_yasg.utils import swagger_auto_schema
 
 from safers.users.authentication import ProxyAuthentication
 
-from safers.chatbot.models import Report
+from safers.chatbot.models import Report, ReportCategory
 from safers.chatbot.serializers import ReportSerializer, ReportViewSerializer
-from .views_base import ChatbotView
+
+from .views_base import ChatbotView, parse_none, parse_datetime
 
 _report_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -42,6 +44,9 @@ _report_schema = openapi.Schema(
                 "type": "Image",
             },
         ],
+        "categories": [
+            "Measurements"
+        ],
         "geometry": {
             "type": "Point",
             "coordinates": [1, 2]
@@ -64,7 +69,7 @@ class ReportView(ChatbotView):
 
 class ReportListView(ReportView):
 
-    GATEWAY_URL_PATH = "/api/services/app/Reports/GetReports"
+    GATEWAY_URL_LIST_PATH = "/api/services/app/Reports/GetReports"
 
     @swagger_auto_schema(
         query_serializer=ReportViewSerializer,
@@ -75,19 +80,31 @@ class ReportListView(ReportView):
         proxy_data = self.get_proxy_list_data(
             request,
             proxy_url=urljoin(
-                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_PATH
+                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_LIST_PATH
             ),
         )
+
+        report_categories = {
+            # hitting the db once outside of the list comprehension below
+            # instead of hitting it for every report in proxy_data
+            report_category.pop("category_id"): report_category
+            for report_category in ReportCategory.objects.values(
+                "category_id",
+                "name",
+                "group",
+                "sub_group",
+            )
+        }
 
         reports = [
             Report(
                 report_id=data.get("id"),
                 mission_id=data.get("relativeMissionId"),
-                timestamp=data.get("timestamp"),
-                source=data.get("source"),
-                hazard=data.get("hazard"),
-                status=data.get("status"),
-                content=data.get("content"),
+                timestamp=parse_datetime(data.get("timestamp")),
+                source=parse_none(data.get("source")),
+                hazard=parse_none(data.get("hazard")),
+                status=parse_none(data.get("status")),
+                content=parse_none(data.get("content")),
                 is_public=data.get("isPublic"),
                 description=data.get("description"),
                 geometry=geos.Point(
@@ -102,8 +119,16 @@ class ReportListView(ReportView):
                     "name": data.get("username"),
                     "organization": data.get("organizationName"),
                 },
+                categories=[
+                    v
+                    for k, v in report_categories.items()
+                    if k in [
+                        extension.get("categoryId")
+                        for extension in data.get("extensionData", [])
+                    ]
+                ]
             ) for data in proxy_data
-        ]
+        ]  # yapf: disable
 
         model_serializer = self.model_serializer_class(
             reports, context=self.get_serializer_context(), many=True
@@ -114,7 +139,7 @@ class ReportListView(ReportView):
 
 class ReportDetailView(ReportView):
 
-    GATEWAY_URL_PATH = "/api/services/app/Reports/GetReportById"
+    GATEWAY_URL_DETAIL_PATH = "/api/services/app/Reports/GetReportById"
 
     @swagger_auto_schema(
         query_serializer=ReportViewSerializer,
@@ -129,7 +154,7 @@ class ReportDetailView(ReportView):
 
         try:
             response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_PATH),
+                urljoin(settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_DETAIL_PATH),
                 auth=ProxyAuthentication(request.user),
                 params=proxy_params,
                 timeout=4,  # 4 seconds as per https://requests.readthedocs.io/en/stable/user/advanced/#timeouts
@@ -143,6 +168,15 @@ class ReportDetailView(ReportView):
         geometry = feature.get("geometry", None)
         properties = feature.get("properties", {})
 
+        report_categories = {
+            report_category.pop("category_id"): report_category
+            for report_category in ReportCategory.objects.values(
+                "category_id",
+                "name",
+                "group",
+                "sub_group",
+            )
+        }
         report = Report(
             report_id=properties.get("id"),
             mission_id=properties.get("relativeMissionId"),
@@ -163,12 +197,40 @@ class ReportDetailView(ReportView):
                 "name": properties.get("username"),
                 "organization": properties.get("organizationName"),
             },
-        )
+            categories=[
+                v
+                for k, v in report_categories.items()
+                if k in [
+                    extension.get("categoryId")
+                    for extension in properties.get("extensionData", [])
+                ]
+            ]
+        )  # yapf: disable
         model_serializer = self.model_serializer_class(
             report, context=self.get_serializer_context(), many=False
         )
 
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
+
+
+_report_categories_schema = openapi.Schema(
+    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
+)
+
+
+@swagger_auto_schema(
+    responses={status.HTTP_200_OK: _report_categories_schema}, method="get"
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def report_categories_view(request):
+    """
+    Returns the list of possible Report categories.
+    """
+    report_categories_groups = ReportCategory.objects.values_list(
+        "group", flat=True
+    ).distinct()
+    return Response(report_categories_groups, status=status.HTTP_200_OK)
 
 
 """

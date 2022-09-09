@@ -16,7 +16,25 @@ class ActionStatusTypes(models.TextChoices):
 
 
 class ActionActivityTypes(models.TextChoices):
-    pass
+    SURVEILLANCE = "Surveillance", _("Surveillance"),
+    OPERATIVE_CENTER = "In activity in operative centers", _("In activity in operative centers"),
+    AIB_MODULES = "AIB Modules", _("AIB Modules"),
+    MOBILE_TUBS = "Mobile tubs", _("Mobile tubs"),
+    POWERED_EQUIPMENT = "Powered equip.", _("Powered equip."),
+    MANUAL_EQUIPMENT = "Manual equip.", _("Manual equip."),
+    PUMPING_EQUIPMENT = "Pumping equip.", _("Pumping equip."),
+    BARRIERS = "Barriers", _("Barriers"),
+    OPERATIVE_MACHINES = "Operative machines", _("Operative machines"),
+    ASSISTANCE = "Assistance to the population", _("Assistance to the population"),
+    FIRE_EXTINGUISHER_SYSTEM = "Fire ext. system", _("Fire ext. system"),
+    FUEL_REDUCTION = "Fuel reduction", _("Fuel reduction"),
+    FIRE_SUPPRESSION = "Fire suppression", _("Fire suppression"),
+    IMPACT_ASSESSMENT = "Impact assessment", _("Impact assessment"),
+    RESTORATION = "Restoration", _("Restoration"),
+    EVACUATION = "Evacuation", _("Evacuation"),
+    SEARCH_AND_RESCUE = "Search and rescue", _("Search and rescue"),
+    RUBBLE_REMOVAL = "Rubble removal", _("Rubble removal"),
+    SEARCH_MISSING = "Search missing", _("Search missing"),
 
 
 class Action(gis_models.Model):

@@ -49,13 +49,14 @@ class Mission(gis_models.Model):
         max_length=128, unique=True, blank=False, null=False
     )
 
+    title = models.CharField(max_length=128, blank=True, null=True)
     username = models.CharField(max_length=128, blank=True, null=True)
     organization = models.CharField(max_length=128, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     start = models.DateTimeField()
-    start_inclusive = models.BooleanField()
+    start_inclusive = models.BooleanField(default=True)
     end = models.DateTimeField()
-    end_inclusive = models.BooleanField()
+    end_inclusive = models.BooleanField(default=True)
     source = models.CharField(
         max_length=64,
         choices=MissionSourceTypes.choices,
@@ -64,8 +65,7 @@ class Mission(gis_models.Model):
     status = models.CharField(
         max_length=64,
         choices=MissionStatusTypes.choices,
-        blank=True,
-        null=True,
+        default=MissionStatusTypes.CREATED,
     )
     reports = models.JSONField(
         blank=True,
@@ -76,7 +76,7 @@ class Mission(gis_models.Model):
 
     @property
     def name(self):
-        return f"Mission {self.mission_id}"
+        return self.title or f"Mission {self.mission_id}"
 
     def save(self, *args, **kwargs):
         raise NotImplementedError(

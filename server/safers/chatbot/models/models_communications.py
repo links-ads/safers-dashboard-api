@@ -3,6 +3,23 @@ from django.contrib.gis.db import models as gis_models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from safers.core.utils import validate_schema
+
+
+def validate_assigned_to(value):
+    """
+    A simple validator that ensures communication.assigned_to is a list of strings
+    """
+
+    assigned_to_schema = {
+        "type": "array",
+        "items": {
+            "type": "string",
+        },
+    }
+
+    return validate_schema(value, assigned_to_schema)
+
 
 class CommunicationSourceTypes(models.TextChoices):
     CHATBOT = "Chatbot", _("Chatbot"),
@@ -45,9 +62,9 @@ class Communication(gis_models.Model):
     )
 
     start = models.DateTimeField()
-    start_inclusive = models.BooleanField()
+    start_inclusive = models.BooleanField(default=True)
     end = models.DateTimeField()
-    end_inclusive = models.BooleanField()
+    end_inclusive = models.BooleanField(default=True)
 
     source = models.CharField(
         max_length=64,
@@ -68,6 +85,13 @@ class Communication(gis_models.Model):
     target_organizations = models.ManyToManyField(
         "users.organization",
         related_name="targeted_chatbot_communications",
+    )
+
+    assigned_to = models.JSONField(
+        validators=[validate_assigned_to],
+        default=list,
+        # TODO: SHOULD REALLY BE USING target_organization FOR THIS, BUT HAVE TO WAIT
+        # TODO: UNTIL I'VE LINKED FusionAuth Organization w/ Django Organizations
     )
 
     message = models.TextField(blank=True, null=True)

@@ -2,8 +2,10 @@ import uuid
 
 from django.db import models
 from django.contrib.gis.db import models as gis_models
+from django.contrib.postgres.fields import ArrayField
 from django.utils.translation import gettext_lazy as _
 
+from safers.core.models import Country
 from safers.core.utils import validate_schema
 
 
@@ -37,11 +39,32 @@ def validate_reporter(value):
         "type": "object",
         "properties": {
             "name": {"type": "string"},
-            "organization": {"type": "string"}
+            "organization": {"type": ["string", "null"]}
         },
     }  # yapf: disable
 
     return validate_schema(value, reporter_schema)
+
+
+def validate_categories(value):
+    """
+    A simple validator that ensures report.categories is a correctly-formatted object
+    """
+
+    categories_schema = {
+        "type": "array",
+        "items": [{
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "group": {"type": "string"},
+                "sub_group": {"type": "string"},
+
+            }
+        }]
+    }  # yapf: disable
+
+    return validate_schema(value, categories_schema)
 
 
 class ReportSourceTypes(models.TextChoices):
@@ -127,6 +150,9 @@ class Report(gis_models.Model):
     description = models.TextField(blank=True, null=True)
     media = models.JSONField(validators=[validate_media], default=list)
     reporter = models.JSONField(validators=[validate_reporter], default=dict)
+    categories = models.JSONField(
+        validators=[validate_categories], default=list
+    )
     geometry = gis_models.GeometryField(blank=False, null=False)
 
     def __str__(self):
@@ -134,7 +160,32 @@ class Report(gis_models.Model):
 
     @property
     def name(self):
-        return f"Report {self.report_id}"
+
+        if self.reporter.get("organization"):
+            report_scope = "PRO"  # user has organization => professional report
+        else:
+            report_scope = "CIT"  # user has no organization => citizen report
+
+        serial_number = f"S{self.report_id:0>5}"
+
+        country = Country.objects.filter(geometry__intersects=self.geometry
+                                        ).first()
+
+        return "-".join(
+            filter(
+                None,
+                map(
+                    str,
+                    [
+                        "REP",
+                        report_scope,
+                        self.timestamp.year,
+                        serial_number,
+                        country.admin_code if country else None,
+                    ]
+                )
+            )
+        )
 
     @property
     def visibility(self):
@@ -146,6 +197,35 @@ class Report(gis_models.Model):
         raise NotImplementedError(
             "Report is not stored in the db and therefore cannot be saved."
         )
+
+
+class ReportCategory(models.Model):
+    class Meta:
+        verbose_name = "Report Category"
+        verbose_name_plural = "Report Categories"
+
+    category_id = models.IntegerField(blank=False, null=False, unique=True)
+
+    type = models.CharField(max_length=128, blank=True, null=True)
+    hazard = models.CharField(max_length=128, blank=True, null=True)
+    target_key = models.CharField(max_length=128, blank=True, null=True)
+    target = models.CharField(max_length=128, blank=True, null=True)
+    group = models.CharField(max_length=128, blank=True, null=True)
+    group_key = models.CharField(max_length=128, blank=True, null=True)
+    sub_group = models.CharField(max_length=128, blank=True, null=True)
+    sub_group_key = models.CharField(max_length=128, blank=True, null=True)
+    name = models.CharField(max_length=128, blank=True, null=True)
+    code = models.CharField(max_length=128, blank=True, null=True)
+    group_code = models.CharField(max_length=128, blank=True, null=True)
+    unit_of_measure = models.CharField(max_length=128, blank=True, null=True)
+    min_value = models.CharField(max_length=128, blank=True, null=True)
+    max_value = models.CharField(max_length=128, blank=True, null=True)
+    values = ArrayField(
+        models.CharField(max_length=128), blank=True, default=list
+    )
+
+    # groupIcon = models.CharField(blank=True, null=True)
+    # fieldType = models.CharField(blank=True, null=True)
 
 
 ##########################

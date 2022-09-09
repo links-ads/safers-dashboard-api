@@ -11,6 +11,7 @@ from safers.chatbot.views import (
     mission_statuses_view,
     ReportListView,
     ReportDetailView,
+    report_categories_view,
 )
 
 api_router = routers.DefaultRouter()
@@ -50,6 +51,11 @@ api_urlpatterns = [
         "chatbot/reports",
         ReportListView.as_view(),
         name="reports-list",
+    ),
+    path(
+        "chatbot/reports/categories",
+        report_categories_view,
+        name="report-categories-list",
     ),
     path(
         "chatbot/reports/<slug:report_id>",

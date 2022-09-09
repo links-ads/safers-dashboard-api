@@ -19,7 +19,7 @@ from safers.users.exceptions import AuthenticationException
 from safers.users.permissions import IsRemote
 
 from safers.data.models import DataType
-from safers.data.serializers import DataLayerSerializer
+from safers.data.serializers import DataLayerViewSerializer
 
 ###########
 # swagger #
@@ -55,8 +55,11 @@ _data_layer_schema = openapi.Schema(
                     "id": "1.1.1.1",
                     "text": "2022-04-28T12:15:20Z",
                     "info": None,
-                    "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5",
+                    "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=text",
+                    "metadata_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=json",
                     "legend_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetLegendGraphic&srs=EPSG%3A4326&width=256&height=256&format=image%2Fpng",
+                    "pixel_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GetFeatureInfo...",
+                    "timeseries_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
                     "urls": {
                       "2022-04-28T12:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
                       "2022-04-28T13:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T13%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
@@ -95,7 +98,7 @@ _data_layer_domains_schema = openapi.Schema(
 class DataLayerView(views.APIView):
 
     permission_classes = [IsAuthenticated, IsRemote]
-    serializer_class = DataLayerSerializer
+    serializer_class = DataLayerViewSerializer
 
     def get_serializer_context(self):
         """
@@ -107,30 +110,32 @@ class DataLayerView(views.APIView):
             'request': self.request, 'format': self.format_kwarg, 'view': self
         }
 
-    def update_default_data(self, data):
-
-        if data.pop("default_bbox") and "bbox" not in data:
-            user = self.request.user
-            default_bbox = user.default_aoi.geometry.extent
-            data["bbox"] = ",".join(map(str, default_bbox))
-
-        default_date = data.pop("default_date")
-        if default_date and "start" not in data:
-            data["start"] = timezone.now() - timedelta(days=3)
-        if default_date and "end" not in data:
-            data["end"] = timezone.now()
-
-        # as per https://stackoverflow.com/a/42777551/1060339, DateTimeField doesn't
-        # automatically output "Z" for UTC timezone; so put it in explicitly
-        if "start" in data:
-            data["start"] = data["start"].strftime('%Y-%m-%dT%H:%M:%SZ')
-        if "end" in data:
-            data["end"] = data["end"].strftime('%Y-%m-%dT%H:%M:%SZ')
-
-        return data
+    ## REMOVED TIMESTAMP/BBOX FILTERING AS PER https://astrosat.atlassian.net/browse/SAFB-255
+    ##
+    ## def update_default_data(self, data):
+    ##
+    ##     if data.pop("default_bbox") and "bbox" not in data:
+    ##         user = self.request.user
+    ##         default_bbox = user.default_aoi.geometry.extent
+    ##         data["bbox"] = ",".join(map(str, default_bbox))
+    ##
+    ##     default_date = data.pop("default_date")
+    ##     if default_date and "start" not in data:
+    ##         data["start"] = timezone.now() - timedelta(days=3)
+    ##     if default_date and "end" not in data:
+    ##         data["end"] = timezone.now()
+    ##
+    ##     # as per https://stackoverflow.com/a/42777551/1060339, DateTimeField doesn't
+    ##     # automatically output "Z" for UTC timezone; so put it in explicitly
+    ##     if "start" in data:
+    ##         data["start"] = data["start"].strftime('%Y-%m-%dT%H:%M:%SZ')
+    ##     if "end" in data:
+    ##         data["end"] = data["end"].strftime('%Y-%m-%dT%H:%M:%SZ')
+    ##
+    ##     return data
 
     @swagger_auto_schema(
-        query_serializer=DataLayerSerializer,
+        query_serializer=DataLayerViewSerializer,
         responses={status.HTTP_200_OK: _data_layer_list_schema}
     )
     def get(self, request, *args, **kwargs):
@@ -149,10 +154,12 @@ class DataLayerView(views.APIView):
         )
         serializer.is_valid(raise_exception=True)
 
-        updated_data = self.update_default_data(serializer.validated_data)
+        ## REMOVED TIMESTAMP/BBOX FILTERING AS PER https://astrosat.atlassian.net/browse/SAFB-255
+        ## updated_data = self.update_default_data(serializer.validated_data)
+
         proxy_params = {
             serializer.ProxyFieldMapping[k]: v
-            for k, v in updated_data.items()
+            for k, v in serializer.validated_data.items()
             if k in serializer.ProxyFieldMapping
         }  # yapf: disable
 
@@ -173,7 +180,8 @@ class DataLayerView(views.APIView):
                 "service": "WMS",
                 "request": "GetMap",
                 "srs": "EPSG:4326",
-                "bbox": "{bbox}",
+                "bbox": "{{bbox}}",
+                "transparent": True,
                 "width": 256,
                 "height": 256,
                 "format": "image/png",
@@ -188,15 +196,59 @@ class DataLayerView(views.APIView):
                 "service": "WMS",
                 "request": "GetLegendGraphic",
                 "srs": "EPSG:4326",
-                "width": 256,
+                "width": 512,
                 "height": 256,
                 "format": "image/png",
+                "LEGEND_OPTIONS": "fontsize:80;dpi=72"
             },
             safe="{}",
         )
         geoserver_legend_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_legend_query_params}"
 
-        metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}"
+        geoserver_pixel_query_params = urlencode(
+            {
+                "service": "WMS",
+                "version": "1.1.0",
+                "request": "GetFeatureInfo",
+                "srs": "EPSG:4326",
+                "info_format": "application/json",
+                "layers": "{name}",
+                "query_layers": "{name}",
+                "width": 1,
+                "height": 1,
+                "x": 1,
+                "y": 1,
+                "bbox": "{{bbox}}",
+            },
+            safe="{}",
+        )
+        geoserver_pixel_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_pixel_query_params}"
+
+        geoserver_timeseries_query_params = urlencode(
+            # this seems unintuitive, but the GetTimeseries Geoserver API uses the bbox (not x & y)
+            # to determine the region to inspect - therefore I set height & width & x & y to constants
+            # and the frontend injects a pixel-sized bbox into the query
+            {
+                "service": "WMS",
+                "version": "1.1.0",
+                "request": "GetTimeSeries",
+                "srs": "EPSG:4326",
+                "format":
+                    "text/csv",  # "image/png" or "image/jpg" or "text/csv"
+                "time": "{time}",
+                "layers": "{name}",
+                "query_layers": "{name}",
+                "width": 1,
+                "height": 1,
+                "x": 1,
+                "y": 1,
+                "bbox": "{{bbox}}",
+            },
+            safe="{}",
+        )
+        geoserver_timeseries_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_timeseries_query_params}"
+
+        metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}?metadata_format={{metadata_format}}"
 
         data_type_info = {"None": None}
         data_type_sources = {"None": None}
@@ -241,8 +293,24 @@ class DataLayerView(views.APIView):
                         "id": f"{i}.{j}.{k}.{l}",
                         "text": detail["created_At"],
                         "info": None,
-                        "info_url": metadata_url.format(metadata_id=detail.get("metadata_Id")),
-                        "legend_url": geoserver_legend_url.format(name=quote_plus(detail["name"])),
+                        "info_url": metadata_url.format(
+                            metadata_id=detail.get("metadata_Id"),
+                            metadata_format="text",
+                        ),
+                        "metadata_url": metadata_url.format(
+                            metadata_id=detail.get("metadata_Id"),
+                            metadata_format="json",
+                        ),
+                        "legend_url": geoserver_legend_url.format(
+                            name=quote_plus(detail["name"]),
+                        ),
+                        "pixel_url": geoserver_pixel_url.format(
+                            name=quote_plus(detail["name"]),
+                        ),
+                        "timeseries_url": geoserver_timeseries_url.format(
+                            name=quote_plus(detail["name"]),
+                            time=quote_plus(",".join(detail["timestamps"])),
+                        ) if len(detail.get("timestamps", [])) > 0 else None,
                         "urls": OrderedDict(
                           [
                             (
@@ -250,7 +318,6 @@ class DataLayerView(views.APIView):
                                 geoserver_layer_url.format(
                                   name=quote_plus(detail["name"]),
                                   time=quote_plus(timestamp),
-                                  bbox="{bbox}",
                                 )
                             )
                             for timestamp in detail.get("timestamps", [])

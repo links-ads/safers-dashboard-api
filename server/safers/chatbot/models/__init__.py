@@ -10,7 +10,8 @@ from .models_missions import (
     MissionStatusTypes,
 )
 from .models_reports import (
-    Report,  # ReportMedia,
+    Report,
+    ReportCategory,
     ReportHazardTypes,
     ReportStatusTypes,
     ReportContentTypes,

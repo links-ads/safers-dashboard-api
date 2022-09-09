@@ -1,8 +1,10 @@
+import json
+
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from safers.chatbot.models import Mission, MissionStatusTypes
-from .serializers_base import ChatbotViewSerializer
+from .serializers_base import ChatbotViewSerializer, ChatbotDateTimeFormats
 
 
 class MissionViewSerializer(ChatbotViewSerializer):
@@ -50,8 +52,55 @@ class MissionSerializer(serializers.ModelSerializer):
         precision=Mission.PRECISION, remove_duplicates=True
     )
 
+    start = serializers.DateTimeField(input_formats=ChatbotDateTimeFormats)
+    end = serializers.DateTimeField(input_formats=ChatbotDateTimeFormats)
+
     location = serializers.SerializerMethodField()
 
     def get_location(self, obj):
         if obj.geometry:
             return obj.geometry.coords
+
+
+class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
+    class Meta:
+        model = Mission
+        fields = (
+            "title",
+            "description",
+            "start",
+            "end",
+            "organizationId",
+            "source",  # "reports",
+            "duration",
+            "geometry",
+        )
+        geo_field = "geometry"
+        id_field = False
+
+    start = serializers.DateTimeField(
+        input_formats=ChatbotDateTimeFormats, write_only=True
+    )
+    end = serializers.DateTimeField(
+        input_formats=ChatbotDateTimeFormats, write_only=True
+    )
+
+    organizationId = serializers.SerializerMethodField(
+        method_name="get_organization_id"
+    )
+
+    duration = serializers.SerializerMethodField()
+
+    def get_duration(self, obj):
+        return {
+            "lowerBound": obj.start,
+            "upperBound": obj.end,
+            "lowerBoundIsInclusive": obj.start_inclusive,
+            "upperBoundIsInclusive": obj.end_inclusive,
+        }
+
+    def get_organization_id(self, obj):
+        user = self.context["request"].user
+        if user.organization:
+            return user.organization.organization_id
+        return None

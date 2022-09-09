@@ -24,6 +24,10 @@ class Organization(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
+    organization_id = models.SlugField(
+        blank=True,
+        null=True,
+    )
     name = models.CharField(
         max_length=128,
         blank=False,

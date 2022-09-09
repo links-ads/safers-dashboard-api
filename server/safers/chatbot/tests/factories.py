@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from safers.core.tests.providers import GeometryProvider
 
-from safers.chatbot.models import Action, ActionStatusTypes, Communication, Mission, MissionStatusTypes, Report, ReportContentTypes,  ReportStatusTypes
+from safers.chatbot.models import Action, ActionActivityTypes, ActionStatusTypes, Communication, Mission, MissionStatusTypes, Report, ReportContentTypes,  ReportStatusTypes
 
 fake = Faker()
 
@@ -53,6 +53,14 @@ class ReportFactory(factory.django.DjangoModelFactory):
             "organization": fake.word(),
         }
 
+    @factory.lazy_attribute
+    def categories(self):
+        return [{
+            "name": fake.word(),
+            "group": fake.word(),
+            "sub_group": fake.word(),
+        } for _ in range(fake.pyint(min_value=0, max_value=4))]
+
 
 class CommunicationFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -86,6 +94,12 @@ class CommunicationFactory(factory.django.DjangoModelFactory):
     def communication_id(self, n):
         return f"{n}"
 
+    @factory.lazy_attribute
+    def assigned_to(self):
+        return [
+            fake.word() for _ in range(fake.pyint(min_value=0, max_value=4))
+        ]
+
 
 class ActionFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -110,7 +124,7 @@ class ActionFactory(factory.django.DjangoModelFactory):
     def activity(self):
         # only set an activity if status is ACTIVE
         if self.status == ActionStatusTypes.ACTIVE:
-            return fake.word()
+            return fake.random_element(elements=ActionActivityTypes.values)
 
 
 class MissionFactory(factory.django.DjangoModelFactory):

@@ -1,5 +1,3 @@
-import re
-from datetime import datetime
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -15,11 +13,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from safers.chatbot.models import Action, ActionActivityTypes, ActionStatusTypes
 from safers.chatbot.serializers import ActionSerializer, ActionViewSerializer
-from .views_base import ChatbotView
-
-# output of chatbot action timestamp is not standard
-# this regex is used to throw away milliseconds and replace the timezone
-ACTION_TIMESTAMP_REGEX = re.compile(r"^(.*)(\.\d+)(Z)")
+from .views_base import ChatbotView, parse_none, parse_datetime
 
 
 class ActionView(ChatbotView):
@@ -52,9 +46,7 @@ class ActionListView(ActionView):
                 organization=data.get("organizationName"),
                 activity=data.get("activityName"),
                 status=data.get("status"),
-                timestamp=datetime.fromisoformat(
-                    ACTION_TIMESTAMP_REGEX.sub(r"\1+00:00", data["timestamp"])
-                ),
+                timestamp=parse_datetime(data["timestamp"]),
                 geometry=geos.Point(data["longitude"], data["latitude"])
                 if "longitude" in data and "latitude" in data else None,
             ) for data in proxy_data
