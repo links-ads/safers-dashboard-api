@@ -1,9 +1,13 @@
+import logging
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
 from safers.cameras.models import CameraMedia
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -24,9 +28,17 @@ class Command(BaseCommand):
             "Don't actually delete anything, just report what _would_ be deleted."
         )
 
+        parser.add_argument(
+            "--logging",
+            dest="log_output",
+            action="store_true",
+            help="Log output."
+        )
+
     def handle(self, *args, **options):
 
         dry_run = options["dry_run"]
+        log_output = options["log_output"]
 
         try:
             preserve_timestamp = timezone.now(
@@ -45,7 +57,12 @@ class Command(BaseCommand):
                     for camera_media in camera_media_to_delete:
                         camera_media.delete()
                     msg = f"Deleted {camera_media_to_delete.count()} CameraMedia objects."
+                    if log_output:
+                        logging.info(msg)
                     self.stdout.write(msg)
 
         except Exception as e:
-            raise CommandError(e)
+            msg = str(e)
+            if log_output:
+                logging.error(msg)
+            raise CommandError(msg)
