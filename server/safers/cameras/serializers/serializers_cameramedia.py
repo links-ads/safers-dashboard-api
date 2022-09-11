@@ -20,30 +20,32 @@ class CameraMediaSerializer(serializers.ModelSerializer):
             "geometry",
             "url",
             "message",
-            "favorite",
+            "favorite",  # note "favorite" is an annotated field
         )
 
     camera_id = serializers.SlugRelatedField(
-        slug_field="camera_id", queryset=Camera.objects.all(), source="camera"
+        slug_field="camera_id",
+        queryset=Camera.objects.all(),
+        source="camera",
     )
+
     fire_classes = serializers.SlugRelatedField(
         slug_field="name",
         queryset=CameraMediaFireClass.objects.all(),
-        many=True
+        many=True,
     )
 
     tags = serializers.SlugRelatedField(
-        slug_field="name", queryset=CameraMediaTag.objects.all(), many=True
+        slug_field="name",
+        queryset=CameraMediaTag.objects.all(),
+        many=True,
     )
 
-    geometry = gis_serializers.GeometryField(
-        precision=CameraMedia.PRECISION, allow_null=True, required=False
-    )
+    # possibly more efficient to just accept defaut geodjango behaviour here
+    # geometry = gis_serializers.GeometryField(
+    #     precision=CameraMedia.PRECISION, allow_null=True, required=False
+    # )
 
     message = serializers.JSONField(write_only=True)
 
-    favorite = serializers.SerializerMethodField(method_name="is_favorite")
-
-    def is_favorite(self, obj):
-        user = self.context["request"].user
-        return obj in user.favorite_camera_medias.all()
+    favorite = serializers.NullBooleanField(read_only=True, required=False)

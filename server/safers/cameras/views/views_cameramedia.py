@@ -1,7 +1,3 @@
-from copy import deepcopy
-from functools import reduce
-from operator import __or__
-
 from django.conf import settings
 from django.contrib.gis.geos import Polygon
 from django.db.models import BooleanField, ExpressionWrapper, Q
@@ -98,7 +94,7 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         method="bbox_filter", help_text=_("xmin, ymin, xmax, ymax")
     )
     default_bbox = filters.BooleanFilter(
-        initial=True,
+        initial=False,
         help_text=_(
             "If default_bbox is True and no bbox is provided the user's default_aoi bbox will be used; "
             "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
@@ -123,22 +119,18 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 
         # update filters based on default fields
 
-        updated_cleaned_data = deepcopy(self.form.cleaned_data)
-
-        default_date = updated_cleaned_data.pop("default_date")
-        if default_date and not updated_cleaned_data.get("end_date"):
-            updated_cleaned_data["end_date"] = timezone.now()
-        if default_date and not updated_cleaned_data.get("start_date"):
-            updated_cleaned_data["start_date"] = timezone.now(
+        default_date = self.form.cleaned_data.pop("default_date")
+        if default_date and not self.form.cleaned_data.get("end_date"):
+            self.form.cleaned_data["end_date"] = timezone.now()
+        if default_date and not self.form.cleaned_data.get("start_date"):
+            self.form.cleaned_data["start_date"] = timezone.now(
             ) - settings.SAFERS_DEFAULT_TIMERANGE
 
-        default_bbox = updated_cleaned_data.pop("default_bbox")
-        if default_bbox and not updated_cleaned_data.get("bbox"):
+        default_bbox = self.form.cleaned_data.pop("default_bbox")
+        if default_bbox and not self.form.cleaned_data.get("bbox"):
             user = self.request.user
             bbox = user.default_aoi.geometry.extent
-            updated_cleaned_data["bbox"] = ",".join(map(str, bbox))
-
-        self.form.cleaned_data = updated_cleaned_data
+            self.form.cleaned_data["bbox"] = ",".join(map(str, bbox))
 
         return super().filter_queryset(queryset)
 
@@ -189,14 +181,15 @@ class CameraMediaViewSet(
         ensures that favorite camera_medias are at the start of the qs
         """
         user = self.request.user
-        qs = CameraMedia.objects.all().prefetch_related(
-            "fire_classes", "favorited_users"
+        qs = CameraMedia.objects.select_related("camera").prefetch_related(
+            "tags", "fire_classes"
         )
         qs = qs.annotate(
             favorite=ExpressionWrapper(
                 Q(favorited_users=user), output_field=BooleanField()
             )
         ).distinct()
+
         return qs.order_by("favorite")
 
     def get_object(self):

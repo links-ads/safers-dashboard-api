@@ -172,12 +172,12 @@ if settings.DEBUG:
 
     if "silk" in settings.INSTALLED_APPS:
         import silk
-        urlpatterns += [
+        urlpatterns = [
             path("silk/", include('silk.urls', namespace="silk")),
-        ]
+        ] + urlpatterns
 
     if "debug_toolbar" in settings.INSTALLED_APPS:
         import debug_toolbar
         urlpatterns = [
-            path("__debug__", include(debug_toolbar.urls))
+            path("__debug__/", include(debug_toolbar.urls))
         ] + urlpatterns

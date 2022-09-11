@@ -71,6 +71,8 @@ The RMQ app uses `pika` to monitor the SAFERS Message Queue.  Upon receipt of a 
 
 Profiling is handled using cProfile & django-cprofile-middleware & snakeviz & silk.
 
-- appending `prof` to a URL will give a profile summary (in development only)
-- appending `prof&download` to a URL will create a file called "view.prof" which can be inspected by running `snakeviz ./path/to/view.prof` outside of docker
+- appending `&prof` to a URL will give a profile summary (in development only)
+- appending `&prof&download` to a URL will create a file called "view.prof" which can be inspected by running `snakeviz ./path/to/view.prof` outside of docker
 - db queries can be monitored by going to "http://localhost:8000/silk"
+
+Alternatively - b/c the above is a bit "unuser-friendly" - django-debug-toolbar is also enabled.  It is a bit limited, obviously, b/c of Django Rest Framework.  For GETs, usage is: `localhost:8000/api/<whatever>/?format=json&debug-toolbar`
