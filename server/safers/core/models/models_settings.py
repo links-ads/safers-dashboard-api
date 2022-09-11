@@ -75,6 +75,13 @@ class SafersSettings(SingletonMixin, models.Model):
         ),
     )
 
+    camera_media_preserve_timerange = models.DurationField(
+        default=timedelta(hours=24),
+        help_text=_(
+            "Time range of (non smoke/fire) camera_medias to preserver; everything outside of this range is purged."
+        )
+    )
+
     default_timerange = models.DurationField(
         default=timedelta(days=3),
         help_text=_(

@@ -450,6 +450,10 @@ SAFERS_DEFAULT_TIMERANGE = DynamicSetting(
     "core.SafersSettings.default_timerange",
     timedelta(days=3),
 )
+SAFERS_CAMERA_MEDIA_PRESERVE_TIMERANGE = DynamicSetting(
+    "core.SafersSettings.camera_media_preserve_timerange",
+    timedelta(days=1),
+)
 SAFERS_POSSIBLE_EVENT_DISTANCE = DynamicSetting(
     "core.SafersSettings.possible_event_distance",
     10,
