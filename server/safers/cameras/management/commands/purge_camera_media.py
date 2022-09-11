@@ -40,12 +40,12 @@ class Command(BaseCommand):
                 self.stdout.write(msg)
 
             else:
-                # (cannot do bulk deletion b/c `undetected` filter uses `distinct`)
+                # (cannot do bulk deletion b/c `undetected` filter uses `distinct` so using loop below)
                 with transaction.atomic():
                     for camera_media in camera_media_to_delete:
                         camera_media.delete()
-                msg = f"Deleted {camera_media_to_delete.count()} CameraMedia objects."
-                self.stdout.write(msg)
+                    msg = f"Deleted {camera_media_to_delete.count()} CameraMedia objects."
+                    self.stdout.write(msg)
 
         except Exception as e:
             raise CommandError(e)
