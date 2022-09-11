@@ -94,7 +94,8 @@ def process_messages(message_body, **kwargs):
             # delete old undetected camera_media objects...
             # (the pre_delete signal will take care of camera.last_update)
             old_undetected_camera_medias = camera.media.undetected().filter(
-                timestamp__lt=timezone.now() - settings.SAFERS_DEFAULT_TIMERANGE
+                timestamp__lt=timezone.now() -
+                settings.SAFERS_CAMERA_MEDIA_PRESERVE_TIMERANGE
             ).exclude(pk=camera_media.pk)
             if old_undetected_camera_medias.exists():
                 for old_undected_camera_media in old_undetected_camera_medias:

@@ -67,6 +67,8 @@ Users can authenticate locally or remotely (via FusionAuth).  Note that only rem
 
 The RMQ app uses `pika` to monitor the SAFERS Message Queue.  Upon receipt of a message with a registered routing_key the handlers defined in `rmq.py#BINDING_KEYS` are called. 
 
+The managemnt comamnd `manage.py purge_camera_media` should be run periodically to remove outdated camera_media objects.  This can be done locally via cron.  In deployment, **heroku scheduler** is used for this functionality.
+
 ## profiling
 
 Profiling is handled using cProfile & django-cprofile-middleware & snakeviz & silk.
