@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='saferssettings',
             name='camera_media_preserve_timerange',
-            field=models.DurationField(default=datetime.timedelta(days=1), help_text='Time range of (non smoke/fire) camera_medias to preserver; everything outside of this range is purged.'),
+            field=models.DurationField(default=datetime.timedelta(days=1), help_text='Time range of (non smoke/fire) camera_medias to preserve; everything outside of this range is purged.'),
         ),
     ]
