@@ -351,7 +351,7 @@ def data_layer_domains_view(request):
     """
     Returns the list of possible DataLayer domains.
     """
-    data_type_domains = DataType.objects.only("domain").exclude(
+    data_type_domains = DataType.objects.operational().only("domain").exclude(
         domain__isnull=True
     ).order_by("domain").values_list("domain", flat=True).distinct()
     return Response(data_type_domains, status=status.HTTP_200_OK)
@@ -366,7 +366,7 @@ def data_layer_sources_view(request):
     """
     Returns the list of possible DataLayer sources.
     """
-    data_type_sources = DataType.objects.only("source").exclude(
+    data_type_sources = DataType.objects.operational().only("source").exclude(
         source__isnull=True
     ).order_by("source").values_list("source", flat=True).distinct()
     return Response(data_type_sources, status=status.HTTP_200_OK)
