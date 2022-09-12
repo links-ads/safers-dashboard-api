@@ -6,8 +6,10 @@ from safers.data.views import (
     DataLayerView,
     data_layer_domains_view,
     data_layer_sources_view,
-    DataLayerMetadataView,
     MapRequestViewSet,
+    map_request_domains_view,
+    map_request_sources_view,
+    DataLayerMetadataView,
 )
 
 api_router = routers.DefaultRouter()
@@ -30,6 +32,16 @@ api_urlpatterns = [
         "data/layers/sources",
         data_layer_sources_view,
         name="data-layers-sources-list"
+    ),
+    path(
+        "data/maprequests/domains",
+        map_request_domains_view,
+        name="map-requests-domains-list"
+    ),
+    path(
+        "data/maprequests/sources",
+        map_request_sources_view,
+        name="map-requests-sources-list"
     ),
     path(
         "data/layers/metadata/<slug:metadata_id>",
