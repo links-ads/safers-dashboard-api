@@ -71,7 +71,8 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
             "start",
             "end",
             "organizationId",
-            "source",  # "reports",
+            "source",
+            "status",  # "reports",
             "duration",
             "geometry",
         )
