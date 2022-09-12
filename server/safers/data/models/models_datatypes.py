@@ -34,6 +34,9 @@ class DataTypeQuerySet(models.QuerySet):
     def on_demand(self):
         return self.filter(is_on_demand=True)
 
+    def operational(self):
+        return self.filter(is_on_demand=False)
+
 
 class DataType(models.Model):
     """
