@@ -163,7 +163,6 @@ class DataLayerView(views.APIView):
             if k in serializer.ProxyFieldMapping
         }  # yapf: disable
 
-
         try:
             response = requests.get(
                 urljoin(settings.SAFERS_GATEWAY_API_URL, GATEWAY_URL_PATH),

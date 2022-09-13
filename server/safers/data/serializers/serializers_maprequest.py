@@ -10,32 +10,10 @@ from rest_framework_gis import serializers as gis_serializers
 from safers.core.serializers import SwaggerCurrentUserDefault
 from safers.data.models import MapRequest, DataType
 
-## REMOVED TIMESTAMP/BBOX FILTERING AS PER https://astrosat.atlassian.net/browse/SAFB-255
-##
-## from .serializers_base import DataViewSerializer
-##
-## class MapRequestViewSerializer(DataViewSerializer):
-##     """
-##     Note that this isn't a ModelSerializer; it's just being
-##     used for query_param validation in the DataLayer Views
-##     """
-##
-##     ProxyFieldMapping = {
-##         # fields to pass onto proxy
-##         "bbox": "Bbox",
-##         "start": "Start",
-##         "end": "End",
-##         "include_map_requests": "IncludeMapRequests",
-##     }
-##
-##     include_map_requests = serializers.BooleanField(
-##         default=True,
-##         required=False,
-##         help_text=_(
-##             "Whether or not to include on-demand MapRequests.  "
-##             "This ought to be 'False' to distinguish this API from the 'api/data/map_requests' API."
-##         ),
-##     )
+############################
+# view serializer          #
+# (for proxy query_params) #
+############################
 
 
 class MapRequestViewSerializer(serializers.Serializer):

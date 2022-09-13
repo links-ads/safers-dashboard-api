@@ -119,7 +119,6 @@ class MapRequestViewSet(
         When a MapRequest is created, publish a corresponding message to 
         RMQ in order to trigger the creation of the MapRequest's data
         """
-
         map_request = serializer.save()
         map_request.invoke()
         return map_request
@@ -134,7 +133,7 @@ class MapRequestViewSet(
 
     @swagger_auto_schema(
         query_serializer=MapRequestViewSerializer,
-        #     # responses={status.HTTP_200_OK: _data_layer_list_schema}
+        responses={status.HTTP_200_OK: _map_request_list_schema}
     )
     def list(self, request, *args, **kwargs):
         """
@@ -145,6 +144,8 @@ class MapRequestViewSet(
         GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
         GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
         METADATA_URL_PATH = "/api/data/layers/metadata"
+
+        # TODO: REFACTOR - MUCH OF THIS IS DUPLILCATED IN DataLayerView
 
         geoserver_layer_query_params = urlencode(
             {
@@ -198,9 +199,6 @@ class MapRequestViewSet(
         geoserver_pixel_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_pixel_query_params}"
 
         geoserver_timeseries_query_params = urlencode(
-            # this seems unintuitive, but the GetTimeseries Geoserver API uses the bbox (not x & y)
-            # to determine the region to inspect - therefore I set height & width & x & y to constants
-            # and the frontend injects a pixel-sized bbox into the query
             {
                 "service": "WMS",
                 "version": "1.1.0",
@@ -268,7 +266,6 @@ class MapRequestViewSet(
                     for detail in layer.get("details", []):
                         request_id = detail.get("mapRequestCode")
                         if request_id in map_request_ids:
-                            # yapf: disable
                             proxy_details[request_id].update({
                                 str(layer["dataTypeId"]): {
                                     "info": None,
@@ -298,8 +295,7 @@ class MapRequestViewSet(
                                         )
                                     ]
                                 }
-                            })
-
+                            })  # yapf: disable
 
         model_serializer = self.get_serializer(
             queryset,
@@ -310,8 +306,6 @@ class MapRequestViewSet(
         )
 
         return Response(model_serializer.data, status=status.HTTP_200_OK)
-
-
 
 
 @swagger_auto_schema(
