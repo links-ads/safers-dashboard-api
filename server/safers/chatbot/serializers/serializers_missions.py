@@ -72,7 +72,7 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
             "end",
             "organizationId",
             "source",
-            "status",  # "reports",
+            "currentStatus",  # "reports",
             "duration",
             "geometry",
         )
@@ -88,6 +88,10 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     organizationId = serializers.SerializerMethodField(
         method_name="get_organization_id"
+    )
+
+    currentStatus = serializers.CharField(
+        source="status", default=MissionStatusTypes.CREATED
     )
 
     duration = serializers.SerializerMethodField()
