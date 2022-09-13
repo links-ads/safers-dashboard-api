@@ -99,8 +99,7 @@ class MissionListView(MissionView):
                 end_inclusive=data["duration"].get(
                     "upperBoundIsInclusive", False
                 ),
-                # TODO: PROXY IS SENDING A NUMBER - I NEED TO MAP THAT TO ONE OF MissionStatusType.choices
-                # status=data.get("currentStatus"),
+                status=data.get("currentStatus"),
                 reports=[{
                     "id": report.get("id"),
                     "name": f"Report {report.get('id')}",
@@ -125,7 +124,6 @@ class MissionListView(MissionView):
         """
         create view
         """
-
         serializer = MissionCreateSerializer(
             data=request.data,
             context=self.get_serializer_context(),
