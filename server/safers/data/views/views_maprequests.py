@@ -29,36 +29,70 @@ from safers.users.permissions import IsRemote
 _map_request_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     example={
-        "key": "1.1",
         "id": "0736d0dd-6dd4-48dd-8a3c-586ec8ab61b2",
         "request_id": "string",
         "timestamp": "2022-07-04T14:09:31.618887Z",
-        "category": "Post Event Monitoring",
+        "user": "c1090335-a744-4a46-8712-24b6a45cc553",
+        "category": "Fire Simulation",
         "parameters": {},
-        "geometry": None,
+        "geometry": {},
+        "geometry_wkt": "POLYGON ((1 2, 3 4, 5 6, 1 2))",
         "layers": [
             {
-                "key": "1.1.1",
                 "status": "PROCESSING",
-                "url": "whatever",
+                "datatype_id": "string",
+                "datatype_name": "string",
             }
         ]
     }
 )  # yapf: disable
 
+
 _map_request_list_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY,
     items=openapi.Schema(
         type=openapi.TYPE_OBJECT,
-        properties=OrderedDict((
-            ("key", openapi.Schema(type=openapi.TYPE_STRING, example="1")),
-            ("category", openapi.Schema(type=openapi.TYPE_STRING, example="Post Event Monitoring")),
-            # TODO: REPLACE _map_request_schema w/ MapRequestSerializer (as per https://github.com/axnsan12/drf-yasg/issues/88)
-            ("requests", openapi.Schema(type=openapi.TYPE_ARRAY, items=_map_request_schema)),
-        ))
+        example={
+            "key": "1",
+            "category": "Fire Simulation",
+            "info": "string",
+            "info_url": None,
+            "requests": [
+                {
+                    "key": "1.1",
+                    "id": "0736d0dd-6dd4-48dd-8a3c-586ec8ab61b2",
+                    "request_id": "string",
+                    "title": "string",
+                    "timestamp": "022-07-04T14:09:31.618887Z",
+                    "user": "9aacbe6f-8ae5-479b-a539-2eac942d2c14",
+                    "category": "Fire Simulation",
+                    "parameters": {},
+                    "geometry": {},
+                    "geometry_wkt": "POLYGON ((1 2, 3 4, 5 6, 1 2))",
+                    "layers": [
+                        {
+                            "key": "1.1.1",
+                            "datatype_id": "string",
+                            "status": "string",
+                            "datatype_name": "string",
+                            "info": None,
+                            "info_url": "url",
+                            "metadata_url": "url",
+                            "legend_url": "url",
+                            "pixel_url": "url",
+                            "timeseries_url": "url",
+                            "urls": [
+                                {
+                                    "datetime": "url"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
     )
 )  # yapf: disable
-
 
 
 _map_request_sources_schema = openapi.Schema(
