@@ -69,7 +69,7 @@ class MapRequestListSerializer(serializers.ListSerializer):
         of built-in django methods b/c "category" is not a field)
         """
         representation = super().to_representation(data)
-        grouped_representation = groupby(
+        representation_grouped_by_category = groupby(
             representation, key=lambda x: x["category"]
         )
         return [
@@ -91,8 +91,9 @@ class MapRequestListSerializer(serializers.ListSerializer):
                     for j, group_member in enumerate(group, start=1)
                 ],
             }
-            for i, (key, group) in enumerate(grouped_representation, start=1)
+            for i, (key, group) in enumerate(representation_grouped_by_category, start=1)
         ] # yapf: disable
+
 
 class MapRequestDataTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -103,6 +104,7 @@ class MapRequestDataTypeSerializer(serializers.ModelSerializer):
             "source",
             "domain",
             "status",
+            "info",
             "proxy_details",
         )
 
@@ -110,6 +112,7 @@ class MapRequestDataTypeSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source="data_type.description")
     source = serializers.CharField(source="data_type.source")
     domain = serializers.CharField(source="data_type.domain")
+    info = serializers.CharField(source="data_type.info")
     proxy_details = serializers.SerializerMethodField()
 
     def get_proxy_details(self, obj):
@@ -163,8 +166,10 @@ class MapRequestSerializer(serializers.ModelSerializer):
     )
 
     def get_category(self, obj):
-        groups = obj.data_types.values_list("group", flat=True)
-        group = group = groups.distinct().first()
+        """
+        all MapRequests DataTypes have the same group (which the dashboard calls "category")
+        """
+        group = obj.data_types.values_list("group", flat=True).first()
         if group:
             return group.title()
 
