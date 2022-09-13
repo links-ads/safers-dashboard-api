@@ -253,7 +253,7 @@ class DataLayerView(views.APIView):
         data_type_info = {"None": None}
         data_type_sources = {"None": None}
         data_type_domains = {"None": None}
-        for data_type in DataType.objects.all():
+        for data_type in DataType.objects.operational():
             data_type_key = (
                 data_type.datatype_id or data_type.subgroup or data_type.group
             ).upper()

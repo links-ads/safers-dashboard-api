@@ -1,6 +1,7 @@
 from itertools import groupby
 
 from django.contrib.auth import get_user_model
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
@@ -9,27 +10,34 @@ from rest_framework_gis import serializers as gis_serializers
 from safers.core.serializers import SwaggerCurrentUserDefault
 from safers.data.models import MapRequest, DataType
 
-from .serializers_base import DataViewSerializer
-
 ############################
 # view serializer          #
 # (for proxy query_params) #
 ############################
 
 
-class MapRequestViewSerializer(DataViewSerializer):
+class MapRequestViewSerializer(serializers.Serializer):
     """
     Note that this isn't a ModelSerializer; it's just being
     used for query_param validation in the DataLayer Views
     """
 
+    OrderType = models.TextChoices("OrderType", "date -date")
     ProxyFieldMapping = {
         # fields to pass onto proxy
-        "bbox": "Bbox",
-        "start": "Start",
-        "end": "End",
         "include_map_requests": "IncludeMapRequests",
     }
+
+    order = serializers.ChoiceField(choices=OrderType.choices, required=False)
+
+    n_layers = serializers.IntegerField(
+        default=1,
+        required=False,
+        help_text=_(
+            "The number of recent layers to return for each data type. "
+            "It is very unlikely you want to change this value."
+        ),
+    )
 
     include_map_requests = serializers.BooleanField(
         default=True,
@@ -39,6 +47,13 @@ class MapRequestViewSerializer(DataViewSerializer):
             "This ought to be 'True' to distinguish this API from the 'api/data/layers' API."
         ),
     )
+
+    def validate_n_layers(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(
+                "n_layers must be greater than 0."
+            )
+        return value
 
 
 ##########################
@@ -84,11 +99,29 @@ class MapRequestDataTypeSerializer(serializers.ModelSerializer):
         model = MapRequest.data_types.through
         fields = (
             "datatype_id",
+            "name",
+            "source",
+            "domain",
             "status",
-            "url",
+            "proxy_details",
         )
 
     datatype_id = serializers.CharField(source="data_type.datatype_id")
+    name = serializers.CharField(source="data_type.description")
+    source = serializers.CharField(source="data_type.source")
+    domain = serializers.CharField(source="data_type.domain")
+    proxy_details = serializers.SerializerMethodField()
+
+    def get_proxy_details(self, obj):
+        request_id = obj.map_request.request_id
+        datatype_id = obj.data_type.datatype_id
+        proxy_details = self.context.get("proxy_details", {})
+        return proxy_details.get(request_id, {}).get(datatype_id, {})
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.update(representation.pop("proxy_details"))
+        return representation
 
 
 class MapRequestSerializer(serializers.ModelSerializer):
