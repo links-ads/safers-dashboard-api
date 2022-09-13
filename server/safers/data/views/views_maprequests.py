@@ -43,6 +43,8 @@ _map_request_schema = openapi.Schema(
                 "name": "string",
                 "source": "string",
                 "domain": "string",
+                "info": "string",
+                "info_url": None,
                 "status": "PROCESSING",
             }
         ]
@@ -300,7 +302,7 @@ class MapRequestViewSet(
                             data_type_id = str(layer["dataTypeId"])
                             proxy_details[request_id].update({
                                 data_type_id: {
-                                    "info": None,
+                                    # "info": None,
                                     "info_url": metadata_url.format(metadata_id=detail.get("metadata_Id"), metadata_format="text"),
                                     "metadata_url": metadata_url.format(metadata_id=detail.get("metadata_Id"), metadata_format="json"),
                                     "legend_url": geoserver_legend_url.format(name=quote_plus(detail["name"])),
@@ -310,7 +312,7 @@ class MapRequestViewSet(
                                             name=quote_plus(detail["name"]),
                                             time=quote_plus(",".join(detail["timestamps"])),
                                         )
-                                        if len(detail.get("timestamps", [])) > 0
+                                        if len(detail.get("timestamps", [])) > 1
                                         else None,
                                     "urls": [
                                         OrderedDict(
