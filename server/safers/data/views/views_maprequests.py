@@ -39,9 +39,11 @@ _map_request_schema = openapi.Schema(
         "geometry_wkt": "POLYGON ((1 2, 3 4, 5 6, 1 2))",
         "layers": [
             {
-                "status": "PROCESSING",
                 "datatype_id": "string",
-                "datatype_name": "string",
+                "name": "string",
+                "source": "string",
+                "domain": "string",
+                "status": "PROCESSING",
             }
         ]
     }
@@ -55,8 +57,10 @@ _map_request_list_schema = openapi.Schema(
         example={
             "key": "1",
             "category": "Fire Simulation",
-            "info": "string",
-            "info_url": None,
+            # "source": "string",
+            # "domain": "string",
+            # "info": "string",
+            # "info_url": None,
             "requests": [
                 {
                     "key": "1.1",
@@ -73,8 +77,10 @@ _map_request_list_schema = openapi.Schema(
                         {
                             "key": "1.1.1",
                             "datatype_id": "string",
+                            "name": "string",
+                            "source": "string",
+                            "domain": "string",
                             "status": "string",
-                            "datatype_name": "string",
                             "info": None,
                             "info_url": "url",
                             "metadata_url": "url",
@@ -179,6 +185,9 @@ class MapRequestViewSet(
         GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
         METADATA_URL_PATH = "/api/data/layers/metadata"
 
+        queryset = self.get_queryset()
+        map_request_ids = queryset.values_list("request_id", flat=True)
+
         # TODO: REFACTOR - MUCH OF THIS IS DUPLILCATED IN DataLayerView
 
         geoserver_layer_query_params = urlencode(
@@ -255,9 +264,6 @@ class MapRequestViewSet(
 
         metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}?metadata_format={{metadata_format}}"
 
-        queryset = self.get_queryset()
-        map_request_ids = queryset.values_list("request_id", flat=True)
-
         view_serializer = MapRequestViewSerializer(
             data=request.query_params,
             context=self.get_serializer_context(),
@@ -282,15 +288,6 @@ class MapRequestViewSet(
 
         proxy_content = response.json()
 
-        # can't figure out how to do this in a list comprehension
-        # proxy_details = [
-        #     detail for group in proxy_content.get("layerGroups", [])
-        #     for sub_group in group.get("subGroups", [])
-        #     for layer in sub_group.get("layers", [])
-        #     for detail in layer.get("details", [])
-        #     if detail.get("mapRequestCode") in map_request_ids
-        # ]
-
         # proxy_details is a dict of dicts: "request_id" followed by "data_type_id"
         # it is passed as context to the serializer below to add links, etc. to the model_serializer data
         proxy_details = defaultdict(dict)
@@ -300,8 +297,9 @@ class MapRequestViewSet(
                     for detail in layer.get("details", []):
                         request_id = detail.get("mapRequestCode")
                         if request_id in map_request_ids:
+                            data_type_id = str(layer["dataTypeId"])
                             proxy_details[request_id].update({
-                                str(layer["dataTypeId"]): {
+                                data_type_id: {
                                     "info": None,
                                     "info_url": metadata_url.format(metadata_id=detail.get("metadata_Id"), metadata_format="text"),
                                     "metadata_url": metadata_url.format(metadata_id=detail.get("metadata_Id"), metadata_format="json"),

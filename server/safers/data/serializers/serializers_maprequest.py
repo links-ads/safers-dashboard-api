@@ -99,13 +99,17 @@ class MapRequestDataTypeSerializer(serializers.ModelSerializer):
         model = MapRequest.data_types.through
         fields = (
             "datatype_id",
+            "name",
+            "source",
+            "domain",
             "status",
-            "datatype_name",
             "proxy_details",
         )
 
     datatype_id = serializers.CharField(source="data_type.datatype_id")
-    datatype_name = serializers.CharField(source="data_type.description")
+    name = serializers.CharField(source="data_type.description")
+    source = serializers.CharField(source="data_type.source")
+    domain = serializers.CharField(source="data_type.domain")
     proxy_details = serializers.SerializerMethodField()
 
     def get_proxy_details(self, obj):
