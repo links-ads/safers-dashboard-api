@@ -142,6 +142,10 @@ class MapRequestViewSet(
     permission_classes = [IsAuthenticated, IsRemote]
     serializer_class = MapRequestSerializer
 
+    GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
+    GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
+    METADATA_URL_PATH = "/api/data/layers/metadata"
+
     @swagger_fake(MapRequest.objects.none())
     def get_queryset(self):
         """
@@ -181,10 +185,6 @@ class MapRequestViewSet(
         but then merges it w/ the remote (proxy) data
         """
 
-        GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
-        GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
-        METADATA_URL_PATH = "/api/data/layers/metadata"
-
         queryset = self.get_queryset()
         map_request_ids = queryset.values_list("request_id", flat=True)
 
@@ -205,7 +205,7 @@ class MapRequestViewSet(
             },
             safe="{}",
         )
-        geoserver_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_layer_query_params}"
+        geoserver_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_URL_PATH)}?{geoserver_layer_query_params}"
 
         geoserver_legend_query_params = urlencode(
             {
@@ -220,7 +220,7 @@ class MapRequestViewSet(
             },
             safe="{}",
         )
-        geoserver_legend_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_legend_query_params}"
+        geoserver_legend_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_URL_PATH)}?{geoserver_legend_query_params}"
 
         geoserver_pixel_query_params = urlencode(
             {
@@ -239,7 +239,7 @@ class MapRequestViewSet(
             },
             safe="{}",
         )
-        geoserver_pixel_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_pixel_query_params}"
+        geoserver_pixel_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_URL_PATH)}?{geoserver_pixel_query_params}"
 
         geoserver_timeseries_query_params = urlencode(
             {
@@ -260,9 +260,9 @@ class MapRequestViewSet(
             },
             safe="{}",
         )
-        geoserver_timeseries_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_timeseries_query_params}"
+        geoserver_timeseries_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_URL_PATH)}?{geoserver_timeseries_query_params}"
 
-        metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}?metadata_format={{metadata_format}}"
+        metadata_url = f"{self.request.build_absolute_uri(self.METADATA_URL_PATH)}/{{metadata_id}}?metadata_format={{metadata_format}}"
 
         view_serializer = MapRequestViewSerializer(
             data=request.query_params,
@@ -278,7 +278,7 @@ class MapRequestViewSet(
 
         try:
             response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, GATEWAY_URL_PATH),
+                urljoin(settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_PATH),
                 auth=ProxyAuthentication(request.user),
                 params=proxy_params,
             )
