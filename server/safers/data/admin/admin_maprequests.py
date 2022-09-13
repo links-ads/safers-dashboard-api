@@ -159,6 +159,7 @@ class MapRequestAdmin(gis_admin.GeoModelAdmin):
     list_display = (
         "request_id",
         "title",
+        "category",
         "created",
         "get_statuses_for_list_view",
     )
