@@ -188,6 +188,12 @@ class MapRequest(gis_models.Model):
         blank=True, null=True, help_text=_("WKT representation of geometry")
     )
 
+    @property
+    def category(self):
+        group = self.data_types.values_list("group", flat=True).first()
+        if group:
+            return group.title()
+
     def save(self, *args, **kwargs):
         """
         automatically set the request_id & geometry_wkt when saving
@@ -222,6 +228,9 @@ class MapRequest(gis_models.Model):
         try:
 
             for data_type in self.data_types.all():
+                # TODO: DO SOMETHING SPECIAL FOR CIMA
+                if data_type.id == "35006":  # do something special for CIMA
+                    pass
                 routing_key = f"request.{data_type.datatype_id}.{RMQ_USER}.{self.request_id}"
 
                 message_body["datatype_id"] = data_type.datatype_id
@@ -271,7 +280,7 @@ class MapRequest(gis_models.Model):
                 elif message_type == "end":
                     map_request_data_type.status = MapRequestStatus.AVAILABLE
 
-                if message_body.get("status_code") != 200:
+                if message_body.get("status_code") not in [200, 201, 202]:
                     map_request_data_type.status = MapRequestStatus.FAILED
 
                 map_request_data_type.message = message_body.get("message")

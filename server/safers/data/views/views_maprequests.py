@@ -46,6 +46,7 @@ _map_request_schema = openapi.Schema(
                 "info": "string",
                 "info_url": None,
                 "status": "PROCESSING",
+                "message": None,
             }
         ]
     }
@@ -83,6 +84,7 @@ _map_request_list_schema = openapi.Schema(
                             "source": "string",
                             "domain": "string",
                             "status": "string",
+                            "message": None,
                             "info": None,
                             "info_url": "url",
                             "metadata_url": "url",

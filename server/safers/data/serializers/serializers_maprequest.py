@@ -104,6 +104,7 @@ class MapRequestDataTypeSerializer(serializers.ModelSerializer):
             "source",
             "domain",
             "status",
+            "message",
             "info",
             "proxy_details",
         )
@@ -146,7 +147,6 @@ class MapRequestSerializer(serializers.ModelSerializer):
         list_serializer_class = MapRequestListSerializer
 
     request_id = serializers.CharField(read_only=True)
-    category = serializers.SerializerMethodField()
     layers = MapRequestDataTypeSerializer(
         many=True, read_only=True, source="map_request_data_types"
     )
@@ -164,14 +164,6 @@ class MapRequestSerializer(serializers.ModelSerializer):
         default=SwaggerCurrentUserDefault(),
         queryset=get_user_model().objects.all(),
     )
-
-    def get_category(self, obj):
-        """
-        all MapRequests DataTypes have the same group (which the dashboard calls "category")
-        """
-        group = obj.data_types.values_list("group", flat=True).first()
-        if group:
-            return group.title()
 
     def validate_data_types(self, values):
         data_types_groups = set([v.group for v in values])
