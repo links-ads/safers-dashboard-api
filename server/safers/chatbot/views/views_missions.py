@@ -74,7 +74,9 @@ class MissionListView(MissionView):
         responses={status.HTTP_200_OK: _mission_list_schema},
     )
     def get(self, request, *args, **kwargs):
-
+        """
+        list view
+        """
         proxy_data = self.get_proxy_list_data(
             request,
             proxy_url=urljoin(
@@ -85,6 +87,7 @@ class MissionListView(MissionView):
         missions = [
             Mission(
                 mission_id=data["id"],
+                title=data.get("title"),
                 description=data.get("description"),
                 # TODO: username=data.get(),
                 organization=data.get("organization", {}).get("name"),
@@ -119,6 +122,9 @@ class MissionListView(MissionView):
         responses={status.HTTP_200_OK: _mission_create_schema}
     )
     def post(self, request, *args, **kwargs):
+        """
+        create view
+        """
 
         serializer = MissionCreateSerializer(
             data=request.data,
