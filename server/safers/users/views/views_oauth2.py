@@ -157,13 +157,13 @@ class LoginView(GenericAPIView):
 _register_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     example={
-        "email": "allyn.treshansky+1@gmail.com",
+        "email": "allyn.treshansky+1@astrosat.net",
         "first_name": "Allyn",
         "last_name": "Treshansky",
         "password": "RandomPassword123",
         "role": "Organization Manager",
-        "organization": None,
-        "agreed_terms": True,
+        "organization": "Test Organization",
+        "accepted_terms": True,
     }
 )
 
@@ -198,7 +198,15 @@ class RegisterView(GenericAPIView):
         response = AUTH_CLIENT.register(request_params)
 
         if not response.was_successful():
-            raise APIException(response.error_response)
+            # reshape the errors so the dashboard client can parse them
+            # note that this won't map directly to the form (b/c the response
+            # comes from FusionAuth and not the dashboard itself) - so these
+            # messages will be rendered by the `getGeneralErrors` function
+            exception_message = {
+                field: [error.get("message") for error in errors]
+                for field, errors in response.error_response.get("fieldErrors", {}).items()
+            }  # yapf: disable
+            raise APIException(exception_message)
 
         auth_user_data = response.success_response["user"]
         user, created_user = User.objects.get_or_create(
