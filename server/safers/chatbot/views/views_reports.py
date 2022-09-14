@@ -45,7 +45,17 @@ _report_schema = openapi.Schema(
             },
         ],
         "categories": [
-            "Measurements"
+            "People"
+        ],
+        "categories_info": [
+            "Infected: 1",
+            "Dead: 0",
+            "Evacuated: 15",
+            "Missing: 0",
+            "Injured: 5",
+            "Recovered: 1",
+            "Rescued: 25",
+            "Hospitalized: 2",
         ],
         "geometry": {
             "type": "Point",
