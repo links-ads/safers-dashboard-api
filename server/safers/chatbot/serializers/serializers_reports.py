@@ -1,12 +1,12 @@
+from django.template.defaultfilters import pluralize
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers, ISO_8601
 from rest_framework_gis import serializers as gis_serializers
 
 from safers.chatbot.models import Report, ReportHazardTypes, ReportStatusTypes, ReportContentTypes, ReportVisabilityTypes
-from .serializers_base import ChatbotViewSerializer
 
-ReportSerializerDateTimeFormats = [ISO_8601, "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d"]
+from .serializers_base import ChatbotViewSerializer, ChatbotDateTimeFormats
 
 
 class ReportViewSerializer(ChatbotViewSerializer):
@@ -67,6 +67,7 @@ class ReportSerializer(serializers.ModelSerializer):
             "hazard",
             "status",
             "categories",
+            "categories_info",
             "content",
             "visibility",
             "description",
@@ -85,6 +86,7 @@ class ReportSerializer(serializers.ModelSerializer):
     location = serializers.SerializerMethodField()
 
     categories = serializers.SerializerMethodField()
+    categories_info = serializers.SerializerMethodField()
 
     def get_location(self, obj):
         if obj.geometry:
@@ -92,5 +94,32 @@ class ReportSerializer(serializers.ModelSerializer):
 
     def get_categories(self, obj):
         # only returning the category_group
-        category_groups = [category["group"] for category in obj.categories]
-        return set(category_groups)
+        categories_groups = [category["group"] for category in obj.categories]
+        return set(categories_groups)
+
+    def get_categories_info(self, obj):
+        categories_info = []
+        for category in obj.categories:
+            name = category["name"]
+            value = category["value"]
+            units = category["units"]
+            category_info_string = ""
+            if name:
+                category_info_string += f" {name}:"
+            if value:
+                category_info_string += f" {value}"
+                if units:
+                    if value.isnumeric() and float(value) > 0:
+                        category_info_string += f" {pluralize(units)}"
+                    else:
+                        category_info_string += f" {units}"
+            if category_info_string:
+                categories_info.append(category_info_string.strip())
+
+        return categories_info
+
+    def create(self):
+        """
+        creates a model instance w/out saving it
+        """
+        return Report(**self.validated_data)
