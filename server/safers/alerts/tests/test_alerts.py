@@ -4,6 +4,7 @@ import urllib
 from datetime import timedelta
 
 from django.conf import settings
+from django.contrib.gis import geos
 from django.urls import resolve, reverse
 from django.utils import timezone
 
@@ -11,7 +12,7 @@ from rest_framework import status
 
 from .factories import *
 
-from safers.alerts.models import Alert
+from safers.alerts.models import Alert, cap_area_to_geojson
 from safers.events.models import Event
 
 
@@ -143,3 +144,29 @@ class TestAlertViews:
         event = Event.objects.first()
         assert alert1 not in event.alerts.all()
         assert alert2 in event.alerts.all()
+
+
+class TestAlertParsing:
+
+    CIRCLE_AREA = [{"areaDesc": "some circle", "circle": "1, 2 3"}]
+    POLYGON_AREA = [{
+        "areaDesc": "some polygon", "polygon": "1, 2 3, 4 5, 6 1, 2"
+    }]
+    POINT_AREA = [{"areaDesc": "some point", "point": "1, 2"}]
+
+    CIRCLE_GEOMETRY = geos.Point(2, 1).buffer(3)
+    POLYGON_GEOMETRY = geos.Polygon(((2, 1), (4, 3), (6, 5), (2, 1)))
+    POINT_GEOMETRY = geos.Point(2, 1)
+
+    def test_parse_cap_alert_geometry(self):
+        test_circle_feature = cap_area_to_geojson(self.CIRCLE_AREA)
+        assert test_circle_feature["features"][0]["geometry"][
+            "coordinates"] == self.CIRCLE_GEOMETRY.coords
+
+        test_polygon_feature = cap_area_to_geojson(self.POLYGON_AREA)
+        assert test_polygon_feature["features"][0]["geometry"][
+            "coordinates"] == self.POLYGON_GEOMETRY.coords
+
+        test_point_feature = cap_area_to_geojson(self.POINT_AREA)
+        assert test_point_feature["features"][0]["geometry"][
+            "coordinates"] == self.POINT_GEOMETRY.coords

@@ -1,3 +1,4 @@
+import re
 import uuid
 
 from django.contrib.gis import geos
@@ -335,6 +336,27 @@ class Alert(models.Model):
 
 
 def cap_area_to_geojson(cap_area):
+    """
+    Converts the area of a CAP Alert to a GEOSGeometry.
+    The format of the alert area is:
+        "area": [
+            {
+                "areaDesc": "some circle",
+                "circle" : "lat, lon radius"
+            },
+            {
+                "areaDesc": "some polygon",
+                "polygon" : "lat1, lon1 lat2, lon2... latN, lonN lat1, lon1"
+            },
+            {
+                "areaDesc": "some point",
+                "point" : "lat, lon"
+            },
+        ]
+    """
+
+    list_of_coords_regex = re.compile(r"(?<![,\s])\s+")
+
     features = []
     for area in cap_area:
 
@@ -345,27 +367,36 @@ def cap_area_to_geojson(cap_area):
             }
         }
 
-        area_keys = {key.title(): key for key in area.keys()}
+        if "circle" in area:
+            coords, radius = list_of_coords_regex.split(area["circle"])
+            lat, lon = list(map(float, coords.split(",")))
+            geometry = geos.Point(lon, lat).buffer(float(radius))
+            feature["geometry"] = {
+                "type": "Polygon", "coordinates": geometry.coords
+            }
 
-        if "Polygon" in area_keys:
+        elif "polygon" in area:
+            coords = list_of_coords_regex.split(area["polygon"])
+            remapped_coords = list(
+                map(lambda x: list(map(float, x.split(",")[::-1])), coords)
+            )  # convert list of strings w/ commas to list of (reversed) lists
+            geometry = geos.Polygon(remapped_coords)
             feature["geometry"] = {
-                "type": "Polygon", "coordinates": area[area_keys["Polygon"]]
+                "type": "Polygon", "coordinates": geometry.coords
             }
-        elif "Point" in area_keys:
-            lat, lon = list(map(float, area[area_keys["Point"]].split()))
+
+        elif "point" in area:
+            lat, lon = list(map(float, area["point"].split(",")))
+            geometry = geos.Point(lon, lat)
             feature["geometry"] = {
-                "type": "Point", "coordinates": geos.Point(lon, lat).coords
+                "type": "Point", "coordinates": geometry.coords
             }
-        elif "Circle" in area_keys:
-            lat, lon, radius = list(map(float, area[area_keys["Circle"]].split()))
-            feature["geometry"] = {
-                "type": "Polygon",
-                "coordinates": geos.Point(lon, lat).buffer(radius).coords
-            }
-        elif "Geocode" in area_keys:
-            raise ValueError("don't know how to cope w/ geocode yet")
+
+        elif "geocode" in area:
+            raise ValueError("SAFERS does not support alerts w/ 'geocode'.")
+
         else:
-            raise ValueError("unknown area type")
+            raise ValueError(f"Unknown alert area type: {area}")
 
         features.append(feature)
 
