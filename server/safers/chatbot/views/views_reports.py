@@ -93,6 +93,7 @@ class ReportListView(ReportView):
                 "name",
                 "group",
                 "sub_group",
+                "unit_of_measure",
             )
         }
 
@@ -120,12 +121,16 @@ class ReportListView(ReportView):
                     "organization": data.get("organizationName"),
                 },
                 categories=[
-                    v
-                    for k, v in report_categories.items()
-                    if k in [
-                        extension.get("categoryId")
-                        for extension in data.get("extensionData", [])
-                    ]
+                    {
+                        "group": report_categories[extension["categoryId"]]["group"],
+                        "sub_group": report_categories[extension["categoryId"]]["sub_group"],
+                        "name": report_categories[extension["categoryId"]]["name"],
+                        "units": report_categories[extension["categoryId"]]["unit_of_measure"],
+                        "value": extension.get("value"),
+                        "status": extension.get("status"),
+                    }
+                    for extension in data.get("extensionData", [])
+                    if extension.get("categoryId") in report_categories
                 ]
             ) for data in proxy_data
         ]  # yapf: disable
@@ -175,6 +180,7 @@ class ReportDetailView(ReportView):
                 "name",
                 "group",
                 "sub_group",
+                "unit_of_measure",
             )
         }
         report = Report(
@@ -198,14 +204,19 @@ class ReportDetailView(ReportView):
                 "organization": properties.get("organizationName"),
             },
             categories=[
-                v
-                for k, v in report_categories.items()
-                if k in [
-                    extension.get("categoryId")
-                    for extension in properties.get("extensionData", [])
-                ]
+                {
+                    "group": report_categories[extension["categoryId"]]["group"],
+                    "sub_group": report_categories[extension["categoryId"]]["sub_group"],
+                    "name": report_categories[extension["categoryId"]]["name"],
+                    "units": report_categories[extension["categoryId"]]["unit_of_measure"],
+                    "value": extension.get("value"),
+                    "status": extension.get("status"),
+                }
+                for extension in properties.get("extensionData", [])
+                if extension.get("categoryId") in report_categories
             ]
         )  # yapf: disable
+
         model_serializer = self.model_serializer_class(
             report, context=self.get_serializer_context(), many=False
         )

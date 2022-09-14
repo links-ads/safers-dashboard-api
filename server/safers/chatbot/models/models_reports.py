@@ -56,10 +56,12 @@ def validate_categories(value):
         "items": [{
             "type": "object",
             "properties": {
-                "name": {"type": "string"},
                 "group": {"type": "string"},
                 "sub_group": {"type": "string"},
-
+                "name": {"type": "string"},
+                "units": {"type": "string"},
+                "value": {"type": "string"},
+                "status": {"type": "string"},
             }
         }]
     }  # yapf: disable
