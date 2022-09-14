@@ -6,7 +6,7 @@ from rest_framework_gis import serializers as gis_serializers
 
 from safers.chatbot.models import Report, ReportHazardTypes, ReportStatusTypes, ReportContentTypes, ReportVisabilityTypes
 
-from .serializers_base import ChatbotViewSerializer, ChatbotDateTimeFormats
+from .serializers_base import ChatbotViewSerializer
 
 
 class ReportViewSerializer(ChatbotViewSerializer):
