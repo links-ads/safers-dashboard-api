@@ -114,10 +114,10 @@ class Event(gis_models.Model):
         ).first()
 
         return "-".join(
-            filter(
-                None,
-                map(
-                    str,
+            map(
+                str,
+                filter(
+                    None,
                     [
                         "WF",
                         self.start_date.year,
