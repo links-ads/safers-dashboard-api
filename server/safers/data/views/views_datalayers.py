@@ -55,6 +55,7 @@ _data_layer_schema = openapi.Schema(
                   {
                     "id": "1.1.1.1",
                     "text": "2022-04-28T12:15:20Z",
+                    "title": "Temperature at 2m",
                     "units": "°C",
                     "info": None,
                     "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=text",
@@ -294,6 +295,7 @@ class DataLayerView(views.APIView):
                       {
                         # "data_type": detail.get("dataTypeId"),
                         "id": f"{i}.{j}.{k}.{l}",
+                        "title": layer["name"],
                         "text": detail["created_At"],
                         "units": layer.get("unitOfMeasure"),
                         "info": None,
