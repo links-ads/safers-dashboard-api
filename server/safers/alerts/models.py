@@ -39,8 +39,7 @@ class AlertType(CaseInsensitiveTextChoices):
 
 
 class AlertSource(CaseInsensitiveTextChoices):
-    REPORT = "REPORT", _("Report (from chatbot)")
-    EFFIS_FWI = "EFFIS_FWI", _("FWI (from netCDF)")
+    DSS = "DSS", _("Decision Support System")
     IN_SITU = "IN SITU CAMERAS", _("In-Situ Cameras")
 
 
@@ -57,9 +56,7 @@ ALERT_SERVICE_CODES_MAP = {
     # maps AlertSources to AlertServiceCodes
     AlertSource.IN_SITU:
         AlertServiceCodes.CAMERAS,
-    AlertSource.EFFIS_FWI:
-        AlertServiceCodes.DSS,
-    AlertSource.REPORT:
+    AlertSource.DSS:
         AlertServiceCodes.DSS,
 }
 
@@ -213,10 +210,10 @@ class Alert(models.Model):
         ).first()
 
         return "-".join(
-            filter(
-                None,
-                map(
-                    str,
+            map(
+                str,
+                filter(
+                    None,
                     [
                         "ALTR",
                         service_code,
@@ -430,7 +427,7 @@ def cap_area_to_geojson(cap_area):
             "area": [
                 {
                     "areaDesc": "areaDesc",
-                    "point" : "40.648142 22.95255"
+                    "point" : "40.648142, 22.95255"
                 }
             ]
         }
