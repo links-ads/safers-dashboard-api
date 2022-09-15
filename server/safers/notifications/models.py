@@ -7,6 +7,7 @@ from django.contrib.gis.geos import GeometryCollection
 from django.utils.translation import gettext_lazy as _
 
 from safers.core.mixins import HashableMixin
+from safers.core.utils import cap_area_to_geojson
 from safers.rmq.exceptions import RMQException
 
 # NOTIFICATIONS COME FROM THE SEMANTIC-REASONING-MODULE
@@ -217,47 +218,6 @@ class Notification(models.Model):
         }
 
 
-def cap_area_to_geojson(cap_area):
-    features = []
-    for area in cap_area:
-
-        feature = {
-            "type": "Feature",
-            "properties": {
-                "description": area.get("areaDesc")
-            }
-        }
-
-        area_keys = {key.title(): key for key in area.keys()}
-
-        if "Polygon" in area_keys:
-            feature["geometry"] = {
-                "type": "Polygon", "coordinates": area[area_keys["Polygon"]]
-            }
-        elif "Point" in area_keys:
-            lat, lon = list(map(float, area[area_keys["Point"]].split()))
-            feature["geometry"] = {
-                "type": "Point", "coordinates": geos.Point(lon, lat).coords
-            }
-        elif "Circle" in area_keys:
-            lat, lon, radius = list(map(float, area[area_keys["Circle"]].split()))
-            feature["geometry"] = {
-                "type": "Polygon",
-                "coordinates": geos.Point(lon, lat).buffer(radius).coords
-            }
-        elif "Geocode" in area_keys:
-            raise ValueError("don't know how to cope w/ geocode yet")
-        else:
-            raise ValueError("unknown area type")
-
-        features.append(feature)
-
-    return {
-        "type": "FeatureCollection",
-        "features": features,
-    }
-
-
 ########################
 # NOTIFICATION MESSAGE #
 ########################
@@ -279,7 +239,7 @@ def cap_area_to_geojson(cap_area):
             "area": [
                 {
                     "areaDesc": "areaDesc",
-                    "point" : "40.648142 22.95255"
+                    "point" : "40.648142, 22.95255"
                 }
             ]
         }
