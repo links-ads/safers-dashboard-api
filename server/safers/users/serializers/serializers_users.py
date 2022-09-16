@@ -78,6 +78,16 @@ class UserSerializer(UserSerializerLite):
             errors[k].append(*v)
         return errors
 
+    def validate(self, data):
+        validated_data = super().validate(data)
+
+        if (validated_data["organization"] is not None
+           ) and (validated_data["role"].name.lower() == "citizen"):
+            raise serializers.ValidationError(
+                "A citizen must not belong to an organization."
+            )
+        return validated_data
+
     def validate_username(self, value):
         if value in settings.ACCOUNT_USERNAME_BLACKLIST:
             raise serializers.ValidationError(

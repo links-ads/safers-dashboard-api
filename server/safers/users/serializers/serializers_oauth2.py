@@ -42,6 +42,16 @@ class RegisterViewSerializer(serializers.Serializer):
     )
     accepted_terms = serializers.BooleanField()
 
+    def validate(self, data):
+        validated_data = super().validate(data)
+
+        if (validated_data["organization"] is not None
+           ) and (validated_data["role"].name.lower() == "citizen"):
+            raise serializers.ValidationError(
+                "A citizen must not belong to an organization."
+            )
+        return validated_data
+
     def validate_email(self, value):
         if get_user_model().objects.filter(email=value).exists():
             raise serializers.ValidationError(
