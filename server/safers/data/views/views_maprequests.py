@@ -318,8 +318,7 @@ class MapRequestViewSet(
                                         )
                                         if len(detail.get("timestamps", [])) > 1
                                         else None,
-                                    "urls": [
-                                        OrderedDict(
+                                    "urls": OrderedDict(
                                             [
                                                 (
                                                     timestamp,
@@ -331,7 +330,6 @@ class MapRequestViewSet(
                                                 for timestamp in detail.get("timestamps", [])
                                             ]
                                         )
-                                    ]
                                 }
                             })  # yapf: disable
 
