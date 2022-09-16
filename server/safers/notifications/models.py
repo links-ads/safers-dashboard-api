@@ -166,7 +166,7 @@ class Notification(models.Model):
         assert message_type.lower() == "notification", f"attempting to process {message_type} as a Notification"
 
         message_sender = message_body["sender"]
-        if message_sender == "sem":
+        if message_sender == "DSS":
             notifications_type = NotificationType.RECOMENDATION
         else:
             notifications_type = None
