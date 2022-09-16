@@ -251,7 +251,27 @@ class MapRequest(gis_models.Model):
         (called from MapRequestViewSet.perform_destroy)
         """
 
-        raise NotImplementedError("Unable to delete MapRequest Data")
+        rmq = RMQ()
+
+        # TODO: UPDATE MESSAGE ONCE DELETING A THE DATA ASSOCIATED W/ A REQUEST IS SUPPORTED
+        message_body = {"description": "Deleting a MapRequest"}
+
+        try:
+
+            for data_type in self.data_types.all():
+                routing_key = f"delete.{data_type.datatype_id}.{RMQ_USER}.{self.request_id}"
+
+                message_body["datatype_id"] = data_type.datatype_id
+
+                rmq.publish(
+                    json.dumps(message_body, cls=JSONEncoder),
+                    routing_key,
+                    self.request_id,
+                )
+
+        except Exception as e:
+            msg = f"unable to publish message: {e}"
+            raise RMQException(msg)
 
     @classmethod
     def process_message(cls, message_body, **kwargs):
