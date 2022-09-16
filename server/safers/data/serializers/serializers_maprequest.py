@@ -75,11 +75,11 @@ class MapRequestListSerializer(serializers.ListSerializer):
         return [
             {
                 "key": f"{i}",
-                "category": key,
-                "requests": [
+                "title": key,
+                "children": [
                     dict(
                         key=f"{i}.{j}",
-                        layers=[
+                        children=[
                             dict(
                                 key=f"{i}.{j}.{k}",
                                 **layer,
@@ -100,7 +100,7 @@ class MapRequestDataTypeSerializer(serializers.ModelSerializer):
         model = MapRequest.data_types.through
         fields = (
             "datatype_id",
-            "name",
+            "title",
             "source",
             "domain",
             "status",
@@ -110,7 +110,7 @@ class MapRequestDataTypeSerializer(serializers.ModelSerializer):
         )
 
     datatype_id = serializers.CharField(source="data_type.datatype_id")
-    name = serializers.CharField(source="data_type.description")
+    title = serializers.CharField(source="data_type.description")
     source = serializers.CharField(source="data_type.source")
     domain = serializers.CharField(source="data_type.domain")
     info = serializers.CharField(source="data_type.info")
