@@ -302,7 +302,6 @@ class MapRequestViewSet(
                     for detail in layer.get("details", []):
                         request_id = detail.get("mapRequestCode")
                         if request_id in map_request_ids:
-                            print(f"units={layer['unitOfMeasure']}", flush=True)
                             data_type_id = str(layer["dataTypeId"])
                             proxy_details[request_id].update({
                                 data_type_id: {
