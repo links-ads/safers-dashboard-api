@@ -15,8 +15,9 @@ from safers.rmq.exceptions import RMQException
 
 
 class NotificationSource(models.TextChoices):
-    REPORT = "REPORT", _("Report (from chatbot)")
-    EFFIS_FWI = "EFFIS_FWI", _("FWI (from netCDF)")
+    DSS = "DSS", _("Decision Support System")
+    # REPORT = "REPORT", _("Report (from chatbot)")
+    # EFFIS_FWI = "EFFIS_FWI", _("FWI (from netCDF)")
 
 
 class NotificationType(models.TextChoices):
@@ -228,7 +229,7 @@ class Notification(models.Model):
     "sent": "2022-04-13T14:28:25+03:00",
     "status": "Actual",
     "msgType": "Notification",
-    "source": "Report",
+    "source": "DSS",
     "scope": "Public",
     "code": [],
     "info": [
