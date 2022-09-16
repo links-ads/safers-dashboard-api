@@ -29,6 +29,7 @@ class UserSerializerLite(serializers.ModelSerializer):
         fields = (
             "id",
             "email",
+            "username",
             "accepted_terms",
             "is_verified",
             "last_login",
