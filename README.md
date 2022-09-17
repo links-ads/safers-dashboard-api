@@ -20,6 +20,13 @@ RabbitMQ
 
 Pika
 
+### scheduler
+
+
+The managemnt comamnd `manage.py purge_camera_media` should be run periodically to remove outdated camera_media objects.  
+
+In development this is done by a separate **scheduler** service that uses `cron` to run `./scheduler/scripts/purge_camera_media.development.sh`.  In deployment, this is done by **heroku scheduler** which runs `./scheduler/scripts/purge_camera_media.deployment.sh`.
+
 ### storage
 
 AWS S3
@@ -66,8 +73,6 @@ these can all be added by running: `manage.py configure`
 Users can authenticate locally or remotely (via FusionAuth).  Note that only remote users can interact w/ the SAFERS API - so there's really not much point in using the Dashboard as a local user.
 
 The RMQ app uses `pika` to monitor the SAFERS Message Queue.  Upon receipt of a message with a registered routing_key the handlers defined in `rmq.py#BINDING_KEYS` are called. 
-
-The managemnt comamnd `manage.py purge_camera_media` should be run periodically to remove outdated camera_media objects.  This can be done locally via cron.  In deployment, **heroku scheduler** is used for this functionality.
 
 ## profiling
 

@@ -1,0 +1,3 @@
+# used by development; deployment uses heroku-scheduler
+# run purge_camera_media every minute 
+* * * * * /home/app/scheduler/scripts/purge_camera_media.development.sh 
