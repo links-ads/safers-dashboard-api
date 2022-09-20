@@ -44,7 +44,6 @@ fi
 
 if [[ "${ENABLE_CRON}" -eq 1 ]]; then
     echo -e "\n### STARTING CRON ###\n"
-    mkdir -p /etc/service/cron
-    cp run-cron.sh /etc/service/cron/run
+    crontab < $APP_HOME/scheduler/crontab
 fi
 
