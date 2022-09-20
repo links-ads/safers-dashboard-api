@@ -6,10 +6,34 @@ from rest_framework import status
 
 from safers.data.tests.factories import *
 from safers.data.models.models_maprequests import MapRequestStatus
+from safers.data.serializers.serializers_maprequest import MapRequestSerializer
 
 
 @pytest.mark.django_db
 class TestMapRequests:
+    def test_group_map_requests(self):
+        """
+        tests that the output of MapRequestListSerializer is grouped by category
+        """
+
+        data_types = [
+            DataTypeFactory(datatype_id=f"{i}", group=f"group_{i}")
+            for i in range(3)
+        ]
+        map_requests = [
+            MapRequestFactory(
+                title=f"map_request_{i}", data_types=[data_types[i % 3]]
+            ) for i in range(6)
+        ]
+
+        serializer = MapRequestSerializer(map_requests, many=True)
+        content = serializer.data
+
+        assert len(content) == 3
+        for i in in range(3):
+            assert content[i]["title"] == data_types[i].group.title()
+            assert len(content["children"]) == 2
+          
     def test_generate_request_id(self):
 
         map_request_1 = MapRequestFactory()

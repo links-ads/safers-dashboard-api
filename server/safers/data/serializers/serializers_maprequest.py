@@ -65,13 +65,16 @@ class MapRequestViewSerializer(serializers.Serializer):
 class MapRequestListSerializer(serializers.ListSerializer):
     def to_representation(self, data):
         """
-        reshape data to group by category; (using itertools instead 
+        reshape data to group by category; (using itertools.groupby instead 
         of built-in django methods b/c "category" is not a field)
         """
         representation = super().to_representation(data)
-        representation_grouped_by_category = groupby(
-            representation, key=lambda x: x["category"]
+        groupby_key_fn = lambda x: x["category"]
+        sorted_representation = sorted(representation, key=groupby_key_fn)
+        grouped_by_representation = groupby(
+            sorted_representation, key=groupby_key_fn
         )
+
         return [
             {
                 "key": f"{i}",
@@ -91,7 +94,7 @@ class MapRequestListSerializer(serializers.ListSerializer):
                     for j, group_member in enumerate(group, start=1)
                 ],
             }
-            for i, (key, group) in enumerate(representation_grouped_by_category, start=1)
+            for i, (key, group) in enumerate(grouped_by_representation, start=1)
         ] # yapf: disable
 
 
