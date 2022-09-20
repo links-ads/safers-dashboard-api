@@ -72,7 +72,7 @@ class MapRequestListSerializer(serializers.ListSerializer):
         groupby_key_fn = lambda x: x["category"]
         sorted_representation = sorted(representation, key=groupby_key_fn)
         grouped_by_representation = groupby(
-            sorted_representation, key=lambda x: x["category"]
+            sorted_representation, key=groupby_key_fn
         )
 
         return [
