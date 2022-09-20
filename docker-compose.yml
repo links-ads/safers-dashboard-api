@@ -14,48 +14,48 @@ services:
     ports:
       - "5666:5432"
 
-  auth:
-    image: fusionauth/fusionauth-app:latest
-    depends_on:
-      - db
-    environment:
-      # (using the same db service for auth & server in development)
-      DATABASE_URL: jdbc:postgresql://db:5432/fusionauth
-      DATABASE_ROOT_USERNAME: safers_user
-      DATABASE_ROOT_PASSWORD: safers_pwd
-      DATABASE_USERNAME: fusionauth
-      DATABASE_PASSWORD: fusionauth
-      FUSIONAUTH_APP_MEMORY: 512M
-      FUSIONAUTH_APP_RUNTIME_MODE: development
-      FUSIONAUTH_APP_URL: http://fusionauth:9011
-      # ES_JAVA_OPTS: "-Xms512m -Xmx512m"
-      SEARCH_TYPE: database
-    restart: unless-stopped
-    volumes:
-      - ./auth/fa_config:/usr/local/fusionauth/confg
-    networks:
-      - safers
-    ports:
-      - "9011:9011"
+  # auth:
+  #   image: fusionauth/fusionauth-app:latest
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     # (using the same db service for auth & server in development)
+  #     DATABASE_URL: jdbc:postgresql://db:5432/fusionauth
+  #     DATABASE_ROOT_USERNAME: safers_user
+  #     DATABASE_ROOT_PASSWORD: safers_pwd
+  #     DATABASE_USERNAME: fusionauth
+  #     DATABASE_PASSWORD: fusionauth
+  #     FUSIONAUTH_APP_MEMORY: 512M
+  #     FUSIONAUTH_APP_RUNTIME_MODE: development
+  #     FUSIONAUTH_APP_URL: http://fusionauth:9011
+  #     # ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+  #     SEARCH_TYPE: database
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./auth/fa_config:/usr/local/fusionauth/confg
+  #   networks:
+  #     - safers
+  #   ports:
+  #     - "9011:9011"
 
-  broker:
-    image: rabbitmq:3-management
-    hostname: broker
-    # TODO: WILL WANT SOME CONFIG IN DEFINITIONS TO SETUP QUEUES
-    # TODO: BUT NOT PWDS, ETC
-    # volumes:
-    #   - ./broker/etc/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
-    #   - ./broker/etc/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-    #   - ./broker/db:/var/lib/rabbitmq/mnesia/rabbit@safers
-    #   - ./broker/logs:/var/log/rabbitmq/log
-    environment:
-      - RABBITMQ_DEFAULT_USER=safers_user
-      - RABBITMQ_DEFAULT_PASS=safers_pwd
-    networks:
-      - safers
-    ports:
-      - 5672:5672  # internal queue
-      - 15672:15672  # management client
+  # broker:
+  #   image: rabbitmq:3-management
+  #   hostname: broker
+  #   # TODO: WILL WANT SOME CONFIG IN DEFINITIONS TO SETUP QUEUES
+  #   # TODO: BUT NOT PWDS, ETC
+  #   # volumes:
+  #   #   - ./broker/etc/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+  #   #   - ./broker/etc/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+  #   #   - ./broker/db:/var/lib/rabbitmq/mnesia/rabbit@safers
+  #   #   - ./broker/logs:/var/log/rabbitmq/log
+  #   environment:
+  #     - RABBITMQ_DEFAULT_USER=safers_user
+  #     - RABBITMQ_DEFAULT_PASS=safers_pwd
+  #   networks:
+  #     - safers
+  #   ports:
+  #     - 5672:5672  # internal queue
+  #     - 15672:15672  # management client
 
 
   server:
@@ -82,6 +82,18 @@ services:
       DJANGO_SETTINGS_MODULE: config.settings
     volumes:
       - ./server:/home/app/server
+    networks:
+      - safers
+
+  scheduler:
+    build: .
+    environment:
+      SYS_ENV: development
+      ENABLE_CRON: 1
+      DJANGO_SETTINGS_MODULE: config.settings
+    volumes:
+      - ./server:/home/app/server
+      - ./scheduler:/home/app/scheduler
     networks:
       - safers
 

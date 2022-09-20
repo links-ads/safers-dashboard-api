@@ -36,9 +36,14 @@ else
     fi
 fi
 
-
 if [[ "${ENABLE_RMQ_WORKER}" -eq 1 ]]; then
     echo -e "\n### STARTING RMQ WORKER ###\n"
     mkdir -p /etc/service/rmq-worker
     cp run-rmq-worker.sh /etc/service/rmq-worker/run
 fi
+
+if [[ "${ENABLE_CRON}" -eq 1 ]]; then
+    echo -e "\n### STARTING CRON ###\n"
+    crontab < $APP_HOME/scheduler/crontab
+fi
+
