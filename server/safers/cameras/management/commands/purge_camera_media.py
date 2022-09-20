@@ -6,7 +6,6 @@ from django.db import transaction
 from django.utils import timezone
 
 from safers.cameras.models import CameraMedia
-from safers.core.models import SafersSettings
 
 logger = logging.getLogger(__name__)
 
@@ -43,10 +42,6 @@ class Command(BaseCommand):
 
         timestamp = timezone.now()
         preserve_timestamp = timestamp - settings.SAFERS_CAMERA_MEDIA_PRESERVE_TIMERANGE
-
-        safers_settings = SafersSettings.load()
-        safers_settings.max_favorite_camera_media += 1
-        safers_settings.save()
 
         try:
 
