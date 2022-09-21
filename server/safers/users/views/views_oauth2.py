@@ -188,7 +188,7 @@ class RegisterView(GenericAPIView):
             },
             "user": {
                 "email": serializer.validated_data["email"],
-                "username": serializer.validated_data["email"],
+                "username": serializer.validated_data["email"].strip("@")[0],
                 "password": serializer.validated_data["password"],
                 "firstName": serializer.validated_data["first_name"],
                 "lastName": serializer.validated_data["last_name"],

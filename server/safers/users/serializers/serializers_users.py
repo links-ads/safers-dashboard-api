@@ -80,9 +80,9 @@ class UserSerializer(UserSerializerLite):
 
     def validate(self, data):
         validated_data = super().validate(data)
-
-        if (validated_data["organization"] is not None
-           ) and (validated_data["role"].name.lower() == "citizen"):
+        organziation = validated_data.get("organization")
+        role = validated_data.get("role")
+        if organziation and role and role.name.lower() == "citizen":
             raise serializers.ValidationError(
                 "A citizen must not belong to an organization."
             )
