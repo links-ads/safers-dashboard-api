@@ -88,6 +88,7 @@ class DataType(models.Model):
 
     description = models.TextField(blank=True, null=True)
     info = models.TextField(blank=True, null=True)
+    group_info = models.TextField(blank=True, null=True)
 
     group = models.CharField(max_length=128, blank=True, null=True)
     subgroup = models.CharField(max_length=128, blank=True, null=True)
