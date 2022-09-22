@@ -66,10 +66,13 @@ class MapRequestListSerializer(serializers.ListSerializer):
     def to_representation(self, data):
         """
         reshape data to group by category; (using itertools.groupby instead 
-        of built-in django methods b/c "category" is not a field)
+        of built-in django methods b/c "category_info" is not a field)
         """
         representation = super().to_representation(data)
-        groupby_key_fn = lambda x: x["category"]
+        groupby_key_fn = lambda x: (
+            x["category_info"].get("group"),
+            x["category_info"].get("group_info"),
+        )
         sorted_representation = sorted(representation, key=groupby_key_fn)
         grouped_by_representation = groupby(
             sorted_representation, key=groupby_key_fn
@@ -78,7 +81,8 @@ class MapRequestListSerializer(serializers.ListSerializer):
         return [
             {
                 "key": f"{i}",
-                "title": key,
+                "title": key[0].title(),
+                "info": key[1],
                 "children": [
                     dict(
                         key=f"{i}.{j}",
@@ -140,7 +144,7 @@ class MapRequestSerializer(serializers.ModelSerializer):
             "title",
             "timestamp",
             "user",
-            "category",
+            "category_info",
             "parameters",
             "geometry",
             "geometry_wkt",

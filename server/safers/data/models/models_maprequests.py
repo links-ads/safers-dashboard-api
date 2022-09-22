@@ -190,9 +190,14 @@ class MapRequest(gis_models.Model):
 
     @property
     def category(self):
-        group = self.data_types.values_list("group", flat=True).first()
-        if group:
-            return group.title()
+        category = self.data_types.values_list("group", flat=True).first()
+        if category:
+            return category.title()
+
+    @property
+    def category_info(self):
+        category_info = self.data_types.values("group", "group_info").first()
+        return category_info
 
     def save(self, *args, **kwargs):
         """

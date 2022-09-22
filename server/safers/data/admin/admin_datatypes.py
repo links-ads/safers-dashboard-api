@@ -27,6 +27,7 @@ class DataTypeAdmin(admin.ModelAdmin):
         "is_active",
         "description",
         "info",
+        "group_info",
         "group",
         "subgroup",
         "format",
