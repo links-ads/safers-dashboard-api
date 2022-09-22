@@ -24,16 +24,27 @@ class Role(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
+    role_id = models.SlugField(
+        blank=True,
+        null=True,
+    )
     name = models.CharField(
         max_length=128,
         blank=False,
         null=False,
         unique=True,
     )
+    label = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+    )
     description = models.TextField(
         blank=True,
         null=True,
     )
+    is_default = models.BooleanField(default=False)
+    is_super = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):

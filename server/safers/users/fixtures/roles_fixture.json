@@ -1,38 +1,80 @@
 [
-{
-    "model": "users.role",
-    "pk": "7fef8e5e-f458-4a32-8c69-5db7b052bed2",
-    "fields": {
-        "name": "Organization Manager",
-        "description": "",
-        "is_active": true
+    {
+        "model": "users.role",
+        "pk": "7fef8e5e-f458-4a32-8c69-5db7b052bed2",
+        "fields": {
+            "role_id": "4",
+            "name": "first_responder",
+            "label": "First Responder",
+            "description": "On-field role: First Responders can make reports and accomplish missions",
+            "is_default": false,
+            "is_super": false,
+            "is_active": true
+        }
+    },
+    {
+        "model": "users.role",
+        "pk": "8aae6241-4631-47fe-97a9-e46b7c7e9055",
+        "fields": {
+            "role_id": "3",
+            "name": "decision_maker",
+            "label": "Decision Maker",
+            "description": "Decision Maker: sits in a control rooms during emergency, monitoring the situation",
+            "is_default": false,
+            "is_super": false,
+            "is_active": true
+        }
+    },
+    {
+        "model": "users.role",
+        "pk": "b5ac4ac5-feae-429d-a17f-f142a07ecd97",
+        "fields": {
+            "role_id": "2",
+            "name": "citizen",
+            "label": "Citizen",
+            "description": "citizen",
+            "is_default": true,
+            "is_super": false,
+            "is_active": true
+        }
+    },
+    {
+        "model": "users.role",
+        "pk": "c18cbc98-42dd-4f98-ac1b-74d8a843f63a",
+        "fields": {
+            "role_id": "5",
+            "name": "organization_manager",
+            "label": "Organization Manager",
+            "description": "Organization Manager: manages everything within his/her Organization in SAFERS",
+            "is_default": false,
+            "is_super": false,
+            "is_active": true
+        }
+    },
+    {
+        "model": "users.role",
+        "pk": "d13eef34-b802-44e8-bec6-2bcc72ae4410",
+        "fields": {
+            "role_id": "6",
+            "name": "team_leader",
+            "label": "Team Leader",
+            "description": "Like First Responder, but with more powers",
+            "is_default": false,
+            "is_super": false,
+            "is_active": true
+        }
+    },
+    {
+        "model": "users.role",
+        "pk": "e38000a4-e121-427c-94f0-0330741a5a16",
+        "fields": {
+            "role_id": "1",
+            "name": "administrator",
+            "label": "Administrator",
+            "description": "Administrator of SAFERS",
+            "is_default": false,
+            "is_super": true,
+            "is_active": false
+        }
     }
-},
-{
-    "model": "users.role",
-    "pk": "8aae6241-4631-47fe-97a9-e46b7c7e9055",
-    "fields": {
-        "name": "Decision Maker",
-        "description": "",
-        "is_active": true
-    }
-},
-{
-    "model": "users.role",
-    "pk": "b5ac4ac5-feae-429d-a17f-f142a07ecd97",
-    "fields": {
-        "name": "First Responder",
-        "description": "",
-        "is_active": true
-    }
-},
-{
-    "model": "users.role",
-    "pk": "e38000a4-e121-427c-94f0-0330741a5a16",
-    "fields": {
-        "name": "Citizen",
-        "description": "",
-        "is_active": true
-    }
-}
 ]
