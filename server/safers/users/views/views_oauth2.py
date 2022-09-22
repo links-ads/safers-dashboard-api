@@ -1,5 +1,4 @@
 import json
-
 from collections import OrderedDict
 from sys import stdout
 
@@ -29,6 +28,7 @@ from safers.users.exceptions import AuthenticationException
 from safers.users.models import User, Oauth2User, AUTH_USER_FIELDS, AUTH_PROFILE_FIELDS, AUTH_TOKEN_FIELDS
 from safers.users.serializers import AuthenticateSerializer, Oauth2RegisterViewSerializer, KnoxTokenSerializer, UserSerializerLite, UserProfileSerializer
 from safers.users.utils import AUTH_CLIENT, create_knox_token
+from safers.users.views import synchronize_profile
 """
 code to authenticate using OAUTH2
 (SHOULD EVENTUALLY REPLACE dj-rest-auth, ETC. IN "views_auth.py")
@@ -123,9 +123,6 @@ class LoginView(GenericAPIView):
                 }
                 profile_serializer.update(user.profile, profile_data)
 
-                # TODO: register user extr steps ?
-                pass
-
             # any additional user checks ?
             # user_logged_in.send(sender=User, request=request, user=user)
 
@@ -135,6 +132,30 @@ class LoginView(GenericAPIView):
                 if k in AUTH_TOKEN_FIELDS:
                     setattr(auth_user, AUTH_TOKEN_FIELDS[k], v)
             auth_user.save()
+
+            if created_auth_user:
+
+                try:
+
+                    user_profile = user.profile
+                    user_profile_data = {
+                        "user": {
+                            "id": str(user.auth_id),
+                            "email": user.email,
+                            "username": user.username,
+                            "firstName": user_profile.first_name,
+                            "lastName": user_profile.last_name,
+                            "roles": [user.role.name] if user.role else []
+                        },
+                        "organizationId":
+                            int(user.organization.organization_id)
+                            if user.organization else None
+                    }
+                    synchronize_profile(user_profile, user_profile_data)
+
+                except Exception as e:
+                    msg = "Unable to set profile fields on authentication server"
+                    raise AuthenticationException(msg)
 
             token_dataclass = create_knox_token(None, user, None)
             token_serializer = KnoxTokenSerializer(token_dataclass)
@@ -188,7 +209,7 @@ class RegisterView(GenericAPIView):
             },
             "user": {
                 "email": serializer.validated_data["email"],
-                "username": serializer.validated_data["email"].strip("@")[0],
+                "username": serializer.validated_data["email"].split("@")[0],
                 "password": serializer.validated_data["password"],
                 "firstName": serializer.validated_data["first_name"],
                 "lastName": serializer.validated_data["last_name"],

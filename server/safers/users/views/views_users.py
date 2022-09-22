@@ -1,9 +1,7 @@
-from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from django.utils.functional import cached_property
 
 from rest_framework import generics, status
-# from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 
 from drf_yasg import openapi
@@ -14,6 +12,7 @@ from safers.core.decorators import swagger_fake
 from safers.users.models import User
 from safers.users.permissions import IsSelfOrAdmin
 from safers.users.serializers import UserSerializerLite, UserSerializer
+from safers.users.views import synchronize_profile
 
 ###########
 # swagger #
@@ -99,47 +98,43 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
             }
         return context
 
+    def delete(self, request, *args, **kwargs):
+        retval = super().delete(request, *args, **kwargs)
+        # TODO: logout
+        return retval
 
-#########
-# utils #
-#########
+    def perform_update(self, serializer):
 
-# TODO: NO LONGER USED
-# TODO: CAN PROBABLY DELETE
+        if "default_aoi" not in serializer.validated_data:
 
+            user = self.get_object()
+            if user.is_remote:
+                user_profile = user.profile
 
-class UserViewMixin(object):
+                first_name = serializer.validated_data.get("profile", {}
+                                                          ).get("first_name")
+                last_name = serializer.validated_data.get("profile",
+                                                          {}).get("last_name")
+                role = serializer.validated_data.get("role")
+                organization = serializer.validated_data.get("organization")
 
-    # DRY way of accessing user obj for views which rely
-    # DRY way of customizing object retrieval for the 2 views below
+                user_profile_data = {
+                    "user": {
+                        "id": str(user.auth_id),
+                        "email": user.email,
+                        "username": user.username,
+                        "firstName": first_name,
+                        "lastName": last_name,
+                        "roles": [role.name] if role else []
+                    },
+                    "organizationId":
+                        int(organization.organization_id)
+                        if organization else None
+                }
+                try:
+                    synchronize_profile(user_profile, user_profile_data)
+                except Exception as e:
+                    msg = "Unable to update profile fields on authentication server."
+                    raise APIException(msg)
 
-    @cached_property
-    def user(self):
-        user_id = self.kwargs["user_id"]
-        user = get_object_or_404(User, id=user_id)
-        return user
-
-    # @swagger_fake(None)
-    # def get_object(self):
-    #     qs = self.get_queryset()
-    #     qs = self.filter_queryset(qs)
-    #     user_uuid = self.kwargs["user_id"]
-
-    #     obj = get_object_or_404(qs, user__uuid=user_uuid)
-    #     self.check_object_permissions(self.request, obj)
-    #     return obj
-
-    # @swagger_fake(User.objects.none())
-    # def get_queryset(self):
-    #     return self.customer.customer_users.select_related("user").all()
-
-    def get_serializer_context(self):
-        # user might not always be provided to the serializer; therefore,
-        # I explicitly update the context to be accessed by ContextVariableDefault as needed
-        context = super().get_serializer_context()
-        if "user" not in context:
-            if getattr(self, "swagger_fake_view", False):
-                context["user"] = None
-            else:
-                context["user"] = self.user
-        return context
+        return super().perform_update(serializer)

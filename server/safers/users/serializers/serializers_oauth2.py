@@ -45,8 +45,8 @@ class RegisterViewSerializer(serializers.Serializer):
     def validate(self, data):
         validated_data = super().validate(data)
 
-        if (validated_data["organization"] is not None
-           ) and (validated_data["role"].name.lower() == "citizen"):
+        if (validated_data["organization"]
+            is not None) and (validated_data["role"].name == "citizen"):
             raise serializers.ValidationError(
                 "A citizen must not belong to an organization."
             )

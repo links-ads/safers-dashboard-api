@@ -8,6 +8,8 @@ class RoleSerializer(serializers.ModelSerializer):
         model = Role
         fields = (
             "id",
+            "role_id",
             "name",
+            "label",
             "description",
         )
