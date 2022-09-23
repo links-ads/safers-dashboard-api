@@ -191,7 +191,10 @@ class MapRequestViewSet(
         """
 
         queryset = self.get_queryset()
-        map_request_ids = queryset.values_list("request_id", flat=True)
+        map_requests = {
+            map_request_data["request_id"]: map_request_data
+            for map_request_data in queryset.values()
+        }
 
         # TODO: REFACTOR - MUCH OF THIS IS DUPLILCATED IN DataLayerView
 
@@ -202,10 +205,10 @@ class MapRequestViewSet(
                 "service": "WMS",
                 "request": "GetMap",
                 "srs": "EPSG:4326",
-                "bbox": "{{bbox}}",
+                "bbox": "{bbox}",
                 "transparent": True,
-                "width": 256,
-                "height": 256,
+                "width": 512,
+                "height": 512,
                 "format": "image/png",
             },
             safe="{}",
@@ -296,12 +299,13 @@ class MapRequestViewSet(
         # proxy_details is a dict of dicts: "request_id" followed by "data_type_id"
         # it is passed as context to the serializer below to add links, etc. to the model_serializer data
         proxy_details = defaultdict(dict)
-        for group in proxy_content.get("layerGroups", []):
-            for sub_group in group.get("subGroups", []):
-                for layer in sub_group.get("layers", []):
-                    for detail in layer.get("details", []):
+        for group in proxy_content.get("layerGroups") or []:
+            for sub_group in group.get("subGroups") or []:
+                for layer in sub_group.get("layers") or []:
+                    for detail in layer.get("details") or []:
                         request_id = detail.get("mapRequestCode")
-                        if request_id in map_request_ids:
+                        map_request = map_requests.get(request_id)
+                        if map_request is not None:
                             data_type_id = str(layer["dataTypeId"])
                             proxy_details[request_id].update({
                                 data_type_id: {
@@ -322,8 +326,9 @@ class MapRequestViewSet(
                                                 (
                                                     timestamp,
                                                     geoserver_layer_url.format(
-                                                    name=quote_plus(detail["name"]),
-                                                    time=quote_plus(timestamp),
+                                                        name=quote_plus(detail["name"]),
+                                                        time=quote_plus(timestamp),
+                                                        bbox=quote_plus(map_request["geometry_extent"]),
                                                     )
                                                 )
                                                 for timestamp in detail.get("timestamps", [])

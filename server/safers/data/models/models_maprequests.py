@@ -185,7 +185,15 @@ class MapRequest(gis_models.Model):
     )  # TODO: CAN THIS BE A GeometryCollectionField
 
     geometry_wkt = models.TextField(
-        blank=True, null=True, help_text=_("WKT representation of geometry")
+        blank=True,
+        null=True,
+        help_text=_("WKT representation of geometry"),
+    )
+
+    geometry_extent = models.TextField(
+        blank=True,
+        null=True,
+        help_text=_("extent of bbox of geometry as a string"),
     )
 
     @property
@@ -208,8 +216,10 @@ class MapRequest(gis_models.Model):
 
         if not self.geometry:
             self.geometry_wkt = None
+            self.geometry_extent = None
         else:
             self.geometry_wkt = self.geometry.wkt
+            self.geometry_extent = ",".join(map(str, self.geometry.extent))
 
         return super().save(*args, **kwargs)
 

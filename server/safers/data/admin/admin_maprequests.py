@@ -123,7 +123,7 @@ class MapRequestDataTypeInline(admin.TabularInline):
 
 class MapRequestAdminForm(ModelForm):
     """
-    Using a custom form to prevent geometry_wkt from being manually edited
+    Using a custom form to prevent geometry_wkt & geometry_bbox_coords from being manually edited
     """
     class Meta:
         model = MapRequest
@@ -132,14 +132,16 @@ class MapRequestAdminForm(ModelForm):
             "parameters",
             "geometry",
             "geometry_wkt",
+            "geometry_extent",
             "user",
         )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["geometry_wkt"].widget.attrs.update({
-            "readonly": True, "disbled": True
-        })
+        for field_name in ["geometry_wkt", "geometry_extent"]:
+            self.fields[field_name].widget.attrs.update({
+                "readonly": True, "disbled": True
+            })
 
 
 @admin.register(MapRequest)
