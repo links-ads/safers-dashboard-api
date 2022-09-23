@@ -87,16 +87,17 @@ class Communication(gis_models.Model):
         choices=CommunicationRestrictionTypes.choices,
         default=CommunicationRestrictionTypes.NONE,
     )
+
+    # TODO: SHOULD REALLY BE USING M2M FIELD FOR target_organizations, BUT
+    # TODO: CHATBOT MODELS AREN'T STORED LOCALLY - AND W/OUT A PK THE M2M
+    # TODO: RELATIONSHIP CANNOT BE SET; SO I JUST USE THE JSONField BELOW
     # target_organizations = models.ManyToManyField(
     #     "users.organization",
     #     related_name="targeted_chatbot_communications",
     # )
-
     target_organizations = models.JSONField(
         validators=[validate_target_organizations],
         default=list,
-        # TODO: SHOULD REALLY BE USING M2M FIELD FOR THIS (SEE ABOVE) BUT CHATBOT MODELS
-        # TODO: AREN'T STORED LOCALLY - AND W/OUT A PK THE RELATIONSHIP CANNOT BE SET
     )
 
     message = models.TextField(blank=True, null=True)
