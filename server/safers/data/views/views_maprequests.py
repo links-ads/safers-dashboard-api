@@ -194,7 +194,7 @@ class MapRequestViewSet(
         map_requests = {
             map_request_data["request_id"]: map_request_data
             for map_request_data in queryset.values()
-        }
+        }  # dict of map_request_data keyed by request_id
 
         # TODO: REFACTOR - MUCH OF THIS IS DUPLILCATED IN DataLayerView
 

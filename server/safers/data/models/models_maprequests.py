@@ -209,7 +209,8 @@ class MapRequest(gis_models.Model):
 
     def save(self, *args, **kwargs):
         """
-        automatically set the request_id & geometry_wkt when saving
+        automatically set the request_id & geometry_wkt when saving, rather
+        than computing it in views b/c geometric computation is expensive
         """
         if not self.request_id:
             self.request_id = get_next_request_id()

@@ -123,7 +123,7 @@ class MapRequestDataTypeInline(admin.TabularInline):
 
 class MapRequestAdminForm(ModelForm):
     """
-    Using a custom form to prevent geometry_wkt & geometry_bbox_coords from being manually edited
+    Using a custom form to prevent geometry_wkt & geometry_extent from being manually edited
     """
     class Meta:
         model = MapRequest
