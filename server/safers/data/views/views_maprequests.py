@@ -296,10 +296,10 @@ class MapRequestViewSet(
         # proxy_details is a dict of dicts: "request_id" followed by "data_type_id"
         # it is passed as context to the serializer below to add links, etc. to the model_serializer data
         proxy_details = defaultdict(dict)
-        for group in proxy_content.get("layerGroups", []):
-            for sub_group in group.get("subGroups", []):
-                for layer in sub_group.get("layers", []):
-                    for detail in layer.get("details", []):
+        for group in proxy_content.get("layerGroups") or []:
+            for sub_group in group.get("subGroups") or []:
+                for layer in sub_group.get("layers") or []:
+                    for detail in layer.get("details") or []:
                         request_id = detail.get("mapRequestCode")
                         if request_id in map_request_ids:
                             data_type_id = str(layer["dataTypeId"])
