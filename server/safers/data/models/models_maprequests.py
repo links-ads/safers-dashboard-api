@@ -185,7 +185,15 @@ class MapRequest(gis_models.Model):
     )  # TODO: CAN THIS BE A GeometryCollectionField
 
     geometry_wkt = models.TextField(
-        blank=True, null=True, help_text=_("WKT representation of geometry")
+        blank=True,
+        null=True,
+        help_text=_("WKT representation of geometry"),
+    )
+
+    geometry_extent = models.TextField(
+        blank=True,
+        null=True,
+        help_text=_("extent of bbox of geometry as a string"),
     )
 
     @property
@@ -201,15 +209,18 @@ class MapRequest(gis_models.Model):
 
     def save(self, *args, **kwargs):
         """
-        automatically set the request_id & geometry_wkt when saving
+        automatically set the request_id & geometry_wkt when saving, rather
+        than computing it in views b/c geometric computation is expensive
         """
         if not self.request_id:
             self.request_id = get_next_request_id()
 
         if not self.geometry:
             self.geometry_wkt = None
+            self.geometry_extent = None
         else:
             self.geometry_wkt = self.geometry.wkt
+            self.geometry_extent = ",".join(map(str, self.geometry.extent))
 
         return super().save(*args, **kwargs)
 
