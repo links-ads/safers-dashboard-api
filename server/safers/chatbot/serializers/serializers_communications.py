@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
+from safers.users.models import Organization
+
 from safers.chatbot.models import Communication
 from .serializers_base import ChatbotViewSerializer, ChatbotDateTimeFormats
 
@@ -27,13 +29,17 @@ class CommunicationSerializer(serializers.ModelSerializer):
             "end",
             "source",
             "message",
-            "assigned_to",
+            "source_organization",
+            "target_organizations",
             "geometry",
             "location",
         )
 
     id = serializers.CharField(source="communication_id")
 
+    source_organization = serializers.SlugRelatedField(
+        slug_field="name", queryset=Organization.objects.all()
+    )
     geometry = gis_serializers.GeometryField(
         precision=Communication.PRECISION, remove_duplicates=True
     )

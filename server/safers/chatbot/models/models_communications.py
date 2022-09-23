@@ -7,8 +7,13 @@ from safers.core.utils import validate_schema
 
 
 def validate_assigned_to(value):
+    # TODO: REMOVE IN A FUTURE PR ONCE MIGRATIONS ARE SORTED OUT
+    return True
+
+
+def validate_target_organizations(value):
     """
-    A simple validator that ensures communication.assigned_to is a list of strings
+    A simple validator that ensures communication.target_organizations is a list of strings
     """
 
     assigned_to_schema = {
@@ -82,16 +87,17 @@ class Communication(gis_models.Model):
         choices=CommunicationRestrictionTypes.choices,
         default=CommunicationRestrictionTypes.NONE,
     )
-    target_organizations = models.ManyToManyField(
-        "users.organization",
-        related_name="targeted_chatbot_communications",
-    )
 
-    assigned_to = models.JSONField(
-        validators=[validate_assigned_to],
+    # TODO: SHOULD REALLY BE USING M2M FIELD FOR target_organizations, BUT
+    # TODO: CHATBOT MODELS AREN'T STORED LOCALLY - AND W/OUT A PK THE M2M
+    # TODO: RELATIONSHIP CANNOT BE SET; SO I JUST USE THE JSONField BELOW
+    # target_organizations = models.ManyToManyField(
+    #     "users.organization",
+    #     related_name="targeted_chatbot_communications",
+    # )
+    target_organizations = models.JSONField(
+        validators=[validate_target_organizations],
         default=list,
-        # TODO: SHOULD REALLY BE USING target_organization FOR THIS, BUT HAVE TO WAIT
-        # TODO: UNTIL I'VE LINKED FusionAuth Organization w/ Django Organizations
     )
 
     message = models.TextField(blank=True, null=True)
