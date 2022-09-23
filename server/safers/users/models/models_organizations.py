@@ -4,7 +4,16 @@ from django.db import models
 
 
 class OrganizationManager(models.Manager):
-    pass
+    def safe_get(self, *args, **kwargs):
+        """
+        models that aren't stored locally (like the chatbot models)
+        sometimes try to reference Organizations that might not exist
+        this allows me to cope w/ those cases
+        """
+        try:
+            return Organization.objects.get(*args, **kwargs)
+        except Organization.DoesNotExist:
+            return None
 
 
 class OrganizationQuerySet(models.QuerySet):

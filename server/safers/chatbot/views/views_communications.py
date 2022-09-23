@@ -15,9 +15,12 @@ from rest_framework.utils.encoders import JSONEncoder
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from safers.users.models import Organization
+from safers.users.authentication import ProxyAuthentication
+
 from safers.chatbot.models import Communication
 from safers.chatbot.serializers import CommunicationSerializer, CommunicationCreateSerializer, CommunicationViewSerializer
-from safers.users.authentication import ProxyAuthentication
+
 from .views_base import ChatbotView, parse_datetime, parse_none
 
 _communication_create_schema = openapi.Schema(
@@ -66,10 +69,14 @@ class CommunicationListView(CommunicationView):
                 # source= (source has a default value so no need to parse from proxy_data)
                 scope=data.get("scope"),
                 restriction=data.get("restriction"),
-                # TODO: SHOULD REALLY REPLACE assigned_to W/ target_organizations BUT HAVE TO WAIT
-                # TODO: UNTIL I'VE LINKED FUSIONAUTH ORGANIZATIONS W/ DJANGO ORGANIZATIONS
-                # target_organizations=
-                assigned_to=[data.get("organizationName")] if data.get("organizationName") else [],
+                source_organization=Organization.objects.safe_get(name=data.get("organizationName")),
+                target_organizations=filter(
+                    None,
+                    [
+                        Organization.objects.safe_get(organization_id=organization_id)
+                        for organization_id in data.get("organizationIdList") or []
+                    ]
+                ),
                 message=data.get("message"),
                 geometry=geos.Point(
                     data["centroid"]["longitude"], data["centroid"]["latitude"]

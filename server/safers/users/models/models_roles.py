@@ -4,7 +4,16 @@ from django.db import models
 
 
 class RoleManager(models.Manager):
-    pass
+    def safe_get(self, *args, **kwargs):
+        """
+        models that aren't stored locally (like the chatbot models)
+        sometimes try to reference Role that might not exist
+        this allows me to cope w/ those cases
+        """
+        try:
+            return Role.objects.get(*args, **kwargs)
+        except Role.DoesNotExist:
+            return None
 
 
 class RoleQuerySet(models.QuerySet):
