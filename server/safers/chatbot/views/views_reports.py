@@ -166,7 +166,6 @@ class ReportDetailView(ReportView):
             "Id": kwargs["report_id"],
             "IncludeArea": True,
         }
-
         try:
             response = requests.get(
                 urljoin(settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_DETAIL_PATH),
@@ -193,6 +192,7 @@ class ReportDetailView(ReportView):
                 "unit_of_measure",
             )
         }
+
         report = Report(
             report_id=properties.get("id"),
             mission_id=properties.get("relativeMissionId"),
