@@ -1,4 +1,3 @@
-from django.template.defaultfilters import pluralize
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers, ISO_8601
@@ -108,11 +107,8 @@ class ReportSerializer(serializers.ModelSerializer):
                 category_info_string += f" {name}:"
             if value:
                 category_info_string += f" {value}"
-                if units:
-                    if value.isnumeric() and float(value) > 0:
-                        category_info_string += f" {pluralize(units)}"
-                    else:
-                        category_info_string += f" {units}"
+                if units and units != "units":
+                    category_info_string += f" {units}"
             if category_info_string:
                 categories_info.append(category_info_string.strip())
 

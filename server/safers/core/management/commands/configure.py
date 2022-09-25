@@ -46,8 +46,8 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
-            "--skip-chatbot-categories",
-            dest="load_chatbot_categories",
+            "--skip-chatbot-report-categories",
+            dest="load_chatbot_report_categories",
             action="store_false",
             help="Whether or not to skip the chatbot.ReportCategory fixtures.",
         )
@@ -108,10 +108,10 @@ class Command(BaseCommand):
                     "cameras_fixture.json",
                 )
 
-            if options["load_chatbot_categories"]:
+            if options["load_chatbot_report_categories"]:
                 load_fixture(
                     apps.get_app_config("chatbot"),
-                    "chatbot_categories_fixture.json",
+                    "chatbot_report_categories_fixture.json",
                 )
 
             if options["load_countries"]:
