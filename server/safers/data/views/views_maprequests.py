@@ -328,7 +328,7 @@ class MapRequestViewSet(
                                                     geoserver_layer_url.format(
                                                         name=quote_plus(detail["name"]),
                                                         time=quote_plus(timestamp),
-                                                        bbox=quote_plus(map_request["geometry_extent"]),
+                                                        bbox=quote_plus(map_request["geometry_extent_str"]),
                                                     )
                                                 )
                                                 for timestamp in detail.get("timestamps", [])

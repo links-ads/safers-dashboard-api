@@ -5,6 +5,7 @@ import uuid
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.gis.db import models as gis_models
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 from django.db.models import Q
@@ -190,7 +191,15 @@ class MapRequest(gis_models.Model):
         help_text=_("WKT representation of geometry"),
     )
 
-    geometry_extent = models.TextField(
+    geometry_extent = ArrayField(
+        models.FloatField(),
+        blank=True,
+        default=list,
+        help_text=_("extent of bbox of geometry as a list"),
+    )
+
+    geometry_extent_str = models.CharField(
+        max_length=256,
         blank=True,
         null=True,
         help_text=_("extent of bbox of geometry as a string"),
@@ -220,7 +229,8 @@ class MapRequest(gis_models.Model):
             self.geometry_extent = None
         else:
             self.geometry_wkt = self.geometry.wkt
-            self.geometry_extent = ",".join(map(str, self.geometry.extent))
+            self.geometry_extent = self.geometry.extent
+            self.geometry_extent_str = ",".join(map(str, self.geometry_extent))
 
         return super().save(*args, **kwargs)
 
