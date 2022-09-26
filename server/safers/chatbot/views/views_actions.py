@@ -73,7 +73,9 @@ def action_activities_view(request):
     """
     Returns the list of possible Action activities.
     """
-    return Response(ActionActivityTypes.values, status=status.HTTP_200_OK)
+    return Response(
+        sorted(ActionActivityTypes.values), status=status.HTTP_200_OK
+    )
 
 
 _action_statuses_schema = openapi.Schema(
@@ -90,4 +92,4 @@ def action_statuses_view(request):
     """
     Returns the list of possible Action statuses.
     """
-    return Response(ActionStatusTypes.values, status=status.HTTP_200_OK)
+    return Response(sorted(ActionStatusTypes.values), status=status.HTTP_200_OK)
