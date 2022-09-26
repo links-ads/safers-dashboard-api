@@ -110,7 +110,8 @@ class Event(gis_models.Model):
         serial_number = f"S{self.sequence_number:0>5}"
 
         country = Country.objects.filter(
-            geometry__intersects=self.geometry_collection
+            # geometry__intersects=self.geometry_collection  # TODO: if geometry_collection is malformed can potentially get "GEOSIntersects: TopologyException: side location conflict"
+            geometry__intersects=self.center
         ).first()
 
         return "-".join(
