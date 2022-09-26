@@ -186,7 +186,7 @@ class DataLayerView(views.APIView):
                 "request": "GetMap",
                 "srs": "EPSG:4326",
                 "version": "1.1.0",
-                "bbox": "{{bbox}}" if not settings.SAFERS_RESTRICT_DATA_TO_AOI else ",".join(map(str, user.default_aoi.geometry.extent)),
+                "bbox": "{{bbox}}" if not settings.SAFERS_RESTRICT_DATA_TO_AOI else user.default_aoi.geometry_extent,
                 "transparent": True,
                 "width": 256,
                 "height": 256,
