@@ -147,6 +147,8 @@ class DataLayerView(views.APIView):
         Each leaf-node provides a URL paramter to retrieve the actual layer.
         """
 
+        user = request.user
+
         GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
         GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
         METADATA_URL_PATH = "/api/data/layers/metadata"
@@ -183,14 +185,15 @@ class DataLayerView(views.APIView):
                 "service": "WMS",
                 "request": "GetMap",
                 "srs": "EPSG:4326",
-                "bbox": "{{bbox}}",
+                "version": "1.1.0",
+                "bbox": "{{bbox}}" if not settings.SAFERS_RESTRICT_DATA_TO_AOI else ",".join(map(str, user.default_aoi.geometry.extent)),
                 "transparent": True,
                 "width": 256,
                 "height": 256,
                 "format": "image/png",
             },
             safe="{}",
-        )
+        )  # yapf: disable
         geoserver_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_URL_PATH)}?{geoserver_layer_query_params}"
 
         geoserver_legend_query_params = urlencode(
