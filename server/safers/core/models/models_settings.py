@@ -40,6 +40,14 @@ class SafersSettings(SingletonMixin, models.Model):
         ),
     )
 
+    restrict_data_to_aoi = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Always resize DataLayers to the user's AOI, regardless of either the map viewport "
+            "or the full extent of the DataLayer."
+        )
+    )
+
     polling_frequency = models.FloatField(
         default=10,
         validators=[MinValueValidator(0)],

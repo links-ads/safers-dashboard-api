@@ -13,6 +13,7 @@ class SafersSettingsSerializer(serializers.ModelSerializer):
             "require_verification",
             "require_terms_acceptance",
             "polling_frequency",
+            "restrict_data_to_aoi",
             "request_timeout",
             "max_favorite_alerts",
             "max_favorite_events",

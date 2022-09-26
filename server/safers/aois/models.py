@@ -57,6 +57,14 @@ class Aoi(gis_models.Model):
 
     geometry = gis_models.GeometryField(blank=False)
 
+    @property
+    def geometry_extent(self):
+        """
+        returns extent (bbox) as a comma-separated string
+        suitable for request query_params
+        """
+        return ",".join(map(str, self.geometry.extent))
+
     def __str__(self):
         if self.country:
             return f"{self.country}: {self.name}"

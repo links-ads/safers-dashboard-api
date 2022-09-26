@@ -446,6 +446,12 @@ SAFERS_REQUIRE_TERMS_ACCEPTANCE = DynamicSetting(
     "core.SafersSettings.require_terms_acceptance",
     True,
 )
+
+SAFERS_RESTRICT_DATA_TO_AOI = DynamicSetting(
+    "core.SafersSettings.restrict_data_to_aoi",
+    False,
+)
+
 SAFERS_DEFAULT_TIMERANGE = DynamicSetting(
     "core.SafersSettings.default_timerange",
     timedelta(days=3),
