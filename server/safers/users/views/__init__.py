@@ -14,7 +14,5 @@ from .views_auth import (
 )
 from .views_oauth2 import (
     LoginView as Oath2LoginView,
-    LogoutView as Oauth2LogoutView,
-    LogoutAllView as Oauth2LogoutAllView,
     RegisterView as Oauth2RegisterView,
 )

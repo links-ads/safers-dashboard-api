@@ -4,11 +4,9 @@ from sys import stdout
 
 from django.conf import settings
 from django.contrib.auth import login
-from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.templatetags.static import static
 
 from rest_framework import status
-from rest_framework.exceptions import APIException
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -16,13 +14,6 @@ from rest_framework.utils.encoders import JSONEncoder
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
-from knox.settings import knox_settings
-from knox.views import (
-    LoginView as KnoxLoginView,
-    LogoutView as KnoxLogoutView,
-    LogoutAllView as KnoxLogoutAllView,
-)
 
 from safers.users.exceptions import AuthenticationException
 from safers.users.models import User, Oauth2User, AUTH_USER_FIELDS, AUTH_PROFILE_FIELDS, AUTH_TOKEN_FIELDS
@@ -253,35 +244,3 @@ class RegisterView(GenericAPIView):
             profile_serializer.update(user.profile, profile_data)
 
         return Response(data=UserSerializerLite(user).data)
-
-
-class LogoutView(KnoxLogoutView):
-    @swagger_auto_schema(
-        responses={status.HTTP_204_NO_CONTENT: None},
-    )
-    def post(self, request, **kwargs):
-        user = request.user
-
-        user_logged_out.send(sender=User, request=request, user=user)
-
-        # first delete oauth2 token...
-        # TODO
-
-        # then delete knox token...
-        super().post(request, **kwargs)
-
-
-class LogoutAllView(KnoxLogoutAllView):
-    @swagger_auto_schema(
-        responses={status.HTTP_204_NO_CONTENT: None},
-    )
-    def post(self, request, **kwargs):
-        user = request.user
-
-        user_logged_out.send(sender=User, request=request, user=user)
-
-        # first delete oauth2 token...
-        # TODO
-
-        # then delete all knox tokens...
-        super().post(request, **kwargs)
