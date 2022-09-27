@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-from django.db import ProgrammingError
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
@@ -31,6 +30,7 @@ from dj_rest_auth.registration.views import (
 
 from safers.users.models import Role, Organization
 from safers.users.serializers import KnoxTokenSerializer, JWTSerializer, RegisterSerializer
+from safers.users.utils import AUTH_CLIENT
 
 #################
 # swagger stuff #
@@ -171,7 +171,22 @@ class LoginView(DjRestAuthLoginView):
     name="get",
 )
 class LogoutView(DjRestAuthLogoutView):
-    pass
+    def logout(self, request):
+
+        # first delete the remote user data, etc...
+        if request.user.is_remote:
+            AUTH_CLIENT.logout(_global=False)
+            auth_user = request.user.auth_user
+            auth_user.delete()
+
+        # then delete local token...
+        try:
+            request.auth.delete()
+        except Exception as e:
+            pass
+
+        # super() will do the rest...
+        return super().logout(request)
 
 
 class PasswordChangeView(DjRestAuthPasswordChangeView):
