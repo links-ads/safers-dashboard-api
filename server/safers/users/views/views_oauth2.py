@@ -227,7 +227,9 @@ class RegisterView(GenericAPIView):
                 field: [error.get("message") for error in errors]
                 for field, errors in response.error_response.get("fieldErrors", {}).items()
             }  # yapf: disable
-            raise APIException(exception_message)
+            return Response(
+                exception_message, status=status.HTTP_400_BAD_REQUEST
+            )
 
         auth_user_data = response.success_response["user"]
         user, created_user = User.objects.get_or_create(
