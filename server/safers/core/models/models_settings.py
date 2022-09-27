@@ -26,6 +26,11 @@ class SafersSettings(SingletonMixin, models.Model):
         help_text=_("Allow users to register w/ Safers."),
     )
 
+    allow_password_change = models.BooleanField(
+        default=False,
+        help_text=_("Allow users to change their password via the dashboard.")
+    )
+
     require_verification = models.BooleanField(
         default=True,
         help_text=_(
