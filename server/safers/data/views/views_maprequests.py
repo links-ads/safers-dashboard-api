@@ -200,11 +200,12 @@ class MapRequestViewSet(
 
         geoserver_layer_query_params = urlencode(
             {
-                "time": "{time}",
-                "layers": "{name}",
                 "service": "WMS",
+                "version": "1.1.0",
                 "request": "GetMap",
                 "srs": "EPSG:4326",
+                "time": "{time}",
+                "layers": "{name}",
                 "bbox": "{bbox}",
                 "transparent": True,
                 "width": 512,
