@@ -165,6 +165,7 @@ class MapRequestAdmin(gis_admin.GeoModelAdmin):
         "request_id",
         "title",
         "category",
+        "user",
         "created",
         "get_statuses_for_list_view",
     )
