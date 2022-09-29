@@ -29,6 +29,7 @@ class NotificationSerializer(serializers.ModelSerializer):
             "category",
             "event",
             "description",
+            "country",
             "geometry",
             "center",
             "bounding_box",

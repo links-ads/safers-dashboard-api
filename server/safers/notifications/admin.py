@@ -59,6 +59,7 @@ class NotificationAdmin(gis_admin.GeoModelAdmin):
         "category",
         "event",
         "description",
+        "country",
         "message",
         # "geometry_collection",
         "center",
