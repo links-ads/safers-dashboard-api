@@ -8,22 +8,33 @@ from django.utils.translation import gettext_lazy as _
 
 from safers.core.mixins import HashableMixin
 from safers.core.models import Country
-from safers.core.utils import cap_area_to_geojson
+from safers.core.utils import CaseInsensitiveTextChoices, cap_area_to_geojson
 from safers.rmq.exceptions import RMQException
 
 # NOTIFICATIONS COME FROM THE SEMANTIC-REASONING-MODULE
 # THEY ARE READ FROM RMQ AND DO NOT PERSIST OUTSIDE THE DASHBOARD
 
 
-class NotificationSource(models.TextChoices):
+class NotificationSourceChoices(CaseInsensitiveTextChoices):
     DSS = "DSS", _("Decision Support System")
     # REPORT = "REPORT", _("Report (from chatbot)")
     # EFFIS_FWI = "EFFIS_FWI", _("FWI (from netCDF)")
 
 
-class NotificationType(models.TextChoices):
+class NotificationTypeChoices(CaseInsensitiveTextChoices):
     RECOMENDATION = "RECOMMENDATION", _("Recommendation (from CERTH)")
     SYSTEM = "SYSTEM NOTIFICATION", _("System Update")
+
+
+class NotificationScopeChoices(CaseInsensitiveTextChoices):
+    PUBLIC = "Public", _("Public")
+    RESTRICTED = "Restricted", _("Restricted")
+
+
+class NotificationRestrictionChoices(CaseInsensitiveTextChoices):
+    CITIZEN = "Citizen", _("Citizen")
+    PROFESSIONAL = "Professional", _("Professional")
+    ORGANIZATION = "Organization", _("Organization")
 
 
 class NotificationManager(models.Manager):
@@ -104,18 +115,37 @@ class Notification(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     type = models.CharField(
-        max_length=128, choices=NotificationType.choices, blank=True, null=True
+        max_length=128,
+        choices=NotificationTypeChoices.choices,
+        blank=True,
+        null=True,
     )
 
     timestamp = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=128, blank=True, null=True)
     source = models.CharField(
         max_length=128,
-        choices=NotificationSource.choices,
+        choices=NotificationSourceChoices.choices,
         blank=True,
-        null=True
+        null=True,
     )
-    scope = models.CharField(max_length=128, blank=True, null=True)
+
+    scope = models.CharField(
+        max_length=128,
+        choices=NotificationScopeChoices.choices,
+        blank=True,
+        null=True,
+    )
+    restriction = models.CharField(
+        max_length=128,
+        choices=NotificationRestrictionChoices.choices,
+        blank=True,
+        null=True,
+    )
+    target_organizations = models.ManyToManyField(
+        "users.organization",
+        related_name="targeted_notifications",
+    )
 
     category = models.CharField(max_length=128, blank=True, null=True)
     event = models.CharField(max_length=128, blank=True, null=True)
@@ -180,7 +210,7 @@ class Notification(models.Model):
 
         message_sender = message_body["sender"]
         if message_sender == "DSS":
-            notifications_type = NotificationType.RECOMENDATION
+            notifications_type = NotificationTypeChoices.RECOMENDATION
         else:
             notifications_type = None
 
@@ -188,20 +218,47 @@ class Notification(models.Model):
 
         try:
             with transaction.atomic():
+
+                message_timestamp = message_body.get("sent")
+                message_status = message_body.get("status")
+                message_target_organizations = message_body.get(
+                    "organizationIds", []
+                )
+                message_source = message_body.get("source")
+                if message_source:
+                    message_source = NotificationSourceChoices.find_enum(
+                        message_source
+                    )
+                message_scope = message_body.get("scope")
+                if message_scope:
+                    message_scope = NotificationScopeChoices.find_enum(
+                        message_scope
+                    )
+                message_restriction = message_body.get("restriction")
+                if message_restriction:
+                    message_restriction = NotificationRestrictionChoices.find_enum(
+                        message_restriction
+                    )
+
                 for info in message_body["info"]:
                     from safers.notifications.serializers import NotificationSerializer
+
                     serializer = NotificationSerializer(
                         data={
                             "type":
                                 notifications_type,
                             "timestamp":
-                                message_body.get("sent"),
+                                message_timestamp,
                             "status":
-                                message_body.get("status"),
+                                message_status,
                             "source":
-                                message_body.get("source"),
+                                message_source,
                             "scope":
-                                message_body.get("scope"),
+                                message_scope,
+                            "restriction":
+                                message_restriction,
+                            "target_organizations":
+                                message_target_organizations,
                             "category":
                                 info.get("category"),
                             "event":
@@ -237,25 +294,29 @@ class Notification(models.Model):
 ########################
 
 {
-    "identifier": "identifier",
-    "sender": "sem",
-    "sent": "2022-04-13T14:28:25+03:00",
-    "status": "Actual",
-    "msgType": "Notification",
-    "source": "DSS",
-    "scope": "Public",
-    "code": [],
-    "info": [
+  "identifier": "identifier",
+  "sender": "DSS",
+  "sent": "2022-09-28T13:45:58+03:00",
+  "msgType": "Notification",
+  "status": "Actual",
+  "areaID": "211",
+  "region": "Corsica",
+  "source": "DSS",
+  "scope": "Restricted",
+  "restriction": "Professional",
+  "organizationIds": [],
+  "code": [],
+  "info": [
+    {
+      "area": [
         {
-            "category": "Fire ",
-            "event": "Fire detection in area",
-            "description": "Pay attention to the wind direction. Fires spread with the wind.",
-            "area": [
-                {
-                    "areaDesc": "areaDesc",
-                    "point" : "40.648142, 22.95255"
-                }
-            ]
+          "areaDesc": "areaDesc",
+          "polygon": "42.909770773, 9.339331933 42.923494631, 9.358474376 42.957357303, 9.348033236 43.000491352, 9.343082236 43.007246911, 9.372758131 43.010004167, 9.419857226 42.987529435, 9.458136133 42.965524928, 9.45104186 42.935464638, 9.467841961 42.797585819, 9.490507822 42.767852831, 9.469360897 42.732872041, 9.457241014 42.703024996, 9.454018538 42.687716432, 9.444429026 42.666910654, 9.447281641 42.624991114, 9.473240635 42.586124143, 9.39244914 42.556359212, 9.361312838 42.610289272, 9.372093069 42.899922733, 9.402125854 42.909770773, 9.339331933"
         }
-    ]
+      ],
+      "category": "Met",
+      "description": "Identify subdivision secondary emergency access.",
+      "event": "Probability of fire"
+    }
+  ]
 }  # yapf: disable
