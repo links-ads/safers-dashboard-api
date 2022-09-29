@@ -7,6 +7,7 @@ from django.contrib.gis.geos import GeometryCollection
 from django.utils.translation import gettext_lazy as _
 
 from safers.core.mixins import HashableMixin
+from safers.core.models import Country
 from safers.core.utils import cap_area_to_geojson
 from safers.rmq.exceptions import RMQException
 
@@ -119,6 +120,11 @@ class Notification(models.Model):
     category = models.CharField(max_length=128, blank=True, null=True)
     event = models.CharField(max_length=128, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    country = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+    )  # storing this as a string rather than a FK
 
     message = models.JSONField(
         blank=True, null=True, help_text=_("raw message content")
@@ -154,6 +160,13 @@ class Notification(models.Model):
         self.bounding_box = GeometryCollection(
             *geometries_geometries.values_list("bounding_box", flat=True)
         ).envelope
+
+        country = Country.objects.filter(
+            # geometry__intersects=self.geometry_collection  # TODO: if geometry_collection is malformed can potentially get "GEOSIntersects: TopologyException: side location conflict"
+            geometry__intersects=self.center
+        ).first()
+        self.country = country.admin_name if country else None
+
         if force_save:
             self.save()
 
