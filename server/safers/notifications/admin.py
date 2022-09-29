@@ -56,6 +56,7 @@ class NotificationAdmin(gis_admin.GeoModelAdmin):
         "status",
         "source",
         "scope",
+        "restriction",
         "category",
         "event",
         "description",
@@ -73,12 +74,16 @@ class NotificationAdmin(gis_admin.GeoModelAdmin):
     inlines = (NotificationGeometryAdminInline, )
     list_display = (
         "title",
+        "scope",
+        "restriction",
         "timestamp",
         "created",
     )
     list_filter = (
         "source",
         "type",
+        "scope",
+        "restriction",
     )
     ordering = ("-created", )
     readonly_fields = (

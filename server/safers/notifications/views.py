@@ -22,7 +22,7 @@ from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector, C
 
 from safers.users.permissions import IsRemote
 
-from safers.notifications.models import Notification, NotificationSource, NotificationType
+from safers.notifications.models import Notification, NotificationSourceChoices, NotificationTypeChoices
 from safers.notifications.serializers import NotificationSerializer
 
 
@@ -81,9 +81,11 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 
     order = filters.OrderingFilter(fields=(("timestamp", "date"), ))
 
-    source = CaseInsensitiveChoiceFilter(choices=NotificationSource.choices)
+    source = CaseInsensitiveChoiceFilter(
+        choices=NotificationSourceChoices.choices
+    )
 
-    type = CaseInsensitiveChoiceFilter(choices=NotificationType.choices)
+    type = CaseInsensitiveChoiceFilter(choices=NotificationTypeChoices.choices)
 
     start_date = filters.DateTimeFilter(
         field_name="timestamp", lookup_expr="date__gte"
@@ -209,7 +211,7 @@ def notification_sources_view(request):
     """
     Returns the list of possible notification sources.
     """
-    return Response(NotificationSource.values, status=status.HTTP_200_OK)
+    return Response(NotificationSourceChoices.values, status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(
@@ -228,4 +230,4 @@ def notification_types_view(request):
     """
     Returns the list of possible notification types.
     """
-    return Response(NotificationType.values, status=status.HTTP_200_OK)
+    return Response(NotificationTypeChoices.values, status=status.HTTP_200_OK)

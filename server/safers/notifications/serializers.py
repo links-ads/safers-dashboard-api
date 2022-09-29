@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
+from safers.users.models import Organization
+
 from safers.notifications.models import Notification, NotificationGeometry
 
 
@@ -26,6 +28,8 @@ class NotificationSerializer(serializers.ModelSerializer):
             "status",
             "source",
             "scope",
+            "restriction",
+            "target_organizations",
             "category",
             "event",
             "description",
@@ -36,6 +40,11 @@ class NotificationSerializer(serializers.ModelSerializer):
             "message",
         )
 
+    target_organizations = serializers.SlugRelatedField(
+        slug_field="organization_id",
+        many=True,
+        queryset=Organization.objects.all()
+    )
     geometry = NotificationGeometrySerializer(many=True, source="geometries")
     center = serializers.SerializerMethodField()
     bounding_box = serializers.SerializerMethodField()
