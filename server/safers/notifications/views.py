@@ -36,6 +36,8 @@ _notification_schema = openapi.Schema(
         "status": "Actual",
         "source": "EFFIS_FWI",
         "scope": "Public",
+        "restriction": None,
+        "target_organizations": [],
         "category": "Met",
         "event": "Probability of fire",
         "description": "Do not light open-air barbecues in forest.",
