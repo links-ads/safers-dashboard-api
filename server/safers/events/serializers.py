@@ -5,7 +5,7 @@ from rest_framework_gis import serializers as gis_serializers
 
 from safers.alerts.models import Alert
 
-from safers.events.models import Event, EventStatus
+from safers.events.models import Event, EventStatusChoices
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -80,9 +80,9 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_status(self, obj):
         if obj.closed:
-            return EventStatus.CLOSED
+            return EventStatusChoices.CLOSED
         elif obj.ongoing:
-            return EventStatus.ONGOING
+            return EventStatusChoices.ONGOING
 
     def get_alerts(self, obj):
         """
