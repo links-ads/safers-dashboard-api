@@ -184,4 +184,4 @@ def mission_statuses_view(request):
     """
     Returns the list of possible Mission statuses.
     """
-    return Response(MissionStatusTypes.values, status=status.HTTP_200_OK)
+    return Response(MissionStatusChoices.values, status=status.HTTP_200_OK)
