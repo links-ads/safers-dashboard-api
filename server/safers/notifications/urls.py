@@ -6,6 +6,7 @@ from safers.notifications.views import (
     NotificationViewSet,
     notification_sources_view,
     notification_types_view,
+    notification_scopes_restrictions_view,
 )
 
 api_router = routers.DefaultRouter()
@@ -23,6 +24,11 @@ api_urlpatterns = [
         "notifications/types",
         notification_types_view,
         name="notification-types-list"
+    ),
+    path(
+        "notifications/scopes-restrictions",
+        notification_scopes_restrictions_view,
+        name="notification-scopes-restrictions-list"
     ),
 ]
 

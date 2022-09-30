@@ -22,7 +22,7 @@ from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector, C
 
 from safers.users.permissions import IsRemote
 
-from safers.notifications.models import Notification, NotificationSourceChoices, NotificationTypeChoices
+from safers.notifications.models import Notification, NotificationSourceChoices, NotificationTypeChoices, NotificationScopeChoices, NotificationRestrictionChoices
 from safers.notifications.serializers import NotificationSerializer
 
 
@@ -38,6 +38,7 @@ _notification_schema = openapi.Schema(
         "scope": "Public",
         "restriction": None,
         "target_organizations": [],
+        "scopeRestriction": "Public",
         "category": "Met",
         "event": "Probability of fire",
         "description": "Do not light open-air barbecues in forest.",
@@ -76,7 +77,9 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         fields = {
             "status",
             "source",
+            "type",
             "scope",
+            "restriction",
             "category",
             "event",
         }
@@ -86,9 +89,23 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
     source = CaseInsensitiveChoiceFilter(
         choices=NotificationSourceChoices.choices
     )
-
     type = CaseInsensitiveChoiceFilter(choices=NotificationTypeChoices.choices)
+    scope = CaseInsensitiveChoiceFilter(
+        choices=NotificationScopeChoices.choices
+    )
+    restriction = CaseInsensitiveChoiceFilter(
+        choices=NotificationRestrictionChoices.choices
+    )
 
+    scopeRestriction = CaseInsensitiveChoiceFilter(
+        choices=[
+            (
+                NotificationScopeChoices.PUBLIC.value,
+                NotificationScopeChoices.PUBLIC.label
+            ),
+        ] + NotificationRestrictionChoices.choices,
+        method="get_scope_restriction"
+    )
     start_date = filters.DateTimeFilter(
         field_name="timestamp", lookup_expr="date__gte"
     )
@@ -112,6 +129,13 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
             "If default_bbox is False and no bbox is provided then no bbox filter will be passed to the API"
         )
     )
+
+    def get_scope_restriction(self, queryset, name, value):
+        if value in NotificationScopeChoices:
+            return queryset.filter(scope=value)
+        elif value in NotificationRestrictionChoices:
+            return queryset.filter(restriction=value)
+        return queryset
 
     def bbox_method(self, queryset, name, value):
 
@@ -233,3 +257,26 @@ def notification_types_view(request):
     Returns the list of possible notification types.
     """
     return Response(NotificationTypeChoices.values, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    responses={
+        status.HTTP_200_OK:
+            openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_STRING)
+            )
+    },
+    method="get"
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def notification_scopes_restrictions_view(request):
+    """
+    Returns the list of possible notification scope/restriction types.
+    """
+    scopes = [
+        NotificationScopeChoices.PUBLIC,
+    ]  # no need to include "Restricted" scope
+    restrictions = NotificationRestrictionChoices.values
+    return Response(scopes + restrictions, status=status.HTTP_200_OK)

@@ -29,6 +29,7 @@ class NotificationSerializer(serializers.ModelSerializer):
             "source",
             "scope",
             "restriction",
+            "scopeRestriction",
             "target_organizations",
             "category",
             "event",
@@ -40,10 +41,11 @@ class NotificationSerializer(serializers.ModelSerializer):
             "message",
         )
 
+    scopeRestriction = serializers.CharField(source="scope_restriction")
     target_organizations = serializers.SlugRelatedField(
         slug_field="organization_id",
         many=True,
-        queryset=Organization.objects.all()
+        queryset=Organization.objects.all(),
     )
     geometry = NotificationGeometrySerializer(many=True, source="geometries")
     center = serializers.SerializerMethodField()
