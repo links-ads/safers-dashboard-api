@@ -3,7 +3,7 @@ import json
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from safers.chatbot.models import Mission, MissionStatusTypes
+from safers.chatbot.models import Mission, MissionStatusChoices
 from .serializers_base import ChatbotViewSerializer, ChatbotDateTimeFormats
 
 
@@ -20,7 +20,7 @@ class MissionViewSerializer(ChatbotViewSerializer):
     }  # yapf:disable
 
     status = serializers.MultipleChoiceField(
-        choices=MissionStatusTypes.choices,
+        choices=MissionStatusChoices.choices,
         required=False,
     )
 
@@ -91,7 +91,7 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
     )
 
     currentStatus = serializers.CharField(
-        source="status", default=MissionStatusTypes.CREATED
+        source="status", default=MissionStatusChoices.CREATED
     )
 
     duration = serializers.SerializerMethodField()

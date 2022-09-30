@@ -18,7 +18,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from safers.users.authentication import ProxyAuthentication
 
-from safers.chatbot.models import Mission, MissionStatusTypes
+from safers.chatbot.models import Mission, MissionStatusChoices
 from safers.chatbot.serializers import MissionSerializer, MissionCreateSerializer, MissionViewSerializer
 
 from .views_base import ChatbotView, parse_datetime, parse_none
@@ -99,7 +99,9 @@ class MissionListView(MissionView):
                 end_inclusive=data["duration"].get(
                     "upperBoundIsInclusive", False
                 ),
-                status=data.get("currentStatus"),
+                status=MissionStatusChoices.find_enum(
+                    data.get("currentStatus")
+                ),
                 reports=[{
                     "id": report.get("id"),
                     "name": f"Report {report.get('id')}",
@@ -182,4 +184,4 @@ def mission_statuses_view(request):
     """
     Returns the list of possible Mission statuses.
     """
-    return Response(MissionStatusTypes.values, status=status.HTTP_200_OK)
+    return Response(MissionStatusChoices.values, status=status.HTTP_200_OK)

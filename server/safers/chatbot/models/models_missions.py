@@ -4,7 +4,7 @@ from django.contrib.gis.db import models as gis_models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from safers.core.utils import validate_schema
+from safers.core.utils import validate_schema, SpaceInsensitiveTextChoices
 
 
 def validate_reports(value):
@@ -27,13 +27,13 @@ def validate_reports(value):
     return validate_schema(value, reports_schema)
 
 
-class MissionSourceTypes(models.TextChoices):
+class MissionSourceChoices(models.TextChoices):
     CHATBOT = "Chatbot", _("Chatbot"),
 
 
-class MissionStatusTypes(models.TextChoices):
+class MissionStatusChoices(SpaceInsensitiveTextChoices):
     CREATED = "Created", _("Created")
-    TAKEN_IN_CHARGE = "TakenInCharge", _("Taken In Charge")
+    TAKEN_IN_CHARGE = "Taken In Charge", _("Taken In Charge")
     COMPLETED = "Completed", _("Completed")
     DELETED = "Deleted", _("Deleted")
 
@@ -59,13 +59,13 @@ class Mission(gis_models.Model):
     end_inclusive = models.BooleanField(default=True)
     source = models.CharField(
         max_length=64,
-        choices=MissionSourceTypes.choices,
-        default=MissionSourceTypes.CHATBOT,
+        choices=MissionSourceChoices.choices,
+        default=MissionSourceChoices.CHATBOT,
     )
     status = models.CharField(
         max_length=64,
-        choices=MissionStatusTypes.choices,
-        default=MissionStatusTypes.CREATED,
+        choices=MissionStatusChoices.choices,
+        default=MissionStatusChoices.CREATED,
     )
     reports = models.JSONField(
         blank=True,
