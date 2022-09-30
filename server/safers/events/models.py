@@ -19,9 +19,9 @@ from safers.core.models import Country
 EVENT_SEQUENCE_GENERATOR = Sequence("events")
 
 
-class EventStatus(models.TextChoices):
-    ONGOING = "ONGOING", _("Ongoing")
-    CLOSED = "CLOSED", _("Closed")
+class EventStatusChoices(models.TextChoices):
+    ONGOING = "Ongoing", _("Ongoing")
+    CLOSED = "Closed", _("Closed")
 
 
 class EventManager(models.Manager):

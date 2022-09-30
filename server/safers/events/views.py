@@ -23,7 +23,7 @@ from safers.core.filters import DefaultFilterSetMixin, MultiFieldOrderingFilter,
 
 from safers.users.permissions import IsRemote
 
-from safers.events.models import Event, EventStatus
+from safers.events.models import Event, EventStatusChoices
 from safers.events.serializers import EventSerializer
 
 ###########
@@ -86,7 +86,9 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
     )
 
     status = filters.MultipleChoiceFilter(
-        method="status_method", choices=EventStatus.choices, conjoined=True
+        method="status_method",
+        choices=EventStatusChoices.choices,
+        conjoined=True,
     )
 
     start_date = filters.DateFilter(
@@ -117,7 +119,7 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         filter_kwargs = {
             # if end_date is None then the status must be ONGOING
             # if end_date is not None then the status must be CLOSED
-            "end_date__isnull": value == EventStatus.ONGOING
+            "end_date__isnull": value == EventStatusChoices.ONGOING
             for value in values
         }
         return queryset.filter(**filter_kwargs)
