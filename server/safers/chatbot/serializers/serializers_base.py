@@ -33,7 +33,7 @@ class ChatbotViewSerializer(serializers.Serializer):
     search_value = serializers.CharField(required=False)
     search_regex = serializers.BooleanField(default=False, required=False)
 
-    # order
+    # order  # no need for ordering chatbot responses on the backend
 
     start = UnderspecifiedDateTimeField(
         input_formats=ChatbotDateTimeFormats,

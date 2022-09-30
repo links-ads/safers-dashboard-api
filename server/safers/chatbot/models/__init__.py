@@ -7,7 +7,8 @@ from .models_actions import (
 from .models_communications import Communication
 from .models_missions import (
     Mission,
-    MissionStatusTypes,
+    MissionStatusChoices,
+    MissionSourceChoices,
 )
 from .models_reports import (
     Report,
