@@ -206,6 +206,14 @@ class User(AbstractUser):
         return self.auth_id is not None
 
     @property
+    def is_citizen(self):
+        return self.role and self.role.name == "citizen"
+
+    @property
+    def is_professional(self):
+        return self.role and self.role.name != "citizen"
+
+    @property
     def auth_user_data(self):
 
         try:

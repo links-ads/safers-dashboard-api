@@ -18,6 +18,7 @@ from django_filters import rest_framework as filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from safers.core.decorators import swagger_fake
 from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector, CaseInsensitiveChoiceFilter
 
 from safers.users.permissions import IsRemote
@@ -198,8 +199,9 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsRemote]
     serializer_class = NotificationSerializer
 
+    @swagger_fake(Notification.objects.none())
     def get_queryset(self):
-        queryset = Notification.objects.all()
+        queryset = Notification.objects.filter_by_user(self.request.user)
         return queryset.prefetch_related("geometries")
 
     def get_object(self):

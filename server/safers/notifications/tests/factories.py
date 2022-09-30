@@ -7,7 +7,7 @@ from faker import Faker
 from safers.core.tests.providers import GeometryProvider
 from safers.core.tests.utils import optional_declaration
 
-from safers.notifications.models import Notification, NotificationGeometry
+from safers.notifications.models import Notification, NotificationGeometry, NotificationRestrictionChoices, NotificationScopeChoices, NotificationSourceChoices, NotificationTypeChoices
 
 fake = Faker()
 
@@ -31,16 +31,39 @@ class NotificationFactory(factory.django.DjangoModelFactory):
         model = Notification
 
     timestamp = FactoryFaker("date_time_this_month")
-    status = FactoryFaker("word")
-    source = FactoryFaker("word")
-    scope = FactoryFaker("word")
+    type = FactoryFaker(
+        "random_element", elements=NotificationTypeChoices.values
+    )
+    status = "Actual"
+    source = FactoryFaker(
+        "random_element", elements=NotificationSourceChoices.values
+    )
+    scope = FactoryFaker(
+        "random_element", elements=NotificationScopeChoices.values
+    )
     category = FactoryFaker("word")
     event = FactoryFaker("word")
-    urgency = FactoryFaker("word")
-    severity = FactoryFaker("word")
-    certainty = FactoryFaker("word")
     description = FactoryFaker("sentence")
+    country = FactoryFaker("country")
     message = FactoryFaker("pydict", value_types=["str"])
+
+    @factory.lazy_attribute
+    def restriction(self):
+        if self.scope == NotificationScopeChoices.RESTRICTED:
+            return fake.random_element(
+                elements=NotificationRestrictionChoices.values
+            )
+
+    @factory.post_generation
+    def target_organizations(obj, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if obj.restriction == NotificationRestrictionChoices.ORGANIZATION:
+
+            if extracted:
+                for organization in extracted:
+                    obj.target_organizations.add(organization)
 
     @factory.post_generation
     def geometries(obj, create, extracted, **kwargs):
