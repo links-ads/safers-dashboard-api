@@ -167,6 +167,17 @@ class Notification(models.Model):
     center = gis_models.PointField(blank=True, null=True)
 
     @property
+    def scope_restriction(self):
+        """
+        returns the most-specific of scope / restriction for this notification
+        """
+        if self.scope == NotificationScopeChoices.PUBLIC:
+            return self.scope
+        elif self.scope == NotificationScopeChoices.RESTRICTED:
+            if self.restriction in NotificationRestrictionChoices:
+                return self.restriction
+
+    @property
     def title(self):
         title = f"Notification {self.id.hex[:7]}"
         if self.category:
