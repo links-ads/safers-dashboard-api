@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 
 from rest_framework import serializers
 
-from safers.users.models import Role, Organization
+from safers.users.models import Role, Organization, Oauth2User
 
 
 class AuthenticateSerializer(serializers.Serializer):
@@ -70,3 +70,9 @@ class RegisterViewSerializer(serializers.Serializer):
         if value is not True:
             raise serializers.ValidationError("Terms must be accepted")
         return value
+
+
+class Oauth2UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Oauth2User
+        fields = ("expires_in", )

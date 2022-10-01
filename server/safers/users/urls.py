@@ -7,6 +7,7 @@ from rest_framework import routers
 from .views import (
     Oath2LoginView,
     Oauth2RegisterView,
+    Oauth2RefreshView,
     LoginView,
     LogoutView,
     PasswordChangeView,
@@ -28,6 +29,7 @@ api_urlpatterns = [
     path(
         "oauth2/register", Oauth2RegisterView.as_view(), name="oauth2-register"
     ),
+    path("oauth2/refresh", Oauth2RefreshView.as_view(), name="oauth2-refresh"),
     path("users/<slug:user_id>", UserView.as_view(), name="users"),
     path("organizations/", OrganizationView.as_view(), name="organizations"),
     path("roles/", RoleView.as_view(), name="roles"),

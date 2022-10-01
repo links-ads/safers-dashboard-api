@@ -8,7 +8,7 @@ from django.templatetags.static import static
 
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.utils.encoders import JSONEncoder
 
@@ -17,17 +17,23 @@ from drf_yasg.utils import swagger_auto_schema
 
 from safers.users.exceptions import AuthenticationException
 from safers.users.models import User, Oauth2User, AUTH_USER_FIELDS, AUTH_PROFILE_FIELDS, AUTH_TOKEN_FIELDS
-from safers.users.serializers import AuthenticateSerializer, Oauth2RegisterViewSerializer, KnoxTokenSerializer, UserSerializerLite, UserProfileSerializer
+from safers.users.permissions import IsRemote
+from safers.users.serializers import (
+    KnoxTokenSerializer,
+    Oauth2AuthenticateSerializer,
+    Oauth2RegisterViewSerializer,
+    Oauth2UserSerializer,
+    UserSerializerLite,
+    UserProfileSerializer,
+)
 from safers.users.utils import AUTH_CLIENT, create_knox_token
 from safers.users.views import synchronize_profile
 """
-code to authenticate using OAUTH2
-(SHOULD EVENTUALLY REPLACE dj-rest-auth, ETC. IN "views_auth.py")
-
+Authentication w/ Oauth2:
 1. client makes request to oauth2 provider to get code
 2. that redirects back to client incuding code in GET
 3. if code is in GET, client POSTS code to AuthenticateView
-4. that gets user details and generates token for client
+4. that view gets user details and generates token for client
 """
 
 
@@ -44,7 +50,7 @@ class LoginView(GenericAPIView):
     """
 
     permission_classes = [AllowAny]
-    serializer_class = AuthenticateSerializer
+    serializer_class = Oauth2AuthenticateSerializer
 
     @property
     def is_swagger(self):
@@ -180,8 +186,12 @@ _register_schema = openapi.Schema(
 )
 
 
-# TODO: DEAL W/ ORGANIZATIONS & ROLES FROM FA
 class RegisterView(GenericAPIView):
+    """
+    Registers a user w/ the Oauth2 Server.
+    On success, creates a _local_ user for the dashboard.
+    Then updates the related UserProfile object w/ some of the details recieved from Oauth2.
+    """
     permission_classes = [AllowAny]
     serializer_class = Oauth2RegisterViewSerializer
 
@@ -191,20 +201,26 @@ class RegisterView(GenericAPIView):
     )
     def post(self, request, *args, **kwargs):
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        view_serializer = self.get_serializer(data=request.data)
+        view_serializer.is_valid(raise_exception=True)
 
         request_params = {
             "registration": {
                 "applicationId": settings.FUSION_AUTH_CLIENT_ID,
             },
             "user": {
-                "email": serializer.validated_data["email"],
-                "username": serializer.validated_data["email"].split("@")[0],
-                "password": serializer.validated_data["password"],
-                "firstName": serializer.validated_data["first_name"],
-                "lastName": serializer.validated_data["last_name"],
-                "twoFactorEnabled": False,
+                "email":
+                    view_serializer.validated_data["email"],
+                "username":
+                    view_serializer.validated_data["email"].split("@")[0],
+                "password":
+                    view_serializer.validated_data["password"],
+                "firstName":
+                    view_serializer.validated_data["first_name"],
+                "lastName":
+                    view_serializer.validated_data["last_name"],
+                "twoFactorEnabled":
+                    False,
             },
         }
         response = AUTH_CLIENT.register(request_params)
@@ -226,8 +242,8 @@ class RegisterView(GenericAPIView):
         user, created_user = User.objects.get_or_create(
             auth_id=auth_user_data["id"],
             defaults=dict(
-                organization=serializer.validated_data["organization"],
-                role=serializer.validated_data["role"],
+                organization=view_serializer.validated_data["organization"],
+                role=view_serializer.validated_data["role"],
                 **{
                     AUTH_USER_FIELDS[k]: v
                     for k, v in auth_user_data.items() if k in AUTH_USER_FIELDS
@@ -243,4 +259,40 @@ class RegisterView(GenericAPIView):
             }
             profile_serializer.update(user.profile, profile_data)
 
-        return Response(data=UserSerializerLite(user).data)
+        user_serializer = UserSerializerLite(user)
+
+        return Response(data=user_serializer.data)
+
+
+class RefreshView(GenericAPIView):
+    permission_classes = [IsAuthenticated, IsRemote]
+    serializer_class = Oauth2UserSerializer
+
+    def post(self, request, *args, **kwargs):
+        """
+        Refreshes the access_token and returns the serialized Oauth2User.
+        (The only field exposed by Oauth2UserSerializer is "expires_in".)
+        """
+        user = request.user
+        auth_user = user.auth_user
+
+        response = AUTH_CLIENT.exchange_refresh_token_for_access_token(
+            refresh_token=auth_user.refresh_token,
+            client_id=settings.FUSION_AUTH_CLIENT_ID,
+            client_secret=settings.FUSION_AUTH_CLIENT_SECRET,
+        )
+        if not response.was_successful():
+            raise AuthenticationException(response.error_response)
+
+        auth_token_data = response.success_response
+        for k, v in auth_token_data.items():
+            if k in AUTH_TOKEN_FIELDS:
+                setattr(auth_user, AUTH_TOKEN_FIELDS[k], v)
+            auth_user.save()
+
+        SerializerClass = self.get_serializer_class()
+        serializer = SerializerClass(
+            auth_user, context=self.get_serializer_context()
+        )
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
