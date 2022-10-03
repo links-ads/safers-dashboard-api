@@ -16,7 +16,7 @@ from safers.events.models import Event
 from safers.cameras.models import CameraMedia
 
 from safers.users.models import User, Organization, Role
-from safers.users.serializers import UserProfileSerializer
+from safers.users.serializers import Oauth2UserSerializer, UserProfileSerializer
 
 
 class UserSerializerLite(serializers.ModelSerializer):
@@ -55,6 +55,7 @@ class UserSerializer(UserSerializerLite):
             "role",
             "default_aoi",
             "profile",
+            "oauth2",
         )
 
     organization = serializers.PrimaryKeyRelatedField(
@@ -70,6 +71,8 @@ class UserSerializer(UserSerializerLite):
     )
 
     profile = UserProfileSerializer()
+
+    oauth2 = Oauth2UserSerializer(source="auth_user")
 
     @property
     def errors(self):
