@@ -183,7 +183,7 @@ class MapRequest(gis_models.Model):
 
     geometry = gis_models.GeometryField(
         blank=True, null=True
-    )  # TODO: CAN THIS BE A GeometryCollectionField
+    )  # note: this can be a GeometryCollection
 
     geometry_wkt = models.TextField(
         blank=True,
