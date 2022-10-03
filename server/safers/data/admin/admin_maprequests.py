@@ -132,6 +132,7 @@ class MapRequestAdminForm(ModelForm):
             "parameters",
             "geometry",
             "geometry_wkt",
+            "geometry_features",
             "geometry_extent",
             "geometry_extent_str",
             "user",
@@ -140,7 +141,10 @@ class MapRequestAdminForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in [
-            "geometry_wkt", "geometry_extent", "geometry_extent_str"
+            "geometry_wkt",
+            "geometry_features",
+            "geometry_extent",
+            "geometry_extent_str"
         ]:
             self.fields[field_name].widget.attrs.update({
                 "readonly": True, "disbled": True

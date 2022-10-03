@@ -53,6 +53,28 @@ class MapRequestStatus(models.TextChoices):
     AVAILABLE = "AVAILABLE", _("Available")
 
 
+def geometry_to_feature_collection(geometry):
+    """
+    returns geometry as a FeatureCollection
+    """
+    geojson = json.loads(geometry.geojson)
+    if geojson.get("type") == "GeometryCollection":
+        feature_geometries = geojson.get("geometries")
+    else:
+        feature_geometries = [geojson]
+    return {
+        "type":
+            "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": feature_geometry,
+            }
+            for feature_geometry in feature_geometries
+        ]
+    }  # yapf: disable
+
+
 ##################
 # managers, etc. #
 ##################
@@ -191,6 +213,12 @@ class MapRequest(gis_models.Model):
         help_text=_("WKT representation of geometry"),
     )
 
+    geometry_features = models.JSONField(
+        blank=True,
+        null=True,
+        help_text=_("FeatureCollection representation of geometry"),
+    )
+
     geometry_extent = ArrayField(
         models.FloatField(),
         blank=True,
@@ -227,10 +255,15 @@ class MapRequest(gis_models.Model):
         if not self.geometry:
             self.geometry_wkt = None
             self.geometry_extent = None
+            self.geometry_extent_str = None
+            self.geometry_features = None
         else:
             self.geometry_wkt = self.geometry.wkt
             self.geometry_extent = self.geometry.extent
             self.geometry_extent_str = ",".join(map(str, self.geometry_extent))
+            self.geometry_features = geometry_to_feature_collection(
+                self.geometry
+            )
 
         return super().save(*args, **kwargs)
 
