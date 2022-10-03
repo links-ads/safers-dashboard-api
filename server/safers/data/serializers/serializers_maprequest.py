@@ -1,3 +1,4 @@
+import json
 from itertools import groupby
 
 from django.contrib.auth import get_user_model
@@ -148,6 +149,7 @@ class MapRequestSerializer(serializers.ModelSerializer):
             "parameters",
             "geometry",
             "geometry_wkt",
+            "geometry_features",
             "bbox",
             "layers",  # (read)
             "data_types",  # (write)
@@ -159,6 +161,7 @@ class MapRequestSerializer(serializers.ModelSerializer):
         many=True, read_only=True, source="map_request_data_types"
     )
     geometry = gis_serializers.GeometryField(precision=MapRequest.PRECISION)
+    geometry_features = serializers.SerializerMethodField(read_only=True)
     timestamp = serializers.DateTimeField(source="created", read_only=True)
     bbox = serializers.ListField(source="geometry_extent", read_only=True)
 
@@ -173,6 +176,20 @@ class MapRequestSerializer(serializers.ModelSerializer):
         default=SwaggerCurrentUserDefault(),
         queryset=get_user_model().objects.all(),
     )
+
+    def get_geometry_features(self, obj):
+        """
+        returns geometry as a FeatureCollection
+        """
+        geojson = json.loads(obj.geometry.geojson)
+        if geojson.get("type") == "GeometryCollection":
+            features = geojson.get("geometries")
+        else:
+            features = [geojson]
+        return {
+            "type": "FeatureCollection",
+            "features": [feature for feature in features]
+        }
 
     def validate_data_types(self, values):
         data_types_groups = set([v.group for v in values])
