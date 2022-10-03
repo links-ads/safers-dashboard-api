@@ -76,6 +76,13 @@ _map_request_list_schema = openapi.Schema(
                     "parameters": {},
                     "geometry": {},
                     "geometry_wkt": "POLYGON ((1 2, 3 4, 5 6, 1 2))",
+                    "geometry_features": {
+                        "type": "FeatureCollection",
+                        "features": [{
+                            "type": "Polygon",
+                            "coordinates": [[[1, 2], [3, 4]]]
+                        }]
+                    },
                     "layers": [
                         {
                             "key": "1.1.1",
