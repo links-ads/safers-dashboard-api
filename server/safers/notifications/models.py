@@ -2,6 +2,7 @@ import uuid
 
 from django.contrib.gis import geos
 from django.db import models, transaction
+from django.db.models import Q
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import GeometryCollection
 from django.utils.translation import gettext_lazy as _
@@ -42,7 +43,36 @@ class NotificationManager(models.Manager):
 
 
 class NotificationQuerySet(models.QuerySet):
-    pass
+    def filter_by_user(self, user):
+        """
+        only return notifications that this user should have access to
+        """
+
+        # every user gets public (or None) scoped notificiations...
+        lookup_expr = Q(scope=NotificationScopeChoices.PUBLIC) | Q(scope__isnull=True)  # yapf: disable
+
+        if user.is_citizen:
+            # every citizen gets public (or None) scoped notifications plus notifications restricted to citizens...
+            lookup_expr |= (
+                Q(scope=NotificationScopeChoices.RESTRICTED) &
+                Q(restriction=NotificationRestrictionChoices.CITIZEN)
+            )
+
+        elif user.is_professional:
+            # every professional gets public (or None) scoped notiications plus notifications restricted to professionals...
+            lookup_expr |= (
+                Q(scope=NotificationScopeChoices.RESTRICTED) &
+                Q(restriction=NotificationRestrictionChoices.PROFESSIONAL)
+            )
+            if user.organization is not None:
+                # ...and notifications restricted to _their_ organization...
+                lookup_expr |= (
+                    Q(scope=NotificationScopeChoices.RESTRICTED) &
+                    Q(restriction=NotificationRestrictionChoices.ORGANIZATION) &
+                    Q(target_organizations__in=[user.organization])
+                )
+
+        return self.filter(lookup_expr)
 
 
 class NotificationGeometry(HashableMixin, gis_models.Model):

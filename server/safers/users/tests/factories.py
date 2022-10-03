@@ -79,7 +79,12 @@ class RoleFactory(factory.django.DjangoModelFactory):
         model = Role
 
     name = FactoryFaker("word")
+    label = FactoryFaker("word")
     description = optional_declaration(FactoryFaker("text"), chance=50)
+
+    @factory.lazy_attribute_sequence
+    def role_id(self, n):
+        return f"{n}"
 
 
 class OrganizationFactory(factory.django.DjangoModelFactory):
@@ -88,3 +93,7 @@ class OrganizationFactory(factory.django.DjangoModelFactory):
 
     name = FactoryFaker("word")
     description = optional_declaration(FactoryFaker("text"), chance=50)
+
+    @factory.lazy_attribute_sequence
+    def organization_id(self, n):
+        return f"{n}"
