@@ -81,7 +81,8 @@ def geometry_to_feature_collection(geometry):
 
 
 class MapRequestManager(models.Manager):
-    pass
+    def get_by_natural_key(self, request_id):
+        return self.get(request_id=request_id)
 
 
 class MapRequestQuerySet(models.QuerySet):
@@ -243,6 +244,9 @@ class MapRequest(gis_models.Model):
     def category_info(self):
         category_info = self.data_types.values("group", "group_info").first()
         return category_info
+
+    def natural_key(self):
+        return (self.request_id, )
 
     def save(self, *args, **kwargs):
         """
