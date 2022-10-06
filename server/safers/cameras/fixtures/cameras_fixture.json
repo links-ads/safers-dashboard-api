@@ -3,6 +3,20 @@
     "model": "cameras.camera",
     "fields": {
       "is_active": true,
+      "camera_id": "SIS2BFuriani_000",
+      "name": "Furiani",
+      "model": "reolink RLC-823A",
+      "owner": "SIS2B",
+      "nation": "France",
+      "geometry": "SRID=4326;POINT (9.4330259 42.6612628)",
+      "direction": 0.0,
+      "altitude": 24
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
       "camera_id": "PCF_El_Perello_007",
       "name": "El_Perello",
       "model": "reolink RLC-823A",
