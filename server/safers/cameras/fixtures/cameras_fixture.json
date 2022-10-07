@@ -3,7 +3,7 @@
     "model": "cameras.camera",
     "fields": {
       "is_active": true,
-      "camera_id": "SIS2BFuriani_000",
+      "camera_id": "SIS2B_Furiani_000",
       "name": "Furiani",
       "model": "reolink RLC-823A",
       "owner": "SIS2B",
