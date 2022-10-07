@@ -11,7 +11,7 @@ def synchronize_profile(user_profile, user_profile_data):
     # TODO: And make this a proper DRF view
     user = user_profile.user
     PROFILE_URL_PATH = "/api/services/app/Profile/UpdateProfile"
-    response = requests.put(
+    response = requests.patch(
         urljoin(
             settings.SAFERS_GATEWAY_API_URL,
             PROFILE_URL_PATH,
