@@ -13,6 +13,8 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from safers.core.models import SafersSettings
+
 from safers.users.authentication import ProxyAuthentication
 from safers.users.exceptions import AuthenticationException
 from safers.users.permissions import IsRemote
@@ -150,7 +152,8 @@ class DataLayerView(views.APIView):
         GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
         METADATA_URL_PATH = "/api/data/layers/metadata"
 
-        resolution = 1024 if settings.restrict_data_to_aoi else 512
+        safers_settings = SafersSettings.load()
+        resolution = 1024 if safers_settings.restrict_data_to_aoi else 512
 
         serializer = self.serializer_class(
             data=request.query_params,
