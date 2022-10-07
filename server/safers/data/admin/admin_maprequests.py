@@ -135,6 +135,7 @@ class MapRequestAdminForm(ModelForm):
             "geometry_features",
             "geometry_extent",
             "geometry_extent_str",
+            "restrict_data_to_aoi",
             "user",
         )
 

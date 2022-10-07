@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from urllib.parse import quote_plus, urlencode, urljoin
 
 from django.conf import settings
-from django.utils import timezone
 
 from rest_framework import status, views
 from rest_framework.decorators import api_view, permission_classes
@@ -151,6 +150,8 @@ class DataLayerView(views.APIView):
         GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
         METADATA_URL_PATH = "/api/data/layers/metadata"
 
+        resolution = 1024 if settings.restrict_data_to_aoi else 512
+
         serializer = self.serializer_class(
             data=request.query_params,
             context=self.get_serializer_context(),
@@ -186,8 +187,8 @@ class DataLayerView(views.APIView):
                 "version": "1.1.0",
                 "bbox": "{{bbox}}",
                 "transparent": True,
-                "width": 256,
-                "height": 256,
+                "width": resolution,
+                "height": resolution,
                 "format": "image/png",
             },
             safe="{}",

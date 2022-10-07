@@ -234,6 +234,13 @@ class MapRequest(gis_models.Model):
         help_text=_("extent of bbox of geometry as a string"),
     )
 
+    restrict_data_to_aoi = models.BooleanField(
+        default=False,
+        help_text=_(
+            "whether to treat geometry as a bbox or to ignore it and use the user's defaut_aoi as the bbox"
+        )
+    )
+
     @property
     def category(self):
         category = self.data_types.values_list("group", flat=True).first()
