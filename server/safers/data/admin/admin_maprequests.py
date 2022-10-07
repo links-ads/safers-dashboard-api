@@ -135,7 +135,9 @@ class MapRequestAdminForm(ModelForm):
             "geometry_features",
             "geometry_extent",
             "geometry_extent_str",
-            "restrict_data_to_aoi",
+            "geometry_buffer_size",
+            "geometry_buffered_extent",
+            "geometry_buffered_extent_str",
             "user",
         )
 
@@ -145,7 +147,9 @@ class MapRequestAdminForm(ModelForm):
             "geometry_wkt",
             "geometry_features",
             "geometry_extent",
-            "geometry_extent_str"
+            "geometry_extent_str",
+            "geometry_buffered_extent",
+            "geometry_buffered_extent_str",
         ]:
             self.fields[field_name].widget.attrs.update({
                 "readonly": True, "disbled": True

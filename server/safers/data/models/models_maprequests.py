@@ -7,6 +7,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.gis.db import models as gis_models
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
@@ -19,6 +20,8 @@ from safers.data.models import DataType
 
 from safers.rmq import RMQ, RMQ_USER
 from safers.rmq.exceptions import RMQException
+
+from safers.data.constants import KILOMETERS_TO_METERS
 
 ###########
 # helpers #
@@ -220,6 +223,14 @@ class MapRequest(gis_models.Model):
         help_text=_("FeatureCollection representation of geometry"),
     )
 
+    geometry_buffer_size = models.FloatField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(1000)],
+        help_text=_(
+            "area (in kilometers) to increase the geometry by when rendering the layer."
+        )
+    )
+
     geometry_extent = ArrayField(
         models.FloatField(),
         blank=True,
@@ -234,11 +245,18 @@ class MapRequest(gis_models.Model):
         help_text=_("extent of bbox of geometry as a string"),
     )
 
-    restrict_data_to_aoi = models.BooleanField(
-        default=False,
-        help_text=_(
-            "whether to treat geometry as a bbox or to ignore it and use the user's defaut_aoi as the bbox"
-        )
+    geometry_buffered_extent = ArrayField(
+        models.FloatField(),
+        blank=True,
+        default=list,
+        help_text=_("extent of bbox of geometry plus buffer as a list"),
+    )
+
+    geometry_buffered_extent_str = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text=_("extent of bbox of geometry plus buffer as a string"),
     )
 
     @property
@@ -257,8 +275,8 @@ class MapRequest(gis_models.Model):
 
     def save(self, *args, **kwargs):
         """
-        automatically set the request_id & geometry_wkt when saving, rather
-        than computing it in views b/c geometric computation is expensive
+        automatically set the request_id & extra geometry fields when saving, 
+        rather than computing it in views b/c geometric computation is expensive
         """
         if not self.request_id:
             self.request_id = get_next_request_id()
@@ -270,11 +288,22 @@ class MapRequest(gis_models.Model):
             self.geometry_features = None
         else:
             self.geometry_wkt = self.geometry.wkt
-            self.geometry_extent = self.geometry.extent
-            self.geometry_extent_str = ",".join(map(str, self.geometry_extent))
             self.geometry_features = geometry_to_feature_collection(
                 self.geometry
             )
+            self.geometry_extent = self.geometry.extent
+            self.geometry_extent_str = ",".join(map(str, self.geometry_extent))
+            if self.geometry_buffer_size == 0:
+                self.geometry_buffered_extent = self.geometry_extent
+                self.geometry_buffered_extent_str = self.geometry_extent_str
+            else:
+                buffered_geometry = self.geometry.buffer(
+                    self.geometry_buffer_size * KILOMETERS_TO_METERS
+                )
+                self.geometry_buffered_extent = buffered_geometry.extent
+                self.geometry_buffered_extent_str = ",".join(
+                    map(str, self.geometry_buffered_extent)
+                )
 
         return super().save(*args, **kwargs)
 

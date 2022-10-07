@@ -203,9 +203,6 @@ class MapRequestViewSet(
             for map_request_data in queryset.values()
         }  # dict of map_request_data keyed by request_id
 
-        aoi_extent = request.user.default_aoi.geometry.extent
-        aoi_extent_str = ",".join(map(str, aoi_extent))
-
         # TODO: REFACTOR - MUCH OF THIS IS DUPLILCATED IN DataLayerView
 
         geoserver_layer_query_params = urlencode(
@@ -339,11 +336,7 @@ class MapRequestViewSet(
                                                     geoserver_layer_url.format(
                                                         name=quote_plus(detail["name"]),
                                                         time=quote_plus(timestamp),
-                                                        bbox=quote_plus(
-                                                            map_request["geometry_extent_str"] if not map_request["restrict_data_to_aoi"]
-                                                            else aoi_extent_str
-                                                        ),
-
+                                                        bbox=quote_plus(map_request["geometry_buffered_extent_str"]),
                                                     )
                                                 )
                                                 for timestamp in detail.get("timestamps", [])
