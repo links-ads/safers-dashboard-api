@@ -41,7 +41,9 @@ class NotificationSerializer(serializers.ModelSerializer):
             "message",
         )
 
-    scopeRestriction = serializers.CharField(source="scope_restriction")
+    scopeRestriction = serializers.CharField(
+        source="scope_restriction", read_only=True
+    )
     target_organizations = serializers.SlugRelatedField(
         slug_field="organization_id",
         many=True,
