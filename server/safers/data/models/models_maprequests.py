@@ -22,6 +22,7 @@ from safers.rmq import RMQ, RMQ_USER
 from safers.rmq.exceptions import RMQException
 
 from safers.data.constants import KILOMETERS_TO_METERS
+from safers.data.utils import meters_to_degrees
 
 ###########
 # helpers #
@@ -298,7 +299,10 @@ class MapRequest(gis_models.Model):
                 self.geometry_buffered_extent_str = self.geometry_extent_str
             else:
                 buffered_geometry = self.geometry.buffer(
-                    self.geometry_buffer_size * KILOMETERS_TO_METERS
+                    meters_to_degrees(
+                        (self.geometry_buffer_size * KILOMETERS_TO_METERS),
+                        latitude=self.geometry.centroid.y
+                    )
                 )
                 self.geometry_buffered_extent = buffered_geometry.extent
                 self.geometry_buffered_extent_str = ",".join(

@@ -162,9 +162,7 @@ class MapRequestSerializer(serializers.ModelSerializer):
     )
     geometry = gis_serializers.GeometryField(precision=MapRequest.PRECISION)
     timestamp = serializers.DateTimeField(source="created", read_only=True)
-    bbox = serializers.ListField(
-        source="geometry_buffered_extent", read_only=True
-    )
+    bbox = serializers.ListField(source="geometry_extent", read_only=True)
 
     data_types = serializers.SlugRelatedField(
         slug_field="datatype_id",
