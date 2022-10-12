@@ -57,7 +57,7 @@ class CameraMediaQuerySet(models.QuerySet):
         # return self.filter(Q(_is_fire=False) & Q(_is_smoke=False))
 
     def alerted(self):
-        return self.fitler(alert__isnull=False)
+        return self.filter(alert__isnull=False)
 
     def unalerted(self):
         return self.filter(alert__isnull=True)
@@ -200,8 +200,9 @@ class CameraMedia(gis_models.Model):
 
         other_camera_medias = self.camera.media.exclude(pk=self.pk)
         other_detected_camera_medias = other_camera_medias.detected()
-        other_alerted_camera_medias = other_detected_camera_medias.alerted()
-        most_recent_alerted_detected_camera_media = other_alerted_camera_medias.order_by(
+        other_alerted_detected_camera_medias = other_detected_camera_medias.alerted(
+        )
+        most_recent_alerted_detected_camera_media = other_alerted_detected_camera_medias.order_by(
             "timestamp"
         ).last()
 
