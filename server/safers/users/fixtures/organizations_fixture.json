@@ -1,83 +1,83 @@
 [
-{
-  "model": "users.organization",
-  "fields": {
-    "organization_id": null,
-    "name": "PCF - Pau Costa Foundation",
-    "description": "",
-    "is_active": false
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": null,
+      "name": "PCF - Pau Costa Foundation",
+      "description": "",
+      "is_active": false
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": "3",
+      "name": "Corsica Demo",
+      "description": "Organization to be used during the pilot in Corsica",
+      "is_active": true
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": "1",
+      "name": "Test Organization",
+      "description": "This is a test organization",
+      "is_active": true
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": null,
+      "name": "HRT - Hellenic Rescue Team",
+      "description": "",
+      "is_active": false
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": "2",
+      "name": "SAFERS Partners",
+      "description": "Organization for partners of SAFERS",
+      "is_active": true
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": null,
+      "name": "HMOD - Hellenic Republic Ministry of National Defence",
+      "description": "",
+      "is_active": false
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": null,
+      "name": "SIS2B - Service d'Incendie et de Secours de la Haute Corse",
+      "description": "",
+      "is_active": false
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": null,
+      "name": "CSI - Consorzio per il Sistema Informativo",
+      "description": "",
+      "is_active": false
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": null,
+      "name": "CIMA - Fondazione CIMA",
+      "description": "",
+      "is_active": false
+    }
   }
-},
-{
-  "model": "users.organization",
-  "fields": {
-    "organization_id": "3",
-    "name": "Corsica Demo",
-    "description": "Organization to be used during the pilot in Corsica",
-    "is_active": true
-  }
-},
-{
-  "model": "users.organization",
-  "fields": {
-    "organization_id": "1",
-    "name": "Test Organization",
-    "description": "This is a test organization",
-    "is_active": true
-  }
-},
-{
-  "model": "users.organization",
-  "fields": {
-    "organization_id": null,
-    "name": "HRT - Hellenic Rescue Team",
-    "description": "",
-    "is_active": false
-  }
-},
-{
-  "model": "users.organization",
-  "fields": {
-    "organization_id": "2",
-    "name": "SAFERS Partners",
-    "description": "Organization for partners of SAFERS",
-    "is_active": true
-  }
-},
-{
-  "model": "users.organization",
-  "fields": {
-    "organization_id": null,
-    "name": "HMOD - Hellenic Republic Ministry of National Defence",
-    "description": "",
-    "is_active": false
-  }
-},
-{
-  "model": "users.organization",
-  "fields": {
-    "organization_id": null,
-    "name": "SIS2B - Service d'Incendie et de Secours de la Haute Corse",
-    "description": "",
-    "is_active": false
-  }
-},
-{
-  "model": "users.organization",
-  "fields": {
-    "organization_id": null,
-    "name": "CSI - Consorzio per il Sistema Informativo",
-    "description": "",
-    "is_active": false
-  }
-},
-{
-  "model": "users.organization",
-  "fields": {
-    "organization_id": null,
-    "name": "CIMA - Fondazione CIMA",
-    "description": "",
-    "is_active": false
-  }
-}
 ]

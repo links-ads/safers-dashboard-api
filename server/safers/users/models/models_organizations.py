@@ -4,8 +4,8 @@ from django.db import models
 
 
 class OrganizationManager(models.Manager):
-    def get_by_natural_key(self, organization_id):
-        return self.get(organization_id=organization_id)
+    def get_by_natural_key(self, name):
+        return self.get(name=name)
 
     def safe_get(self, *args, **kwargs):
         """
@@ -56,4 +56,4 @@ class Organization(models.Model):
         return self.name
 
     def natural_key(self):
-        return (self.organization_id, )
+        return (self.name, )
