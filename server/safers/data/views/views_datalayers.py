@@ -301,7 +301,7 @@ class DataLayerView(views.APIView):
                         # "data_type": detail.get("dataTypeId"),
                         "id": f"{i}.{j}.{k}.{l}",
                         "title": layer["name"],
-                        "text": detail["created_At"],
+                        "text": next(iter(detail.get("timestamps") or []), None),
                         "units": layer.get("unitOfMeasure"),
                         "info": None,
                         "info_url": metadata_url.format(
