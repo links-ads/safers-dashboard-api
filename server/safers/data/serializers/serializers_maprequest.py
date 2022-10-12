@@ -149,6 +149,7 @@ class MapRequestSerializer(serializers.ModelSerializer):
             "geometry",
             "geometry_wkt",
             "geometry_features",
+            "geometry_buffer_size",
             "bbox",
             "layers",  # (read)
             "data_types",  # (write)
