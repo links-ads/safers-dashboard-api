@@ -161,12 +161,18 @@ class MapRequestViewSet(
     @swagger_fake(MapRequest.objects.none())
     def get_queryset(self):
         """
-        return all MapRequests owned by this user
+        return all MapRequests owned by this user / organization
         """
         current_user = self.request.user
-        return current_user.map_requests.prefetch_related(
-            "map_request_data_types"
-        ).all()
+        if current_user.is_citizen:
+            queryset = current_user.map_requests.all()
+        else:
+            organization_users = current_user.organization.users.filter(
+                is_active=True
+            )
+            queryset = MapRequest.objects.filter(user__in=organization_users)
+
+        return queryset.prefetch_related("map_request_data_types")
 
     # TODO: ENSURE create IS AN ATOMIC TRANSACTION TO PREVENT RACE CONDITIONS WHEN SETTING request_id
 
