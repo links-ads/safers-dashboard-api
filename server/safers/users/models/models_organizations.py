@@ -4,6 +4,9 @@ from django.db import models
 
 
 class OrganizationManager(models.Manager):
+    def get_by_natural_key(self, organization_id):
+        return self.get(organization_id=organization_id)
+
     def safe_get(self, *args, **kwargs):
         """
         models that aren't stored locally (like the chatbot models)
@@ -51,3 +54,6 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
+    def natural_key(self):
+        return (self.organization_id, )
