@@ -21,7 +21,7 @@ from safers.data.models import DataType
 from safers.rmq import RMQ, RMQ_USER
 from safers.rmq.exceptions import RMQException
 
-from safers.data.constants import KILOMETERS_TO_METERS
+from safers.data.constants import KILOMETERS_TO_METERS, MAX_GEOMETRY_BUFFER_SIZE, NO_GEOMETRY_BUFFER_SIZE
 from safers.data.utils import meters_to_degrees
 
 ###########
@@ -226,7 +226,10 @@ class MapRequest(gis_models.Model):
 
     geometry_buffer_size = models.FloatField(
         default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)],
+        validators=[
+            MinValueValidator(NO_GEOMETRY_BUFFER_SIZE),
+            MaxValueValidator(MAX_GEOMETRY_BUFFER_SIZE)
+        ],
         help_text=_(
             "area (in kilometers) to increase the geometry by when rendering the layer."
         )
@@ -294,7 +297,7 @@ class MapRequest(gis_models.Model):
             )
             self.geometry_extent = self.geometry.extent
             self.geometry_extent_str = ",".join(map(str, self.geometry_extent))
-            if self.geometry_buffer_size == 0:
+            if self.geometry_buffer_size == NO_GEOMETRY_BUFFER_SIZE:
                 self.geometry_buffered_extent = self.geometry_extent
                 self.geometry_buffered_extent_str = self.geometry_extent_str
             else:
