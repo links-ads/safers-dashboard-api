@@ -85,54 +85,50 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
             return self.request.user
         return super().get_object()
 
-    @swagger_fake({})
-    def get_serializer_context(self):
-        # if this is a remote user, I want to prevent updating any
-        # profile fields which come from the remote auth_user
-        context = super().get_serializer_context()
-        user = self.get_object()
-        if user.is_remote:
-            context["prevent_remote_profile_fields"] = {
-                field: getattr(user.profile, field)
-                for field in user.auth_user.profile_fields
-            }
-        return context
+    # TODO: GOING TO ALLOW USERS TO UPDATE PROFILE FIELDS FOR NOW
+    # @swagger_fake({})
+    # def get_serializer_context(self):
+    #     # if this is a remote user, I want to prevent updating any
+    #     # profile fields which come from the remote auth_user
+    #     context = super().get_serializer_context()
+    #     user = self.get_object()
+    #     if user.is_remote:
+    #         context["prevent_remote_profile_fields"] = {
+    #             field: getattr(user.profile, field)
+    #             for field in user.auth_user.profile_fields
+    #         }
+    #     return context
 
     def delete(self, request, *args, **kwargs):
         retval = super().delete(request, *args, **kwargs)
-        # TODO: logout
+        # TODO: delete user from FusionAuth and logout
         return retval
 
     def perform_update(self, serializer):
-
-        if "default_aoi" not in serializer.validated_data:
+        user_data = serializer.validated_data
+        if "default_aoi" not in user_data:
 
             user = self.get_object()
+
             if user.is_remote:
-                user_profile = user.profile
-
-                first_name = serializer.validated_data.get("profile", {}
-                                                          ).get("first_name")
-                last_name = serializer.validated_data.get("profile",
-                                                          {}).get("last_name")
-                role = serializer.validated_data.get("role")
-                organization = serializer.validated_data.get("organization")
-
-                user_profile_data = {
-                    "user": {
-                        "id": str(user.auth_id),
-                        "email": user.email,
-                        "username": user.username,
-                        "firstName": first_name,
-                        "lastName": last_name,
-                        "roles": [role.name] if role else []
-                    },
-                    "organizationId":
-                        int(organization.organization_id)
-                        if organization else None
-                }
                 try:
-                    synchronize_profile(user_profile, user_profile_data)
+                    first_name = user_data.get("profile", {}).get("first_name")
+                    last_name = user_data.get("profile", {}).get("last_name")
+                    role = user_data.get("role")
+                    organization = user_data.get("organization")
+
+                    user_profile_data = {
+                        "user": {
+                            "firstName": first_name,
+                            "lastName": last_name,
+                            "roles": [role.name] if role else []
+                        },
+                        "organizationId":
+                            int(organization.organization_id)
+                            if organization else None
+                    }
+
+                    synchronize_profile(user.profile, user_profile_data)
                 except Exception as e:
                     msg = "Unable to update profile fields on authentication server."
                     raise APIException(msg)

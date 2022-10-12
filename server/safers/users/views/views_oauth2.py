@@ -28,6 +28,10 @@ from safers.users.serializers import (
 )
 from safers.users.utils import AUTH_CLIENT, create_knox_token
 from safers.users.views import synchronize_profile
+
+import logging
+
+logger = logging.getLogger(__name__)
 """
 Authentication w/ Oauth2:
 1. client makes request to oauth2 provider to get code
@@ -103,7 +107,6 @@ class LoginView(GenericAPIView):
                 request,
                 auth_token_data,
             )
-
             user, created_user = User.objects.get_or_create(
                 auth_id=auth_token_data["userId"],
                 defaults={
@@ -133,21 +136,18 @@ class LoginView(GenericAPIView):
             if created_auth_user:
 
                 try:
-
                     user_profile = user.profile
                     user_profile_data = {
                         "user": {
-                            "id": str(user.auth_id),
-                            "email": user.email,
-                            "username": user.username,
                             "firstName": user_profile.first_name,
                             "lastName": user_profile.last_name,
                             "roles": [user.role.name] if user.role else []
                         },
                         "organizationId":
                             int(user.organization.organization_id)
-                            if user.organization else None
+                            if user.is_professional else None
                     }
+
                     synchronize_profile(user_profile, user_profile_data)
 
                 except Exception as e:
@@ -283,6 +283,8 @@ class RefreshView(GenericAPIView):
         )
         if not response.was_successful():
             raise AuthenticationException(response.error_response)
+
+        logger.info("\n### REFRESHED OAUTH2 TOKEN ###\n")
 
         auth_token_data = response.success_response
         for k, v in auth_token_data.items():
