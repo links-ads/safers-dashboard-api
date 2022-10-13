@@ -16,6 +16,7 @@ from drf_yasg.utils import swagger_auto_schema
 from safers.core.decorators import swagger_fake
 
 from safers.data.models import MapRequest, DataType
+from safers.data.permissions import IsReadOnlyOrOwner
 from safers.data.serializers import MapRequestSerializer, MapRequestViewSerializer
 
 from safers.users.authentication import ProxyAuthentication
@@ -151,7 +152,7 @@ class MapRequestViewSet(
     lookup_field = "id"
     lookup_url_kwarg = "map_request_id"
 
-    permission_classes = [IsAuthenticated, IsRemote]
+    permission_classes = [IsAuthenticated, IsRemote, IsReadOnlyOrOwner]
     serializer_class = MapRequestSerializer
 
     GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
