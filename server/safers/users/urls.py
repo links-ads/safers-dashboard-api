@@ -19,10 +19,10 @@ from .views import (
     OrganizationView,
     RoleView,
     UserView,
+    teams_view,
 )
 
 api_router = routers.DefaultRouter()
-# TODO: AOI VIEWSET
 api_urlpatterns = [
     path("", include(api_router.urls)),
     path("oauth2/login", Oath2LoginView.as_view(), name="oauth2-login"),
@@ -33,6 +33,7 @@ api_urlpatterns = [
     path("users/<slug:user_id>", UserView.as_view(), name="users"),
     path("organizations/", OrganizationView.as_view(), name="organizations"),
     path("roles/", RoleView.as_view(), name="roles"),
+    path("teams/", teams_view, name="teams"),
 ]
 
 # redefining dj-rest-auth URLS here to use custom views...
