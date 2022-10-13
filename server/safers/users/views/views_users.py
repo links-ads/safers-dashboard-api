@@ -12,7 +12,7 @@ from safers.core.decorators import swagger_fake
 from safers.users.models import User
 from safers.users.permissions import IsSelfOrAdmin
 from safers.users.serializers import UserSerializerLite, UserSerializer
-from safers.users.views import synchronize_profile
+from safers.users.views import synchronize_profile, SynchronizeProfileDirection
 
 ###########
 # swagger #
@@ -105,32 +105,20 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
         return retval
 
     def perform_update(self, serializer):
-        user_data = serializer.validated_data
-        if "default_aoi" not in user_data:
+        retval = super().perform_update(serializer)
+
+        if "default_aoi" not in serializer.validated_data:
 
             user = self.get_object()
 
             if user.is_remote:
                 try:
-                    first_name = user_data.get("profile", {}).get("first_name")
-                    last_name = user_data.get("profile", {}).get("last_name")
-                    role = user_data.get("role")
-                    organization = user_data.get("organization")
-
-                    user_profile_data = {
-                        "user": {
-                            "firstName": first_name,
-                            "lastName": last_name,
-                            "roles": [role.name] if role else []
-                        },
-                        "organizationId":
-                            int(organization.organization_id)
-                            if organization else None
-                    }
-
-                    synchronize_profile(user.profile, user_profile_data)
+                    synchronize_profile(
+                        user.profile,
+                        SynchronizeProfileDirection.LOCAL_TO_REMOTE
+                    )
                 except Exception as e:
                     msg = "Unable to update profile fields on authentication server."
                     raise APIException(msg)
 
-        return super().perform_update(serializer)
+        return retval
