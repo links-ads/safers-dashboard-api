@@ -27,7 +27,7 @@ from safers.users.serializers import (
     UserProfileSerializer,
 )
 from safers.users.utils import AUTH_CLIENT, create_knox_token
-from safers.users.views import synchronize_profile
+from safers.users.views import synchronize_profile, SynchronizeProfileDirection
 
 import logging
 
@@ -52,6 +52,9 @@ class LoginView(GenericAPIView):
     - it stores the auth_token and creates a local_token
     - it returns the local_token along w/ user details to the client
     """
+
+    GET_PROFILE_URL_PATH = "/api/services/app/Profile/GetProfile"
+    SET_PROFILE_URL_PATH = "/api/services/app/Profile/UpdateProfile"
 
     permission_classes = [AllowAny]
     serializer_class = Oauth2AuthenticateSerializer
@@ -110,18 +113,10 @@ class LoginView(GenericAPIView):
             user, created_user = User.objects.get_or_create(
                 auth_id=auth_token_data["userId"],
                 defaults={
-                    AUTH_USER_FIELDS[k]: v
-                    for k, v in auth_user_data.items() if k in AUTH_USER_FIELDS
+                    "username": auth_user_data.get("username"),
+                    "email": auth_user_data.get("email") or auth_user_data.get("username"),
                 }
             )
-            if created_user:
-                profile_serializer = UserProfileSerializer()
-                profile_data = {
-                    AUTH_PROFILE_FIELDS[k]: v
-                    for k,
-                    v in auth_user_data.items() if k in AUTH_PROFILE_FIELDS
-                }
-                profile_serializer.update(user.profile, profile_data)
 
             # any additional user checks ?
             # user_logged_in.send(sender=User, request=request, user=user)
@@ -133,26 +128,26 @@ class LoginView(GenericAPIView):
                     setattr(auth_user, AUTH_TOKEN_FIELDS[k], v)
             auth_user.save()
 
-            if created_auth_user:
+            try:
+                user_profile = user.profile
+                if created_user:
+                    # this user must have registered outside the dashboard (ie: the chatbot)
+                    synchronize_profile(
+                        user_profile,
+                        direction=SynchronizeProfileDirection.REMOTE_TO_LOCAL
+                    )
 
-                try:
-                    user_profile = user.profile
-                    user_profile_data = {
-                        "user": {
-                            "firstName": user_profile.first_name,
-                            "lastName": user_profile.last_name,
-                            "roles": [user.role.name] if user.role else []
-                        },
-                        "organizationId":
-                            int(user.organization.organization_id)
-                            if user.is_professional else None
-                    }
-
-                    synchronize_profile(user_profile, user_profile_data)
-
-                except Exception as e:
-                    msg = "Unable to set profile fields on authentication server"
-                    raise AuthenticationException(msg)
+                else:
+                    # this user must have been through this fn before (registered via dashbaord and/or already has profile info)
+                    synchronize_profile(
+                        user_profile,
+                        direction=SynchronizeProfileDirection.LOCAL_TO_REMOTE
+                    )
+            except Exception as e:
+                exception_message = "Unable to set profile fields on authentication server"
+                return Response(
+                    exception_message, status=status.HTTP_400_BAD_REQUEST
+                )
 
             token_dataclass = create_knox_token(None, user, None)
             token_serializer = KnoxTokenSerializer(token_dataclass)
