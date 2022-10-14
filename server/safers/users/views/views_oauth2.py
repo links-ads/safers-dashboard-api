@@ -1,4 +1,5 @@
 import json
+import logging
 from collections import OrderedDict
 from sys import stdout
 
@@ -28,8 +29,6 @@ from safers.users.serializers import (
 )
 from safers.users.utils import AUTH_CLIENT, create_knox_token
 from safers.users.views import synchronize_profile, SynchronizeProfileDirection
-
-import logging
 
 logger = logging.getLogger(__name__)
 """
@@ -145,6 +144,7 @@ class LoginView(GenericAPIView):
                     )
             except Exception as e:
                 exception_message = "Unable to set profile fields on authentication server"
+                logger.error(exception_message)
                 return Response(
                     exception_message, status=status.HTTP_400_BAD_REQUEST
                 )
