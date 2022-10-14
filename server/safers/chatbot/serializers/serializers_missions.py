@@ -73,6 +73,8 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
             "start",
             "end",
             "organizationId",
+            "coordinatorTeamId",
+            "coordinatorPersonId",
             "source",
             "currentStatus",  # "reports",
             "duration",
@@ -103,6 +105,14 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
         method_name="get_organization_id"
     )
 
+    coordinatorTeamId = serializers.IntegerField(
+        source="coordinator_team_id", allow_null=True
+    )
+
+    coordinatorPersonId = serializers.IntegerField(
+        source="coordinator_person_id", allow_null=True
+    )
+
     currentStatus = serializers.CharField(
         source="status", default=MissionStatusChoices.CREATED
     )
@@ -120,5 +130,5 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
     def get_organization_id(self, obj):
         user = self.context["request"].user
         if user.organization:
-            return user.organization.organization_id
+            return int(user.organization.organization_id)
         return None
