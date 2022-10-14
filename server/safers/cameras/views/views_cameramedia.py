@@ -250,7 +250,7 @@ def camera_media_sources_view(request):
     """
     Returns the list of possible cameras to use as sources.
     """
-    cameras = Camera.objects.all()
+    cameras = Camera.objects.active()
     return Response(
         cameras.values_list("camera_id", flat=True), status=status.HTTP_200_OK
     )
