@@ -165,13 +165,13 @@ class MapRequestViewSet(
         return all MapRequests owned by this user / organization
         """
         current_user = self.request.user
-        if current_user.is_citizen:
-            queryset = current_user.map_requests.all()
-        else:
+        if current_user.is_professional:
             organization_users = current_user.organization.users.filter(
                 is_active=True
             )
             queryset = MapRequest.objects.filter(user__in=organization_users)
+        else:
+            queryset = current_user.map_requests.all()
 
         return queryset.prefetch_related("map_request_data_types")
 
