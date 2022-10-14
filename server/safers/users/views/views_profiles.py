@@ -35,10 +35,10 @@ def synchronize_profile(user_profile, direction):
 
     if direction == SynchronizeProfileDirection.REMOTE_TO_LOCAL:
         roles = Role.objects.filter(
-            name__in=profile_data.get("user", {}).get("roles")
+            name__in=(profile_data.get("user") or {}).get("roles", [])
         )
-        organizations = Organization.objects.filter(
-            organization_id=profile_data.get("organization", {}).get("id")
+        organizations = Organization.objects.active().filter(
+            organization_id=(profile_data.get("organization") or {}).get("id")
         )
         user_serializer = UserSerializer()
         user_serializer.update(
