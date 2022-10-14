@@ -167,7 +167,6 @@ class MissionListView(MissionView):
         except Exception as e:
             logger.error("##############################")
             logger.error("error creating mission")
-            logger.error(str(e))
             logger.error(response.json())
             logger.error("##############################")
             raise APIException(e)

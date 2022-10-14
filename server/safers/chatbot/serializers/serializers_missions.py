@@ -132,3 +132,16 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
         if user.organization:
             return int(user.organization.organization_id)
         return None
+
+    def to_representation(self, instance):
+        """
+        A mission can have either a team or a person as coordinators, not both.
+        Therefore, if a person is specified, ensure no team is specified
+        """
+        representation = super().to_representation(instance)
+        coordinatorPersonId = representation["properties"].get(
+            "coordinatorPersonId"
+        )
+        if coordinatorPersonId is not None:
+            representation["properties"]["coordinatorTeamId"] = None
+        return representation
