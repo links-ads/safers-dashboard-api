@@ -52,6 +52,8 @@ class Mission(gis_models.Model):
     title = models.CharField(max_length=128, blank=True, null=True)
     username = models.CharField(max_length=128, blank=True, null=True)
     organization = models.CharField(max_length=128, blank=True, null=True)
+    coordinator_team_id = models.IntegerField(blank=True, null=True)
+    coordinator_person_id = models.IntegerField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     start = models.DateTimeField()
     start_inclusive = models.BooleanField(default=True)

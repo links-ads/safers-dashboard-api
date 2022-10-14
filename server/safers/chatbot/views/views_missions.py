@@ -126,6 +126,7 @@ class MissionListView(MissionView):
         """
         create view
         """
+
         serializer = MissionCreateSerializer(
             data=request.data,
             context=self.get_serializer_context(),
@@ -147,13 +148,12 @@ class MissionListView(MissionView):
             }
         }
 
-        proxy_url = urljoin(
-            settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_CREATE_PATH
-        )
-
         try:
             response = requests.post(
-                proxy_url,
+                urljoin(
+                    settings.SAFERS_GATEWAY_API_URL,
+                    self.GATEWAY_URL_CREATE_PATH,
+                ),
                 auth=ProxyAuthentication(request.user),
                 headers={"Content-Type": "application/json"},
                 json=proxy_data,
