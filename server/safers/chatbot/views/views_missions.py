@@ -1,4 +1,5 @@
 import json
+import logging
 import requests
 from collections import OrderedDict
 from urllib.parse import urljoin
@@ -22,6 +23,8 @@ from safers.chatbot.models import Mission, MissionStatusChoices
 from safers.chatbot.serializers import MissionSerializer, MissionCreateSerializer, MissionViewSerializer
 
 from .views_base import ChatbotView, parse_datetime, parse_none
+
+logger = logging.getLogger(__name__)
 
 _mission_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -162,6 +165,11 @@ class MissionListView(MissionView):
             response.raise_for_status()
 
         except Exception as e:
+            logger.error("##############################")
+            logger.error("error creating mission")
+            logger.error(str(e))
+            logger.error(response.json())
+            logger.error("##############################")
             raise APIException(e)
 
         instance.mission_id = response.json()
