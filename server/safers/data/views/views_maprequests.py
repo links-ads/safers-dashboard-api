@@ -14,10 +14,13 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from safers.core.decorators import swagger_fake
+from safers.core.models import SafersSettings
 
 from safers.data.models import MapRequest, DataType
 from safers.data.permissions import IsReadOnlyOrOwner
 from safers.data.serializers import MapRequestSerializer, MapRequestViewSerializer
+
+from safers.rmq import RMQ_USER
 
 from safers.users.authentication import ProxyAuthentication
 from safers.users.exceptions import AuthenticationException
@@ -289,7 +292,13 @@ class MapRequestViewSet(
 
         view_serializer = MapRequestViewSerializer(
             data=request.query_params,
-            context=self.get_serializer_context(),
+            context=dict(
+                **self.get_serializer_context(),
+                map_request_codes=[
+                    f"{RMQ_USER}.{request_id}"
+                    for request_id in map_requests.keys()
+                ],
+            ),
         )
         view_serializer.is_valid(raise_exception=True)
 
