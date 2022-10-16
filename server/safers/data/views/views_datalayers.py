@@ -1,6 +1,7 @@
 import requests
 from collections import OrderedDict
 from datetime import datetime, timedelta
+from itertools import repeat
 from urllib.parse import quote_plus, urlencode, urljoin
 
 from django.conf import settings
@@ -22,6 +23,7 @@ from safers.users.permissions import IsRemote
 
 from safers.data.models import DataType
 from safers.data.serializers import DataLayerViewSerializer
+from safers.data.utils import extent_to_scaled_resolution
 
 ###########
 # swagger #
@@ -160,7 +162,12 @@ class DataLayerView(views.APIView):
         MAX_GEOSERVER_TIMES = 100  # the maximum timestamps that can be passed to GetTimeSeries at once
 
         safers_settings = SafersSettings.load()
-        resolution = 1024 if safers_settings.restrict_data_to_aoi else 512
+        if safers_settings.restrict_data_to_aoi:
+            max_resolution = 1024
+            width, height = extent_to_scaled_resolution(request.user.default_aoi.geometry.extent, max_resolution)
+        else:
+            max_resolution = 512
+            width, height = repeat(max_resolution, 2)
 
         serializer = self.serializer_class(
             data=request.query_params,
@@ -197,8 +204,8 @@ class DataLayerView(views.APIView):
                 "version": "1.1.0",
                 "bbox": "{{bbox}}",
                 "transparent": True,
-                "width": resolution,
-                "height": resolution,
+                "width": width,  # max_resolution,
+                "height": height,  # max_resolution,
                 "format": "image/png",
             },
             safe="{}",

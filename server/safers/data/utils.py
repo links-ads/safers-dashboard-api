@@ -17,3 +17,23 @@ def meters_to_degrees(meters, latitude=None):
     if latitude is not None:
         degrees /= math.cos(latitude / 360.0 * math.pi)
     return degrees
+
+
+def extent_to_scaled_resolution(extent, max_resolution):
+    """
+    quick-and-dirty way to scale layer heigh/width based on shape of bbox
+    """
+    x_min, y_min, x_max, y_max = extent
+    x_distance = abs(x_max - x_min)
+    y_distance = abs(y_max - y_min)
+    if x_distance >= y_distance:
+        x_resolution = max_resolution
+        y_resolution = (max_resolution * y_distance) / x_distance
+    else:
+        x_resolution = (max_resolution * x_distance) / y_distance
+        y_resolution = max_resolution
+
+    return (
+        round(x_resolution),
+        round(y_resolution),
+    )

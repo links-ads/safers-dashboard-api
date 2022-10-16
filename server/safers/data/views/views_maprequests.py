@@ -20,6 +20,7 @@ from safers.core.utils import chunk
 from safers.data.models import MapRequest, DataType
 from safers.data.permissions import IsReadOnlyOrOwner
 from safers.data.serializers import MapRequestSerializer, MapRequestViewSerializer
+from safers.data.utils import extent_to_scaled_resolution
 
 from safers.rmq import RMQ_USER
 
@@ -223,7 +224,7 @@ class MapRequestViewSet(
         # TODO: REFACTOR - MUCH OF THIS IS DUPLILCATED IN DataLayerView
 
         safers_settings = SafersSettings.load()
-        resolution = safers_settings.map_request_resolution
+        max_resolution = safers_settings.map_request_resolution
 
         geoserver_layer_query_params = urlencode(
             {
@@ -235,8 +236,8 @@ class MapRequestViewSet(
                 "layers": "{name}",
                 "bbox": "{bbox}",
                 "transparent": True,
-                "width": resolution,
-                "height": resolution,
+                "width": "{width}",  # max_resolution,
+                "height": "{height}",  # max_resolution,
                 "format": "image/png",
             },
             safe="{}",
@@ -370,6 +371,11 @@ class MapRequestViewSet(
                                                         name=quote_plus(detail["name"]),
                                                         time=quote_plus(timestamp),
                                                         bbox=quote_plus(map_request["geometry_buffered_extent_str"]),
+                                                        **dict(zip(
+                                                            # (a bit of indirection so that I only call extent_to_scaled_representation once)
+                                                            ["width", "height"],
+                                                            extent_to_scaled_resolution(map_request["geometry_buffered_extent"], max_resolution)
+                                                        )),
                                                     )
                                                 )
                                                 for timestamp in detail.get("timestamps", [])
