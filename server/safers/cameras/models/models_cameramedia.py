@@ -56,6 +56,12 @@ class CameraMediaQuerySet(models.QuerySet):
         return self.exclude(tags__name__in=["fire", "smoke"]).distinct()
         # return self.filter(Q(_is_fire=False) & Q(_is_smoke=False))
 
+    def alerted(self):
+        return self.filter(alert__isnull=False)
+
+    def unalerted(self):
+        return self.filter(alert__isnull=True)
+
 
 class CameraMediaFireClass(models.Model):
     class Meta:
@@ -192,13 +198,17 @@ class CameraMedia(gis_models.Model):
         if not self.is_detected:
             return False
 
-        most_recent_other_detected_camera_media = self.camera.media.exclude(
-            pk=self.pk
-        ).detected().order_by("timestamp").last()
+        other_camera_medias = self.camera.media.exclude(pk=self.pk)
+        other_detected_camera_medias = other_camera_medias.detected()
+        other_alerted_detected_camera_medias = other_detected_camera_medias.alerted(
+        )
+        most_recent_alerted_detected_camera_media = other_alerted_detected_camera_medias.order_by(
+            "timestamp"
+        ).last()
 
-        return not most_recent_other_detected_camera_media or (
+        return not most_recent_alerted_detected_camera_media or (
             abs(
                 self.timestamp -
-                most_recent_other_detected_camera_media.timestamp
+                most_recent_alerted_detected_camera_media.timestamp
             ) >= settings.SAFERS_DEFAULT_TIMERANGE
         )
