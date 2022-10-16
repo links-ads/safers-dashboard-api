@@ -15,6 +15,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from safers.core.decorators import swagger_fake
 from safers.core.models import SafersSettings
+from safers.core.utils import chunk
 
 from safers.data.models import MapRequest, DataType
 from safers.data.permissions import IsReadOnlyOrOwner
@@ -102,6 +103,7 @@ _map_request_list_schema = openapi.Schema(
                             "metadata_url": "url",
                             "legend_url": "url",
                             "pixel_url": "url",
+                            "timeseries_urls": ["url", "url"],
                             "timeseries_url": "url",
                             "urls": [
                                 {
@@ -161,6 +163,8 @@ class MapRequestViewSet(
     GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
     GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
     METADATA_URL_PATH = "/api/data/layers/metadata"
+
+    MAX_GEOSERVER_TIMES = 100  # the maximum timestamps that can be passed to GetTimeSeries at once
 
     SRS = "EPSG:4326"  # (WGS84)
     # SRS = "EPSG:3587"  # (Web Mercator)
@@ -344,6 +348,13 @@ class MapRequestViewSet(
                                     "metadata_url": metadata_url.format(metadata_id=detail.get("metadata_Id"), metadata_format="json"),
                                     "legend_url": geoserver_legend_url.format(name=quote_plus(detail["name"])),
                                     "pixel_url": geoserver_pixel_url.format(name=quote_plus(detail["name"])),
+                                    "timeseries_urls": [
+                                        geoserver_timeseries_url.format(
+                                            name=quote_plus(detail["name"]),
+                                            time=quote_plus(",".join(timestamps_chunk)),
+                                        )
+                                        for timestamps_chunk in chunk(detail["timestamps"], self.MAX_GEOSERVER_TIMES)
+                                    ] if len(detail.get("timestamps", [])) > 1 else None,
                                     "timeseries_url":
                                         geoserver_timeseries_url.format(
                                             name=quote_plus(detail["name"]),

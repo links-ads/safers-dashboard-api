@@ -14,6 +14,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from safers.core.models import SafersSettings
+from safers.core.utils import chunk
 
 from safers.users.authentication import ProxyAuthentication
 from safers.users.exceptions import AuthenticationException
@@ -63,6 +64,10 @@ _data_layer_schema = openapi.Schema(
                     "metadata_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=json",
                     "legend_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetLegendGraphic&srs=EPSG%3A4326&width=256&height=256&format=image%2Fpng",
                     "pixel_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GetFeatureInfo...",
+                    "timeseries_urls": [
+                      "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
+                      "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
+                    ],
                     "timeseries_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
                     "urls": {
                       "2022-04-28T12:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
@@ -151,6 +156,8 @@ class DataLayerView(views.APIView):
         GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
         GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
         METADATA_URL_PATH = "/api/data/layers/metadata"
+
+        MAX_GEOSERVER_TIMES = 100  # the maximum timestamps that can be passed to GetTimeSeries at once
 
         safers_settings = SafersSettings.load()
         resolution = 1024 if safers_settings.restrict_data_to_aoi else 512
@@ -318,10 +325,17 @@ class DataLayerView(views.APIView):
                         "pixel_url": geoserver_pixel_url.format(
                             name=quote_plus(detail["name"]),
                         ),
+                        "timeseries_urls": [
+                          geoserver_timeseries_url.format(
+                            name=quote_plus(detail["name"]),
+                            time=quote_plus(",".join(timestamps_chunk)),
+                          )
+                          for timestamps_chunk in chunk(detail["timestamps"], MAX_GEOSERVER_TIMES)
+                        ] if len(detail.get("timestamps", [])) > 1 else None,
                         "timeseries_url": geoserver_timeseries_url.format(
                             name=quote_plus(detail["name"]),
                             time=quote_plus(",".join(detail["timestamps"])),
-                        ) if len(detail.get("timestamps", [])) > 0 else None,
+                        ) if len(detail.get("timestamps", [])) > 1 else None,
                         "urls": OrderedDict(
                           [
                             (
