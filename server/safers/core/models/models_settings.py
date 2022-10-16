@@ -53,6 +53,13 @@ class SafersSettings(SingletonMixin, models.Model):
         )
     )
 
+    map_request_resolution = models.PositiveIntegerField(
+        default=512,
+        help_text=_(
+            "The resolution (ie: height x width) to use for MapRequests."
+        )
+    )
+
     polling_frequency = models.FloatField(
         default=10,
         validators=[MinValueValidator(0)],

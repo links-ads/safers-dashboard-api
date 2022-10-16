@@ -162,6 +162,9 @@ class MapRequestViewSet(
     GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
     METADATA_URL_PATH = "/api/data/layers/metadata"
 
+    SRS = "EPSG:4326"  # (WGS84)
+    # SRS = "EPSG:3587"  # (Web Mercator)
+
     @swagger_fake(MapRequest.objects.none())
     def get_queryset(self):
         """
@@ -215,18 +218,21 @@ class MapRequestViewSet(
 
         # TODO: REFACTOR - MUCH OF THIS IS DUPLILCATED IN DataLayerView
 
+        safers_settings = SafersSettings.load()
+        resolution = safers_settings.map_request_resolution
+
         geoserver_layer_query_params = urlencode(
             {
                 "service": "WMS",
                 "version": "1.1.0",
                 "request": "GetMap",
-                "srs": "EPSG:4326",
+                "srs": self.SRS,
                 "time": "{time}",
                 "layers": "{name}",
                 "bbox": "{bbox}",
                 "transparent": True,
-                "width": 1024,
-                "height": 1024,
+                "width": resolution,
+                "height": resolution,
                 "format": "image/png",
             },
             safe="{}",
