@@ -288,6 +288,7 @@ class MapRequestViewSet(
                 "srs": "EPSG:4326",
                 "format":
                     "text/csv",  # "image/png" or "image/jpg" or "text/csv"
+                "styles": "raw",
                 "time": "{time}",
                 "layers": "{name}",
                 "query_layers": "{name}",
