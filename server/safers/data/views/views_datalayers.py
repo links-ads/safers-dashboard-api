@@ -162,12 +162,12 @@ class DataLayerView(views.APIView):
         MAX_GEOSERVER_TIMES = 100  # the maximum timestamps that can be passed to GetTimeSeries at once
 
         safers_settings = SafersSettings.load()
-        if safers_settings.restrict_data_to_aoi:
-            max_resolution = 1024
-            width, height = extent_to_scaled_resolution(request.user.default_aoi.geometry.extent, max_resolution)
-        else:
-            max_resolution = 512
-            width, height = repeat(max_resolution, 2)
+        max_resolution = safers_settings.map_request_resolution
+        # if safers_settings.restrict_data_to_aoi:
+        #     width, height = extent_to_scaled_resolution(request.user.default_aoi.geometry.extent, max_resolution)
+        # else:
+        #     width, height = repeat(max_resolution, 2)
+        width, height = repeat(max_resolution, 2)
 
         serializer = self.serializer_class(
             data=request.query_params,

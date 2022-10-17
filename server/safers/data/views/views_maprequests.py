@@ -1,5 +1,6 @@
 import requests
 from collections import OrderedDict, defaultdict
+from itertools import repeat
 from urllib.parse import quote_plus, urlencode, urljoin
 
 from django.conf import settings
@@ -225,6 +226,7 @@ class MapRequestViewSet(
 
         safers_settings = SafersSettings.load()
         max_resolution = safers_settings.map_request_resolution
+        width, height = repeat(max_resolution, 2)
 
         geoserver_layer_query_params = urlencode(
             {
@@ -236,8 +238,8 @@ class MapRequestViewSet(
                 "layers": "{name}",
                 "bbox": "{bbox}",
                 "transparent": True,
-                "width": "{width}",  # max_resolution,
-                "height": "{height}",  # max_resolution,
+                "width": width,  # "{width}",  # max_resolution,
+                "height": height,  # "{height}",  # max_resolution,
                 "format": "image/png",
             },
             safe="{}",
@@ -371,11 +373,11 @@ class MapRequestViewSet(
                                                         name=quote_plus(detail["name"]),
                                                         time=quote_plus(timestamp),
                                                         bbox=quote_plus(map_request["geometry_buffered_extent_str"]),
-                                                        **dict(zip(
-                                                            # (a bit of indirection so that I only call extent_to_scaled_representation once)
-                                                            ["width", "height"],
-                                                            extent_to_scaled_resolution(map_request["geometry_buffered_extent"], max_resolution)
-                                                        )),
+                                                        # **dict(zip(
+                                                        #     # (a bit of indirection so that I only call extent_to_scaled_representation once)
+                                                        #     ["width", "height"],
+                                                        #     extent_to_scaled_resolution(map_request["geometry_buffered_extent"], max_resolution)
+                                                        # )),
                                                     )
                                                 )
                                                 for timestamp in detail.get("timestamps", [])
