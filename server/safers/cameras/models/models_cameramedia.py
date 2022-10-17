@@ -207,8 +207,5 @@ class CameraMedia(gis_models.Model):
         ).last()
 
         return not most_recent_alerted_detected_camera_media or (
-            abs(
-                self.timestamp -
-                most_recent_alerted_detected_camera_media.timestamp
-            ) >= settings.SAFERS_DEFAULT_TIMERANGE
-        )
+            self.timestamp - most_recent_alerted_detected_camera_media.timestamp
+        ) >= settings.SAFERS_DEFAULT_TIMERANGE
