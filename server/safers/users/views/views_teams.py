@@ -1,3 +1,5 @@
+import json
+import logging
 import requests
 from urllib.parse import urljoin
 
@@ -12,6 +14,8 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from safers.users.authentication import ProxyAuthentication
+
+logger = logging.getLogger(__file__)
 
 _team_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -42,15 +46,21 @@ def teams_view(request):
 
     user = request.user
 
-    response = requests.get(
-        urljoin(
-            settings.SAFERS_GATEWAY_API_URL,
-            GET_TEAMS_URL_PATH,
-        ),
-        auth=ProxyAuthentication(user),
-        params={"MaxResultCount": 1000}
-    )
-    response.raise_for_status()
+    try:
+        response = requests.get(
+            urljoin(
+                settings.SAFERS_GATEWAY_API_URL,
+                GET_TEAMS_URL_PATH,
+            ),
+            auth=ProxyAuthentication(user),
+            params={"MaxResultCount": 1000}
+        )
+        response.raise_for_status()
+    except Exception as e:
+        logger.error("### ERROR GETTING TEAMS ###")
+        logger.error(str(e))
+        logger.error(json.dumps(response.json()))
+        raise e
 
     if user.is_remote:
         teams = [
