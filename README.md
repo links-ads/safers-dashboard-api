@@ -56,6 +56,8 @@ several environment variables are required for **safers-dashboard-api**:
 * DJANGO_RMQ_USERNAME
 * DJANGO_RMQ_PASSWORD
 * DJANGO_RMQ_APP_ID="dsh"
+* DJANGO_SENTRY_DSN
+* DJANGO_SENTRY_EVN
 
 In addition, in order to ensure uniqueness among message ids, a `SiteProfile` should be configured.  This can be done in the Django Admin; simply ensure the profiles `code` is a unique string value.
 
@@ -83,3 +85,9 @@ Profiling is handled using cProfile & django-cprofile-middleware & snakeviz & si
 - db queries can be monitored by going to "http://localhost:8000/silk"
 
 Alternatively - b/c the above is a bit "unuser-friendly" - django-debug-toolbar is also enabled.  It is a bit limited, obviously, b/c of Django Rest Framework.  For GETs, usage is: `localhost:8000/api/<whatever>/?format=json&debug-toolbar`
+
+## logging
+
+In development, stream-based logging is enabled.
+
+In deployment, `sentry.io` is enabled.  This requires the environment variables `DJANGO_SENTRY_DSN` and `DJANGO_SENTRY_ENV` to be set.
