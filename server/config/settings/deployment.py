@@ -1,6 +1,9 @@
 from .base import *
 from .base import env
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 DEBUG = env("DJANGO_DEBUG", default="false") == "true"
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
@@ -78,3 +81,27 @@ PUBLIC_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PUBLIC_MEDIA_LOCATION}/'
 PRIVATE_MEDIA_DEFAULT_ACL = 'private'
 PRIVATE_MEDIA_LOCATION = 'media/private'
 PRIVATE_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PRIVATE_MEDIA_LOCATION}/'
+
+###########
+# logging #
+###########
+
+SENTRY_DSN = env("DJANGO_SENTRY_DSN", default=None)
+SENTRY_ENV = env("DJANGO_SENTRY_ENV", default=None)
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=SENTRY_ENV,
+        integrations=[
+            DjangoIntegration(),
+        ],
+
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0,
+
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True
+    )
