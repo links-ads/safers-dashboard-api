@@ -35,9 +35,7 @@ BINDING_KEYS = {
     ),  # TODO: WHY DO I HAVE TO HARD-CODE THE APP_ID FOR THE NEXT 3 KEYS (INSTEAD OF USING "*") ?
     f"status.brn.*.{RMQ_USER}.#": ("safers.data.models.MapRequest", ),
     f"status.pwm.*.{RMQ_USER}.#": ("safers.data.models.MapRequest", ),
-    f"status.propagator.*.{RMQ_USER}.#": (
-        "safers.data.models.MapRequest",
-    ),  # f"status.imp.*.{RMQ_USER}.#": ("safers.data.models.MapRequest", ),
+    f"status.propagator.*.{RMQ_USER}.#": ("safers.data.models.MapRequest", ),
     "status.test.*": (),
 }
 
