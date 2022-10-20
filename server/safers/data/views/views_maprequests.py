@@ -106,7 +106,6 @@ _map_request_list_schema = openapi.Schema(
                             "legend_url": "url",
                             "pixel_url": "url",
                             "timeseries_urls": ["url", "url"],
-                            "timeseries_url": "url",
                             "urls": [
                                 {
                                     "datetime": "url"
@@ -359,13 +358,6 @@ class MapRequestViewSet(
                                         )
                                         for timestamps_chunk in chunk(detail["timestamps"], self.MAX_GEOSERVER_TIMES)
                                     ] if len(detail.get("timestamps", [])) > 1 else None,
-                                    "timeseries_url":
-                                        geoserver_timeseries_url.format(
-                                            name=quote_plus(detail["name"]),
-                                            time=quote_plus(",".join(detail["timestamps"])),
-                                        )
-                                        if len(detail.get("timestamps", [])) > 1
-                                        else None,
                                     "urls": OrderedDict(
                                             [
                                                 (
