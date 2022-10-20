@@ -70,7 +70,6 @@ _data_layer_schema = openapi.Schema(
                       "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
                       "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
                     ],
-                    "timeseries_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
                     "urls": {
                       "2022-04-28T12:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
                       "2022-04-28T13:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T13%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
@@ -340,10 +339,6 @@ class DataLayerView(views.APIView):
                           )
                           for timestamps_chunk in chunk(detail["timestamps"], MAX_GEOSERVER_TIMES)
                         ] if len(detail.get("timestamps", [])) > 1 else None,
-                        "timeseries_url": geoserver_timeseries_url.format(
-                            name=quote_plus(detail["name"]),
-                            time=quote_plus(",".join(detail["timestamps"])),
-                        ) if len(detail.get("timestamps", [])) > 1 else None,
                         "urls": OrderedDict(
                           [
                             (
