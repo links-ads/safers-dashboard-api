@@ -1,5 +1,6 @@
 import requests
 from collections import OrderedDict, defaultdict
+from datetime import datetime
 from itertools import repeat
 from urllib.parse import quote_plus, urlencode, urljoin
 
@@ -161,8 +162,12 @@ class MapRequestViewSet(
     permission_classes = [IsAuthenticated, IsRemote, IsReadOnlyOrOwner]
     serializer_class = MapRequestSerializer
 
+    DATETIME_INPUT_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+    DATETIME_OUTPUT_FORMAT = "%Y-%m-%dT%H:%M:%S.000Z"
+
     GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
-    GEOSERVER_URL_PATH = "/geoserver/ermes/wms"
+    GEOSERVER_WMS_URL_PATH = "/geoserver/ermes/wms"
+    GEOSERVER_WMTS_URL_PATH = "/geoserver/gwc/service/wmts"
     METADATA_URL_PATH = "/api/data/layers/metadata"
 
     MAX_GEOSERVER_TIMES = 100  # the maximum timestamps that can be passed to GetTimeSeries at once
@@ -227,7 +232,7 @@ class MapRequestViewSet(
         max_resolution = safers_settings.map_request_resolution
         width, height = repeat(max_resolution, 2)
 
-        geoserver_layer_query_params = urlencode(
+        geoserver_wms_layer_query_params = urlencode(
             {
                 "service": "WMS",
                 "version": "1.1.0",
@@ -237,13 +242,31 @@ class MapRequestViewSet(
                 "layers": "{name}",
                 "bbox": "{bbox}",
                 "transparent": True,
-                "width": width,  # "{width}",  # max_resolution,
-                "height": height,  # "{height}",  # max_resolution,
+                "width": width,
+                "height": height,
                 "format": "image/png",
             },
             safe="{}",
         )
-        geoserver_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_URL_PATH)}?{geoserver_layer_query_params}"
+        geoserver_wms_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_WMS_URL_PATH)}?{geoserver_wms_layer_query_params}"
+
+        geoserver_wmts_layer_query_params = urlencode(
+            {
+                "time": "{time}",
+                "layer": "{name}",
+                "service": "WMTS",
+                "request": "GetTile",
+                "version": "1.0.0",
+                "transparent": True,
+                "tilematrixset": "EPSG:4326",
+                "tilematrix": "EPSG:4326:{{z}}",
+                "tilecol": "{{x}}",
+                "tilerow": "{{y}}",
+                "format": "image/png",
+            },
+            safe="{}",
+        )
+        geoserver_wmts_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_WMTS_URL_PATH)}?{geoserver_wmts_layer_query_params}"
 
         geoserver_legend_query_params = urlencode(
             {
@@ -258,7 +281,7 @@ class MapRequestViewSet(
             },
             safe="{}",
         )
-        geoserver_legend_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_URL_PATH)}?{geoserver_legend_query_params}"
+        geoserver_legend_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_WMS_URL_PATH)}?{geoserver_legend_query_params}"
 
         geoserver_pixel_query_params = urlencode(
             {
@@ -277,7 +300,7 @@ class MapRequestViewSet(
             },
             safe="{}",
         )
-        geoserver_pixel_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_URL_PATH)}?{geoserver_pixel_query_params}"
+        geoserver_pixel_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_WMS_URL_PATH)}?{geoserver_pixel_query_params}"
 
         geoserver_timeseries_query_params = urlencode(
             {
@@ -299,7 +322,7 @@ class MapRequestViewSet(
             },
             safe="{}",
         )
-        geoserver_timeseries_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_URL_PATH)}?{geoserver_timeseries_query_params}"
+        geoserver_timeseries_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_WMS_URL_PATH)}?{geoserver_timeseries_query_params}"
 
         metadata_url = f"{self.request.build_absolute_uri(self.METADATA_URL_PATH)}/{{metadata_id}}?metadata_format={{metadata_format}}"
 
@@ -362,10 +385,10 @@ class MapRequestViewSet(
                                             [
                                                 (
                                                     timestamp,
-                                                    geoserver_layer_url.format(
+                                                    geoserver_wmts_layer_url.format(
                                                         name=quote_plus(detail["name"]),
                                                         time=quote_plus(timestamp),
-                                                        bbox=quote_plus(map_request["geometry_buffered_extent_str"]),
+                                                        # bbox=quote_plus(map_request["geometry_buffered_extent_str"]),
                                                         # **dict(zip(
                                                         #     # (a bit of indirection so that I only call extent_to_scaled_representation once)
                                                         #     ["width", "height"],
@@ -373,7 +396,10 @@ class MapRequestViewSet(
                                                         # )),
                                                     )
                                                 )
-                                                for timestamp in detail.get("timestamps", [])
+                                                for timestamp in map(
+                                                    lambda x: datetime.strptime(x, self.DATETIME_INPUT_FORMAT).strftime(self.DATETIME_OUTPUT_FORMAT),
+                                                    detail.get("timestamps", [])
+                                                )
                                             ]
                                         )
                                 }
