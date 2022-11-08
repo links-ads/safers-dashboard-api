@@ -172,8 +172,8 @@ class MapRequestViewSet(
 
     MAX_GEOSERVER_TIMES = 100  # the maximum timestamps that can be passed to GetTimeSeries at once
 
-    SRS = "EPSG:4326"  # (WGS84)
-    # SRS = "EPSG:3587"  # (Web Mercator)
+    WMS_CRS = "EPSG:4326"
+    WMTS_CRS = "EPSG:900913"
 
     @swagger_fake(MapRequest.objects.none())
     def get_queryset(self):
@@ -237,7 +237,7 @@ class MapRequestViewSet(
                 "service": "WMS",
                 "version": "1.1.0",
                 "request": "GetMap",
-                "srs": self.SRS,
+                "srs": self.WMS_CRS,
                 "time": "{time}",
                 "layers": "{name}",
                 "bbox": "{bbox}",
@@ -258,8 +258,8 @@ class MapRequestViewSet(
                 "request": "GetTile",
                 "version": "1.0.0",
                 "transparent": True,
-                "tilematrixset": "EPSG:4326",
-                "tilematrix": "EPSG:4326:{{z}}",
+                "tilematrixset": self.WMTS_CRS,
+                "tilematrix": self.WMTS_CRS + ":{{z}}",
                 "tilecol": "{{x}}",
                 "tilerow": "{{y}}",
                 "format": "image/png",
@@ -273,7 +273,7 @@ class MapRequestViewSet(
                 "layer": "{name}",
                 "service": "WMS",
                 "request": "GetLegendGraphic",
-                "srs": "EPSG:4326",
+                "srs": self.WMS_CRS,
                 "width": 512,
                 "height": 256,
                 "format": "image/png",
@@ -288,7 +288,7 @@ class MapRequestViewSet(
                 "service": "WMS",
                 "version": "1.1.0",
                 "request": "GetFeatureInfo",
-                "srs": "EPSG:4326",
+                "srs": self.WMS_CRS,
                 "info_format": "application/json",
                 "layers": "{name}",
                 "query_layers": "{name}",
@@ -307,7 +307,7 @@ class MapRequestViewSet(
                 "service": "WMS",
                 "version": "1.1.0",
                 "request": "GetTimeSeries",
-                "srs": "EPSG:4326",
+                "srs": self.WMS_CRS,
                 "format":
                     "text/csv",  # "image/png" or "image/jpg" or "text/csv"
                 "styles": "raw",
