@@ -71,9 +71,9 @@ _data_layer_schema = openapi.Schema(
                       "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
                     ],
                     "urls": {
-                      "2022-04-28T12:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T12%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
-                      "2022-04-28T13:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T13%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
-                      "2022-04-28T14:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?time=2022-04-28T14%3A15%3A20Z&layers=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetMap&srs=EPSG%3A4326&bbox={bbox}&width=256&height=256&format=image%2Fpng",
+                      "2022-04-28T12:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T12%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng",
+                      "2022-04-28T13:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T13%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng",
+                      "2022-04-28T14:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T14%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng",
                     }
                 }
               ]
