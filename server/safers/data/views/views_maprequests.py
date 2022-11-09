@@ -16,7 +16,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from safers.core.decorators import swagger_fake
-from safers.core.models import SafersSettings
+from safers.core.models import SafersSettings, GeoserverStandards
 from safers.core.utils import chunk
 
 from safers.data.models import MapRequest, DataType
@@ -232,41 +232,43 @@ class MapRequestViewSet(
         max_resolution = safers_settings.map_request_resolution
         width, height = repeat(max_resolution, 2)
 
-        geoserver_wms_layer_query_params = urlencode(
-            {
-                "service": "WMS",
-                "version": "1.1.0",
-                "request": "GetMap",
-                "srs": self.WMS_CRS,
-                "time": "{time}",
-                "layers": "{name}",
-                "bbox": "{bbox}",
-                "transparent": True,
-                "width": width,
-                "height": height,
-                "format": "image/png",
-            },
-            safe="{}",
-        )
-        geoserver_wms_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_WMS_URL_PATH)}?{geoserver_wms_layer_query_params}"
+        if safers_settings.geoserver_standard == GeoserverStandards.WMS:
+            geoserver_layer_query_params = urlencode(
+                {
+                    "service": "WMS",
+                    "version": "1.1.0",
+                    "request": "GetMap",
+                    "srs": self.WMS_CRS,
+                    "time": "{time}",
+                    "layers": "{name}",
+                    "bbox": "{bbox}",
+                    "transparent": True,
+                    "width": width,
+                    "height": height,
+                    "format": "image/png",
+                },
+                safe="{}",
+            )
+            geoserver_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_WMS_URL_PATH)}?{geoserver_layer_query_params}"
 
-        geoserver_wmts_layer_query_params = urlencode(
-            {
-                "time": "{time}",
-                "layer": "{name}",
-                "service": "WMTS",
-                "request": "GetTile",
-                "version": "1.0.0",
-                "transparent": True,
-                "tilematrixset": self.WMTS_CRS,
-                "tilematrix": self.WMTS_CRS + ":{{z}}",
-                "tilecol": "{{x}}",
-                "tilerow": "{{y}}",
-                "format": "image/png",
-            },
-            safe="{}",
-        )
-        geoserver_wmts_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_WMTS_URL_PATH)}?{geoserver_wmts_layer_query_params}"
+        elif safers_settings.geoserver_standard == GeoserverStandards.WMTS:
+            geoserver_layer_query_params = urlencode(
+                {
+                    "time": "{time}",
+                    "layer": "{name}",
+                    "service": "WMTS",
+                    "request": "GetTile",
+                    "version": "1.0.0",
+                    "transparent": True,
+                    "tilematrixset": self.WMTS_CRS,
+                    "tilematrix": self.WMTS_CRS + ":{{z}}",
+                    "tilecol": "{{x}}",
+                    "tilerow": "{{y}}",
+                    "format": "image/png",
+                },
+                safe="{}",
+            )
+            geoserver_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, self.GEOSERVER_WMTS_URL_PATH)}?{geoserver_layer_query_params}"
 
         geoserver_legend_query_params = urlencode(
             {
@@ -385,10 +387,10 @@ class MapRequestViewSet(
                                             [
                                                 (
                                                     timestamp,
-                                                    geoserver_wmts_layer_url.format(
+                                                    geoserver_layer_url.format(
                                                         name=quote_plus(detail["name"]),
                                                         time=quote_plus(timestamp),
-                                                        # bbox=quote_plus(map_request["geometry_buffered_extent_str"]),
+                                                        bbox=quote_plus(map_request["geometry_buffered_extent_str"]),
                                                         # **dict(zip(
                                                         #     # (a bit of indirection so that I only call extent_to_scaled_representation once)
                                                         #     ["width", "height"],

@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.core.models import SafersSettings
+from safers.core.models import SafersSettings, GeoserverStandards
 from safers.core.utils import chunk
 
 from safers.users.authentication import ProxyAuthentication
@@ -200,41 +200,43 @@ class DataLayerView(views.APIView):
         except Exception as e:
             raise AuthenticationException(e)
 
-        geoserver_wms_layer_query_params = urlencode(
-            {
-                "time": "{time}",
-                "layers": "{name}",
-                "service": "WMS",
-                "request": "GetMap",
-                "srs": WMS_CRS,
-                "version": "1.1.0",
-                "bbox": "{{bbox}}",
-                "transparent": True,
-                "width": width,  # max_resolution,
-                "height": height,  # max_resolution,
-                "format": "image/png",
-            },
-            safe="{}",
-        )
-        geoserver_wms_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_WMS_URL_PATH)}?{geoserver_wms_layer_query_params}"
+        if safers_settings.geoserver_standard == GeoserverStandards.WMS:
+            geoserver_layer_query_params = urlencode(
+                {
+                    "time": "{time}",
+                    "layers": "{name}",
+                    "service": "WMS",
+                    "request": "GetMap",
+                    "srs": WMS_CRS,
+                    "version": "1.1.0",
+                    "bbox": "{{bbox}}",
+                    "transparent": True,
+                    "width": width,  # max_resolution,
+                    "height": height,  # max_resolution,
+                    "format": "image/png",
+                },
+                safe="{}",
+            )
+            geoserver_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_WMS_URL_PATH)}?{geoserver_layer_query_params}"
 
-        geoserver_wmts_layer_query_params = urlencode(
-            {
-                "time": "{time}",
-                "layer": "{name}",
-                "service": "WMTS",
-                "request": "GetTile",
-                "version": "1.0.0",
-                "transparent": True,
-                "tilematrixset": WMTS_CRS,
-                "tilematrix": WMTS_CRS + ":{{z}}",
-                "tilecol": "{{x}}",
-                "tilerow": "{{y}}",
-                "format": "image/png",
-            },
-            safe="{}",
-        )
-        geoserver_wmts_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_WMTS_URL_PATH)}?{geoserver_wmts_layer_query_params}"
+        elif safers_settings.geoserver_standard == GeoserverStandards.WMTS:
+            geoserver_layer_query_params = urlencode(
+                {
+                    "time": "{time}",
+                    "layer": "{name}",
+                    "service": "WMTS",
+                    "request": "GetTile",
+                    "version": "1.0.0",
+                    "transparent": True,
+                    "tilematrixset": WMTS_CRS,
+                    "tilematrix": WMTS_CRS + ":{{z}}",
+                    "tilecol": "{{x}}",
+                    "tilerow": "{{y}}",
+                    "format": "image/png",
+                },
+                safe="{}",
+            )
+            geoserver_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_WMTS_URL_PATH)}?{geoserver_layer_query_params}"
 
         geoserver_legend_query_params = urlencode(
             {
@@ -368,7 +370,7 @@ class DataLayerView(views.APIView):
                           [
                             (
                                 timestamp,
-                                geoserver_wmts_layer_url.format(
+                                geoserver_layer_url.format(
                                   name=quote_plus(detail["name"]),
                                   time=quote_plus(timestamp),
                                 )
