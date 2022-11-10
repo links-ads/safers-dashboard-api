@@ -6,6 +6,11 @@ from django.utils.translation import gettext_lazy as _
 from safers.core.mixins import SingletonMixin
 
 
+class GeoserverStandards(models.TextChoices):
+    WMS = "WMS", _("WMS")
+    WMTS = "WMTS", _("WMTS")
+
+
 class SafersSettings(SingletonMixin, models.Model):
     class Meta:
         verbose_name = "Safers Settings"
@@ -58,6 +63,13 @@ class SafersSettings(SingletonMixin, models.Model):
         help_text=_(
             "The resolution (ie: height x width) to use for MapRequests."
         )
+    )
+
+    geoserver_standard = models.CharField(
+        max_length=32,
+        choices=GeoserverStandards.choices,
+        default=GeoserverStandards.WMTS,
+        help_text=_("Whether to use tiled (WMTS) or non-tiled data (WMS)."),
     )
 
     polling_frequency = models.FloatField(
