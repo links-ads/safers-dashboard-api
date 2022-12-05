@@ -90,11 +90,6 @@ _data_layer_list_schema = openapi.Schema(
 )  # yapf: disable
 
 
-_data_layer_sources_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-)  # yapf: disable
-
-
 _data_layer_domains_schema = openapi.Schema(
     type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
 )  # yapf: disable
@@ -413,21 +408,6 @@ def data_layer_domains_view(request):
         domain__isnull=True
     ).order_by("domain").values_list("domain", flat=True).distinct()
     return Response(data_type_domains, status=status.HTTP_200_OK)
-
-
-@swagger_auto_schema(
-    responses={status.HTTP_200_OK: _data_layer_sources_schema}, method="get"
-)
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def data_layer_sources_view(request):
-    """
-    Returns the list of possible DataLayer sources.
-    """
-    data_type_sources = DataType.objects.operational().only("source").exclude(
-        source__isnull=True
-    ).order_by("source").values_list("source", flat=True).distinct()
-    return Response(data_type_sources, status=status.HTTP_200_OK)
 
 
 """
