@@ -1,3 +1,3 @@
-from .views_datalayers import DataLayerView, data_layer_domains_view, data_layer_sources_view
+from .views_datalayers import DataLayerView, data_layer_domains_view
 from .views_metadata import DataLayerMetadataView
-from .views_maprequests import MapRequestViewSet, map_request_domains_view, map_request_sources_view
+from .views_maprequests import MapRequestViewSet, map_request_domains_view
