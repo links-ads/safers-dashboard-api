@@ -1,3 +1,5 @@
 # used by development; deployment uses heroku-scheduler
 # run purge_camera_media every hour 
 0 * * * * /home/app/scheduler/scripts/purge_camera_media.development.sh >> /home/app/scheduler/crontab.log 2>&1
+# run backups every day
+0 0 * * * /home/app/scheduler/scripts/backup.development.sh >> /home/app/scheduler/crontab.log 2>&1
