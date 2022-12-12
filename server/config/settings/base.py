@@ -64,6 +64,7 @@ THIRD_PARTY_APPS = [
     'allauth.socialaccount',
     'anymail',
     'corsheaders',
+    'dbbackup',
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'django_filters',
@@ -371,6 +372,13 @@ SWAGGER_SETTINGS = {
 ###########
 
 # logging is configured in development.py and/or deployment.py
+
+###########
+# backups #
+###########
+
+DBBACKUP_STORAGE = "django.core.files.storage.FileSystemStorage"
+DBBACKUP_STORAGE_OPTIONS = {"location": f"/tmp/{PROJECT_SLUG}/backups/"}
 
 #######
 # RMQ #
