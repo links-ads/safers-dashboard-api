@@ -60,6 +60,13 @@ LOGGING = {
     },
 }
 
+###########
+# backups #
+###########
+
+DBBACKUP_STORAGE = "safers.core.storage.LocalMediaStorage"
+DBBACKUP_STORAGE_OPTIONS = {"location": f"/tmp/{PROJECT_SLUG}/backups/"}
+
 #############
 # profiling #
 #############

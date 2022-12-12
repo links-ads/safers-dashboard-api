@@ -377,8 +377,7 @@ SWAGGER_SETTINGS = {
 # backups #
 ###########
 
-DBBACKUP_STORAGE = "django.core.files.storage.FileSystemStorage"
-DBBACKUP_STORAGE_OPTIONS = {"location": f"/tmp/{PROJECT_SLUG}/backups/"}
+# backups are configured in development.py and/or deployment.py
 
 #######
 # RMQ #
