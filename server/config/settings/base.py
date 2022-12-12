@@ -66,7 +66,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'dj_rest_auth',
     'dj_rest_auth.registration',
-    'django_dbfilters',
+    'django_dbbackup',
     'django_filters',
     'drf_yasg',
     'knox',
