@@ -39,7 +39,7 @@ sentry-sdk = "*"
 django-cprofile-middleware = "*"
 django-silk = "*"
 snakeviz = "*"
-
+django-dbbackup = "*"
 
 [dev-packages]
 factory-boy = "*"
