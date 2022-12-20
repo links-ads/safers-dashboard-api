@@ -3,8 +3,6 @@ import json
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from safers.core.fields import UnderspecifiedDateTimeField
-
 from safers.chatbot.models import Mission, MissionStatusChoices
 from .serializers_base import ChatbotViewSerializer, ChatbotDateTimeFormats
 
@@ -83,22 +81,14 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
         geo_field = "geometry"
         id_field = False
 
-    start = UnderspecifiedDateTimeField(
+    start = serializers.DateTimeField(
         input_formats=ChatbotDateTimeFormats,
         write_only=True,
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
     )
 
-    end = UnderspecifiedDateTimeField(
+    end = serializers.DateTimeField(
         input_formats=ChatbotDateTimeFormats,
         write_only=True,
-        hour=23,
-        minute=59,
-        second=59,
-        microsecond=999999,
     )
 
     organizationId = serializers.SerializerMethodField(
