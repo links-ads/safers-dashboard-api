@@ -24,10 +24,14 @@ def post_delete_camera_media_handler(sender, *args, **kwargs):
     """
     If a CamerMedia is being deleted,
     then the corresponding camera might need to be updated as well.
+    Additionally, any associated files should be deleted.
     """
     camera_media = kwargs.get("instance", None)
     if camera_media:
         camera_media.camera.recalculate_last_update(ignore=[camera_media])
+        camera_media_file = camera_media.file
+        if camera_media_file:
+            camera_media_file.delete(save=False)
 
 
 post_delete.connect(

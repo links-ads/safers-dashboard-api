@@ -1,4 +1,7 @@
+import requests
 import uuid
+from tempfile import TemporaryFile
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -6,6 +9,10 @@ from django.db import models
 from django.db.models import Q, ExpressionWrapper
 from django.contrib.gis.db import models as gis_models
 from django.utils.translation import gettext_lazy as _
+
+
+def camera_media_file_path(instance, filename):
+    return f"cameras/{instance.camera}/{filename}"
 
 
 class CameraMediaType(models.TextChoices):
@@ -125,6 +132,12 @@ class CameraMedia(gis_models.Model):
         max_length=512, blank=True, null=True
     )  # pre-signed AWS URLs can be quite long, hence the max_length kwarg
 
+    file = models.FileField(
+        blank=True,
+        null=True,
+        upload_to=camera_media_file_path,
+    )
+
     tags = models.ManyToManyField(
         CameraMediaTag,
         blank=True,
@@ -209,3 +222,28 @@ class CameraMedia(gis_models.Model):
         return not most_recent_alerted_detected_camera_media or (
             self.timestamp - most_recent_alerted_detected_camera_media.timestamp
         ) >= settings.SAFERS_DEFAULT_TIMERANGE
+
+    @staticmethod
+    def copy_url_to_file(url, file_field):
+
+        assert url, "URL does not exist"
+
+        file_name = urlparse(url).path.split('/')[-1]
+        with TemporaryFile() as temp_file:
+            response = requests.get(url, stream=True)
+            response.raise_for_status()
+            for response_chunk in response.iter_content(chunk_size=4096):
+                temp_file.write(response_chunk)
+            temp_file.seek(0)
+            file_field.save(
+                file_name,
+                temp_file,
+            )
+
+    def save(self, **kwargs):
+        retval = super().save(**kwargs)
+
+        if self.url and not self.file:
+            CameraMedia.copy_url_to_file(self.url, self.file)
+
+        return retval
