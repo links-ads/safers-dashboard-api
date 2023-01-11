@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.gis import admin as gis_admin
 from django.db.models import JSONField
 
@@ -47,6 +47,7 @@ class CameraMediaTagAdmin(admin.ModelAdmin):
 
 @admin.register(CameraMedia)
 class CameraMediaAdmin(gis_admin.GeoModelAdmin):
+    actions = ("copy_urls", )
     date_hierarchy = "timestamp"
     fields = (
         "id",
@@ -56,6 +57,7 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
         "modified",
         "description",
         "url",
+        "file",
         "type",
         "tags",
         "fire_classes",
@@ -89,6 +91,7 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
         "fire_classes",
         ("alert", admin.EmptyFieldListFilter),
     )
+    ordering = ("-timestamp", )
     readonly_fields = (
         "id",
         "created",
@@ -115,3 +118,18 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
             return datetime.fromisoformat(message_timestamp)
         except:
             pass
+
+    @admin.display(description="Copy selected Camera Media URLS to files")
+    def copy_urls(self, request, queryset):
+
+        for camera_media in queryset:
+
+            try:
+                camera_media.copy_url_to_file(
+                    camera_media.url, camera_media.file
+                )
+                msg = f"copied {camera_media.id} URL to {camera_media.file}"
+                self.message_user(request, msg, messages.SUCCESS)
+            except Exception as e:
+                msg = f"error copying {camera_media.id} URL: {e}"
+                self.message_user(request, msg, messages.ERROR)
