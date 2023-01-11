@@ -68,7 +68,9 @@ Finally, several fixtures are used to bootstrap the application:
 * ./server/safers/aois/fixtures/aois_fixture.json
 * ./server/safers/cameras/fixtures/cameras_fixture.json
 * ./server/safers/chatbot/fixtures/chatbot_categories_fixture.json
-these can all be added by running: `manage.py configure`
+these can all be added by running: `docker-compose exec server pipenv run ./server/manage.py configure`
+
+To setup the `admin` user so as to log into the `Django Admin Console` on http://localhost:8000/admin. Run the command to create the superuser `docker-compose exec server pipenv run ./server/manage.py createsuperuser`, this will create the user, but by default, the user will not be authorized, so you also need to run `docker-compose exec server pipenv run ./server/manage.py assign_groups --username admin --regex --groups admin`
 
 ## details
 
