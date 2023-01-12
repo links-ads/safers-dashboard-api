@@ -191,7 +191,7 @@
       "owner": "HRT",
       "nation": "Greece",
       "geometry": "SRID=4326;POINT (23.068407 40.620997)",
-      "direction": 0.0,
+      "direction": 116,
       "altitude": 492
     }
   },
@@ -205,7 +205,7 @@
       "owner": "HRT",
       "nation": "Greece",
       "geometry": "SRID=4326;POINT (23.068407 40.620997)",
-      "direction": 0.0,
+      "direction": 139,
       "altitude": 492
     }
   }
