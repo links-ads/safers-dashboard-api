@@ -2,6 +2,24 @@
 
 This API provides the backend for the safers-dashboard-app.
 
+- [safers-dashboard-api](#safers-dashboard-api)
+  - [components](#components)
+    - [server](#server)
+    - [auth](#auth)
+    - [broker](#broker)
+    - [worker](#worker)
+    - [scheduler](#scheduler)
+    - [storage](#storage)
+  - [configuration](#configuration)
+    - [superuser](#superuser)
+    - [environment variables](#environment-variables)
+    - [RMQ Keys](#rmq-keys)
+    - [Fixtures](#fixtures)
+    - [DataTypes](#datatypes)
+  - [localization](#localization)
+  - [profiling](#profiling)
+  - [logging](#logging)
+
 ## components
 
 ### server
@@ -18,7 +36,8 @@ RabbitMQ
 
 ### worker
 
-Pika
+The RMQ app uses `pika` to monitor the SAFERS Message Queue.  Upon receipt of a message with a registered routing_key the handlers defined in `rmq.py#BINDING_KEYS` are called. 
+
 
 ### scheduler
 
@@ -31,7 +50,12 @@ In development this is done by a separate **scheduler** service that uses `cron`
 
 AWS S3
 
-## config
+## configuration
+
+### superuser
+
+To setup the `admin` user so as to log into the `Django Admin Console` on http://localhost:8000/admin. Run the command to create the superuser `docker-compose exec server pipenv run ./server/manage.py createsuperuser`, this will create the user, but by default, the user will not be authorized, so you also need to run `docker-compose exec server pipenv run ./server/manage.py assign_groups --username admin --regex --groups admin`
+### environment variables
 
 several environment variables are required for **safers-dashboard-api**:
 
@@ -59,7 +83,11 @@ several environment variables are required for **safers-dashboard-api**:
 * DJANGO_SENTRY_DSN
 * DJANGO_SENTRY_EVN
 
+### RMQ Keys
+
 In addition, in order to ensure uniqueness among message ids, a `SiteProfile` should be configured.  This can be done in the Django Admin; simply ensure the profiles `code` is a unique string value.
+
+### Fixtures
 
 Finally, several fixtures are used to bootstrap the application:
 * ./server/safers/users/fixtures/roles_fixture.json
@@ -70,13 +98,12 @@ Finally, several fixtures are used to bootstrap the application:
 * ./server/safers/chatbot/fixtures/chatbot_categories_fixture.json
 these can all be added by running: `docker-compose exec server pipenv run ./server/manage.py configure`
 
-To setup the `admin` user so as to log into the `Django Admin Console` on http://localhost:8000/admin. Run the command to create the superuser `docker-compose exec server pipenv run ./server/manage.py createsuperuser`, this will create the user, but by default, the user will not be authorized, so you also need to run `docker-compose exec server pipenv run ./server/manage.py assign_groups --username admin --regex --groups admin`
+### DataTypes
 
-## details
+In order to show both operational and on-demand Data Layers, a `DataType` must be registerd.  The current set of data_types is stored in a remote spreadsheet [[datamappingform_imp.xlsx](https://istitutoboella.sharepoint.com/:x:/r/sites/ProjectSAFERS/_layouts/15/Doc.aspx?sourcedoc=%7BCB97483F-5F2A-473A-B5D8-EA7DE982E5BF%7D&file=datamappingform_imp.xlsx&action=default&mobileredirect=true)].  The admin action "Import DataTypes from CSV" can take that content and import it into the database; Note this is a brittle process, so backing up the database beforehand is recommended.
+## localization
 
-Users can authenticate locally or remotely (via FusionAuth).  Note that only remote users can interact w/ the SAFERS API - so there's really not much point in using the Dashboard as a local user.
-
-The RMQ app uses `pika` to monitor the SAFERS Message Queue.  Upon receipt of a message with a registered routing_key the handlers defined in `rmq.py#BINDING_KEYS` are called. 
+Localization is enabled in **safers-dashboard-app**.  This localizes text used in the frontend, _not_ the backend.  The current set of localizations is stored in a remote spreadsheet [[dashboard-translations.xlsx](https://istitutoboella.sharepoint.com/:x:/r/sites/ProjectSAFERS/_layouts/15/Doc.aspx?sourcedoc=%7BBE15948D-43F1-4772-9D66-76215E5943A7%7D&file=dashboard-translations.xlsx&action=default&mobileredirect=true)].  There are scripts in **safers-dashboard-app** which take that content and import it; Note this is a manual process.
 
 ## profiling
 
