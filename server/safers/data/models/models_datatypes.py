@@ -95,6 +95,11 @@ class DataType(models.Model):
     format = models.CharField(max_length=128, blank=True, null=True)
     domain = models.CharField(max_length=64, blank=True, null=True)
     source = models.CharField(max_length=64, blank=True, null=True)
+    feature_string = models.TextField(
+        blank=True,
+        null=True,
+        help_text="format string to use when rendering output from GetFeatureInfo"
+    )
     is_on_demand = models.BooleanField(default=False)
     extra_info = models.JSONField(blank=True, null=True)
 

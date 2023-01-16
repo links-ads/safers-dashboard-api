@@ -33,6 +33,7 @@ class DataTypeAdmin(admin.ModelAdmin):
         "format",
         "source",
         "domain",
+        "feature_string",
         "is_on_demand",
         "extra_info",
     )
@@ -105,6 +106,7 @@ class DataTypeAdmin(admin.ModelAdmin):
             "Info (short description )for frontend": "info",
             "Responsible": "source",
             "Domain": "domain",
+            "GetFeatureInfo Format": "feature_string",
             # "Update frequency": "update_frequency",
             # "Comments":
             # "Data example":

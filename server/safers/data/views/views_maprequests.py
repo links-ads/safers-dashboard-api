@@ -98,6 +98,7 @@ _map_request_list_schema = openapi.Schema(
                             "name": "string",
                             "source": "string",
                             "domain": "string",
+                            "feature_string": "value of pixel: {{$.features[0].properties.GRAY_INDEX}}",
                             "status": "string",
                             "message": None,
                             "units": "°C",

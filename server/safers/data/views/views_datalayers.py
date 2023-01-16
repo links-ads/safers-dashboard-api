@@ -53,6 +53,7 @@ _data_layer_schema = openapi.Schema(
                 "units": "°C",
                 "domain": "Weather",
                 "source": "RISC",
+                "feature_string": "value of pixel: {{$.features[0].properties.t2m}} °C",
                 "info": "whatever",
                 "info_url": None,
                 "children": [
@@ -297,6 +298,7 @@ class DataLayerView(views.APIView):
         data_type_info = {"None": None}
         data_type_sources = {"None": None}
         data_type_domains = {"None": None}
+        data_type_feature_strings = {"None": None}
         for data_type in DataType.objects.operational():
             data_type_key = (
                 data_type.datatype_id or data_type.subgroup or data_type.group
@@ -304,6 +306,7 @@ class DataLayerView(views.APIView):
             data_type_info[data_type_key] = data_type.info or data_type.description  # yapf: disable
             data_type_sources[data_type_key] = data_type.source
             data_type_domains[data_type_key] = data_type.domain
+            data_type_feature_strings[data_type_key] = data_type.feature_string
 
         content = response.json()
 
@@ -331,6 +334,7 @@ class DataLayerView(views.APIView):
                     "domain": data_type_domains.get(str(layer.get("dataTypeId"))),
                     "source": data_type_sources.get(str(layer.get("dataTypeId"))),
                     "info": data_type_info.get(str(layer.get("dataTypeId"))),
+                    "feature_string": data_type_feature_strings.get(str(layer.get("dataTypeId"))),
                     "info_url": None,
                     "children": [
                       {
