@@ -53,15 +53,16 @@ _data_layer_schema = openapi.Schema(
                 "units": "°C",
                 "domain": "Weather",
                 "source": "RISC",
-                "feature_string": "value of pixel: {{$.features[0].properties.t2m}} °C",
                 "info": "whatever",
                 "info_url": None,
                 "children": [
                   {
+                    "datatype_id": "31101",
                     "id": "1.1.1.1",
                     "text": "2022-04-28T12:15:20Z",
                     "title": "Temperature at 2m",
                     "units": "°C",
+                    "feature_string": "value of pixel: {{t2m}} °C",
                     "info": None,
                     "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=text",
                     "metadata_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=json",
@@ -334,15 +335,15 @@ class DataLayerView(views.APIView):
                     "domain": data_type_domains.get(str(layer.get("dataTypeId"))),
                     "source": data_type_sources.get(str(layer.get("dataTypeId"))),
                     "info": data_type_info.get(str(layer.get("dataTypeId"))),
-                    "feature_string": data_type_feature_strings.get(str(layer.get("dataTypeId"))),
                     "info_url": None,
                     "children": [
                       {
-                        # "data_type": detail.get("dataTypeId"),
+                        "datatype_id": str(layer.get("dataTypeId")),
                         "id": f"{i}.{j}.{k}.{l}",
                         "title": layer["name"],
                         "text": next(iter(detail.get("timestamps") or []), None),
                         "units": layer.get("unitOfMeasure"),
+                        "feature_string": data_type_feature_strings.get(str(layer.get("dataTypeId"))),
                         "info": None,
                         "info_url": metadata_url.format(
                             metadata_id=detail.get("metadata_Id"),
