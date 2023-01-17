@@ -23,6 +23,7 @@ class Camera(gis_models.Model):
     class Meta:
         verbose_name = "Camera"
         verbose_name_plural = "Cameras"
+        ordering = ("camera_id", )
 
     PRECISION = 12
     MIN_BOUNDING_BOX_SIZE = 0.00001  # TODO: NOT SURE WHAT THIS SHOULD BE
