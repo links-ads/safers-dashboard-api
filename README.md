@@ -16,6 +16,7 @@ This API provides the backend for the safers-dashboard-app.
     - [RMQ Keys](#rmq-keys)
     - [Fixtures](#fixtures)
     - [DataTypes](#datatypes)
+  - [backups](#backups)
   - [localization](#localization)
   - [profiling](#profiling)
   - [logging](#logging)
@@ -96,11 +97,18 @@ Finally, several fixtures are used to bootstrap the application:
 * ./server/safers/aois/fixtures/aois_fixture.json
 * ./server/safers/cameras/fixtures/cameras_fixture.json
 * ./server/safers/chatbot/fixtures/chatbot_categories_fixture.json
+
 these can all be added by running: `docker-compose exec server pipenv run ./server/manage.py configure`
 
 ### DataTypes
 
 In order to show both operational and on-demand Data Layers, a `DataType` must be registerd.  The current set of data_types is stored in a remote spreadsheet [[datamappingform_imp.xlsx](https://istitutoboella.sharepoint.com/:x:/r/sites/ProjectSAFERS/_layouts/15/Doc.aspx?sourcedoc=%7BCB97483F-5F2A-473A-B5D8-EA7DE982E5BF%7D&file=datamappingform_imp.xlsx&action=default&mobileredirect=true)].  The admin action "Import DataTypes from CSV" can take that content and import it into the database; Note this is a brittle process, so backing up the database beforehand is recommended.
+
+## backups
+
+Periodic backups of the database and the media files are taken by the scheduler.  This utilises the "django-dbbackup" library.  Output is generated in media storage.  The filename format is "safers-dashboard-api-&lt;type&gt;_&lt;timestamp&gt;" where "type" is one of "db" or "media".
+
+
 ## localization
 
 Localization is enabled in **safers-dashboard-app**.  This localizes text used in the frontend, _not_ the backend.  The current set of localizations is stored in a remote spreadsheet [[dashboard-translations.xlsx](https://istitutoboella.sharepoint.com/:x:/r/sites/ProjectSAFERS/_layouts/15/Doc.aspx?sourcedoc=%7BBE15948D-43F1-4772-9D66-76215E5943A7%7D&file=dashboard-translations.xlsx&action=default&mobileredirect=true)].  There are scripts in **safers-dashboard-app** which take that content and import it; Note this is a manual process.

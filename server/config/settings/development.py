@@ -65,7 +65,7 @@ LOGGING = {
 ###########
 
 DBBACKUP_STORAGE = "safers.core.storage.LocalMediaStorage"
-DBBACKUP_STORAGE_OPTIONS = {"location": f"/tmp/{PROJECT_SLUG}/backups/"}
+DBBACKUP_STORAGE_OPTIONS = {"location": f"{MEDIA_ROOT}/backups/"}
 
 #############
 # profiling #

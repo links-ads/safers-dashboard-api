@@ -5,6 +5,7 @@ Django settings for safers-dashboard-api project.
 import environ
 
 from datetime import timedelta
+from functools import partial
 from pathlib import Path
 
 from django.utils.html import escape
@@ -13,6 +14,7 @@ from django.utils.text import slugify
 import dj_database_url
 
 from safers.core.utils import DynamicSetting
+from safers.core.utils import backup_filename_template
 
 #########
 # setup #
@@ -377,7 +379,12 @@ SWAGGER_SETTINGS = {
 # backups #
 ###########
 
-# backups are configured in development.py and/or deployment.py
+DBBACKUP_FILENAME_TEMPLATE = partial(backup_filename_template, PROJECT_SLUG)
+DBBACKUP_MEDIA_FILENAME_TEMPLATE = partial(
+    backup_filename_template, PROJECT_SLUG
+)
+
+# further backup configuration is set in development.py and/or deployment.py
 
 #######
 # RMQ #
