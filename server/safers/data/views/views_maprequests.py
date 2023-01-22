@@ -240,7 +240,7 @@ class MapRequestViewSet(
                     "transparent": True,
                     "width": width,
                     "height": height,
-                    "format": "image/png",
+                    "format": "image/jpeg",
                 },
                 safe="{}",
             )
@@ -259,7 +259,7 @@ class MapRequestViewSet(
                     "tilematrix": self.WMTS_CRS + ":{{z}}",
                     "tilecol": "{{x}}",
                     "tilerow": "{{y}}",
-                    "format": "image/png",
+                    "format": "image/jpeg",
                 },
                 safe="{}",
             )
