@@ -110,11 +110,11 @@ if SENTRY_DSN:
 # backups #
 ###########
 
-DBBACKUP_STORAGE = "safers.core.storage.PrivateMediaS3Storage"
+DBBACKUP_STORAGE = "safers.core.storage.PublicMediaS3Storage"
 DBBACKUP_STORAGE_OPTIONS = {
     "access_key": AWS_ACCESS_KEY_ID,
     "secret_key": AWS_SECRET_ACCESS_KEY,
     "bucket_name": AWS_STORAGE_BUCKET_NAME,
-    "default_acl": PRIVATE_MEDIA_DEFAULT_ACL,
+    "default_acl": "private",
     "location": "backups/",
 }
