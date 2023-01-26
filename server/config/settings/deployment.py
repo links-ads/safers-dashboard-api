@@ -68,7 +68,7 @@ AWS_S3_ENDPOINT_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 AWS_S3_REGION_NAME = env("BUCKETEER_AWS_REGION")
 AWS_S3_SIGNATURE_VERSION = env("S3_SIGNATURE_VERSION", default="s3v4")
 AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
-AWS_DEFAULT_ACL = "private"  # None
+AWS_DEFAULT_ACL = None
 
 STATIC_DEFAULT_ACL = 'public-read'
 STATIC_LOCATION = 'static'
@@ -115,5 +115,6 @@ DBBACKUP_STORAGE_OPTIONS = {
     "access_key": AWS_ACCESS_KEY_ID,
     "secret_key": AWS_SECRET_ACCESS_KEY,
     "bucket_name": AWS_STORAGE_BUCKET_NAME,
-    "default_acl": AWS_DEFAULT_ACL,
+    "default_acl": PRIVATE_MEDIA_DEFAULT_ACL,
+    "location": "backups/",
 }
