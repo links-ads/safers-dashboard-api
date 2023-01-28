@@ -2,10 +2,19 @@
   {
     "model": "users.organization",
     "fields": {
-      "organization_id": null,
-      "name": "PCF - Pau Costa Foundation",
-      "description": "",
-      "is_active": false
+      "organization_id": "1",
+      "name": "Test Organization",
+      "description": "This is a test organization",
+      "is_active": true
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": "2",
+      "name": "SAFERS Partners",
+      "description": "Organization for partners of SAFERS",
+      "is_active": true
     }
   },
   {
@@ -20,9 +29,36 @@
   {
     "model": "users.organization",
     "fields": {
-      "organization_id": "1",
-      "name": "Test Organization",
-      "description": "This is a test organization",
+      "organization_id": "5",
+      "name": "Macedonia Pilot",
+      "description": "Organization to be used during the pilot in Macednia",
+      "is_active": true
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": "6",
+      "name": "Catalonia Pilot",
+      "description": "Organization to be used during the pilot in Catalonia",
+      "is_active": true
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": "7",
+      "name": "Liguria Pilot",
+      "description": "Organization to be used during the pilot in Liguria",
+      "is_active": true
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": "8",
+      "name": "Piedmont Pilot",
+      "description": "Organization to be used during the pilot in Piedmont",
       "is_active": true
     }
   },
@@ -33,15 +69,6 @@
       "name": "HRT - Hellenic Rescue Team",
       "description": "",
       "is_active": false
-    }
-  },
-  {
-    "model": "users.organization",
-    "fields": {
-      "organization_id": "2",
-      "name": "SAFERS Partners",
-      "description": "Organization for partners of SAFERS",
-      "is_active": true
     }
   },
   {
@@ -76,6 +103,15 @@
     "fields": {
       "organization_id": null,
       "name": "CIMA - Fondazione CIMA",
+      "description": "",
+      "is_active": false
+    }
+  },
+  {
+    "model": "users.organization",
+    "fields": {
+      "organization_id": null,
+      "name": "PCF - Pau Costa Foundation",
       "description": "",
       "is_active": false
     }

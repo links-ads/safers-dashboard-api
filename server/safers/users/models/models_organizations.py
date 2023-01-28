@@ -28,6 +28,10 @@ class OrganizationQuerySet(models.QuerySet):
 
 
 class Organization(models.Model):
+    class Meta:
+        ordering = ("name", )
+        verbose_name = "Organization"
+        verbose_name_plural = "Organizations"
 
     objects = OrganizationManager.from_queryset(OrganizationQuerySet)()
 
