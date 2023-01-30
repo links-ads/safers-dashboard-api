@@ -18,8 +18,9 @@ class ActionStatusTypes(models.TextChoices):
 class ActionActivityTypes(models.TextChoices):
     SURVEILLANCE = "Surveillance", _("Surveillance"),
     OPERATIVE_CENTER = "In activity in operative centers", _("In activity in operative centers"),
+    LOGISTICS = "Logistics", _("Logistics"),
     AIB_MODULES = "AIB Modules", _("AIB Modules"),
-    MOBILE_TUBS = "Mobile tubs", _("Mobile tubs"),
+    MOBILE_TUBS_AIB = "Mobile tubs AIB", _("Mobile tubs AIB"),
     POWERED_EQUIPMENT = "Powered equip.", _("Powered equip."),
     MANUAL_EQUIPMENT = "Manual equip.", _("Manual equip."),
     PUMPING_EQUIPMENT = "Pumping equip.", _("Pumping equip."),
@@ -30,11 +31,20 @@ class ActionActivityTypes(models.TextChoices):
     FUEL_REDUCTION = "Fuel reduction", _("Fuel reduction"),
     FIRE_SUPPRESSION = "Fire suppression", _("Fire suppression"),
     IMPACT_ASSESSMENT = "Impact assessment", _("Impact assessment"),
-    RESTORATION = "Restoration", _("Restoration"),
+    REPAIR = "Repair", _("Repair"),
     EVACUATION = "Evacuation", _("Evacuation"),
     SEARCH_AND_RESCUE = "Search and rescue", _("Search and rescue"),
     RUBBLE_REMOVAL = "Rubble removal", _("Rubble removal"),
     SEARCH_MISSING = "Search missing", _("Search missing"),
+    PATROLLING = "Patrolling", _("Patrolling"),
+    CHECK_REPORT = "Check report", _("Check report"),
+    FIRE_EXTINGUISHING = "Fire extinguishing", _("Fire extinguishing"),
+    REMEDIATION = "Remediation", _("Remediation"),
+    RESTORATION = "Restoration", _("Restoration"),
+    MOBILE_TUBS = "Mobile tubs", _("Mobile tubs"),
+    LINE_ASSEMBLY = "Line assembly", _("Line assembly"),
+    FIRE_PATROLLING = "Fire patrolling", _("Fire patrolling"),
+    CHECK_FIRE_REPORT = "Check fire report", _("Check fire report"),
 
 
 class Action(gis_models.Model):
