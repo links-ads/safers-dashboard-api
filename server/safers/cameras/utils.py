@@ -111,7 +111,7 @@ def process_messages(message_body, **kwargs):
                     data={
                         # TODO: CAMERAS NEED CAP INFORMATION
                         "timestamp": camera_media.timestamp,
-                        "status": None,
+                        "status": "Actual",
                         "source": AlertSource.IN_SITU,
                         "scope": None,
                         "category": "Fire",
