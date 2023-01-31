@@ -46,7 +46,7 @@ def teams_view(request):
 
     user = request.user
 
-    try:
+    if user.is_remote and user.is_professional:
         response = requests.get(
             urljoin(
                 settings.SAFERS_GATEWAY_API_URL,
@@ -56,28 +56,23 @@ def teams_view(request):
             params={"MaxResultCount": 1000}
         )
         response.raise_for_status()
-    except Exception as e:
-        logger.error("### ERROR GETTING TEAMS ###")
-        logger.error(str(e))
-        logger.error(json.dumps(response.json()))
-        raise e
-
-    if user.is_remote:
-        teams = [
-            {
-                "id": data["id"],
-                "name": data["name"],
-                "members": [
-                    {
-                        "id": member["id"],
-                        "name": member["displayName"],
-                    }
-                    for member in data["members"]
-                ]
-            }
-            for data in response.json()["data"]
-        ]  # yapf: disable
+        content = response.json()["data"]
     else:
-        teams = []
+        content = []
+
+    teams = [
+        {
+            "id": data["id"],
+            "name": data["name"],
+            "members": [
+                {
+                    "id": member["id"],
+                    "name": member["displayName"],
+                }
+                for member in data["members"]
+            ]
+        }
+        for data in content
+    ]  # yapf: disable
 
     return Response(teams, status=status.HTTP_200_OK)
