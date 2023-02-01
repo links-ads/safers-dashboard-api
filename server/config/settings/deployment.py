@@ -110,7 +110,9 @@ if SENTRY_DSN:
 # backups #
 ###########
 
-DBBACKUP_STORAGE = "safers.core.storage.PublicMediaS3Storage"
+# DBBACKUP_STORAGE = "safers.core.storage.PublicMediaS3Storage"
+# stores backups at s3://<bucket-root>/backups/
+DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 DBBACKUP_STORAGE_OPTIONS = {
     "access_key": AWS_ACCESS_KEY_ID,
     "secret_key": AWS_SECRET_ACCESS_KEY,

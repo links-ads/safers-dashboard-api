@@ -106,7 +106,12 @@ In order to show both operational and on-demand Data Layers, a `DataType` must b
 
 ## backups
 
-Periodic backups of the database and the media files are taken by the scheduler.  This utilises the "django-dbbackup" library.  Output is generated in media storage.  The filename format is "safers-dashboard-api-&lt;type&gt;_&lt;timestamp&gt;" where "type" is one of "db" or "media".
+Periodic backups of the database and the media files are taken by the scheduler.  This utilises the "django-dbbackup" library.  
+
+The filename format is "safers-dashboard-api-&lt;type&gt;_&lt;timestamp&gt;" where "type" is one of "db" or "media".  
+
+The Django storages framework is used to store the backup files.  In development these are stored in `MEDIA_ROOT/backups`; They can be accessed directly from the local filesystem.  In deployment, these are stored in S3; They can be accessed using the AWS CLI: `aws --profile &lt;profile name&gt; s3 ls s3://&lt;bucket-root&gt;/`.
+
 
 
 ## localization
