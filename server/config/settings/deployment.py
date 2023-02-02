@@ -64,8 +64,10 @@ DEFAULT_FILE_STORAGE = "safers.core.storage.PublicMediaS3Storage"
 AWS_ACCESS_KEY_ID = env("BUCKETEER_AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = env("BUCKETEER_AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = env("BUCKETEER_BUCKET_NAME")
-AWS_S3_ENDPOINT_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 AWS_S3_REGION_NAME = env("BUCKETEER_AWS_REGION")
+# https://docs.aws.amazon.com/AmazonS3/latest/userguide/dual-stack-endpoints.html#dual-stack-endpoints-description
+AWS_S3_ENDPOINT_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.dualstack.{AWS_S3_REGION_NAME}.amazonaws.com"
+AWS_S3_ADRESSING_STYLE = "virtual"
 AWS_S3_SIGNATURE_VERSION = env("S3_SIGNATURE_VERSION", default="s3v4")
 AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 AWS_DEFAULT_ACL = None
@@ -76,11 +78,11 @@ STATIC_URL = f'{AWS_S3_ENDPOINT_URL}/{STATIC_LOCATION}/'
 
 PUBLIC_MEDIA_DEFAULT_ACL = 'public-read'
 PUBLIC_MEDIA_LOCATION = 'media/public'
-PUBLIC_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PUBLIC_MEDIA_LOCATION}/'
+#PUBLIC_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PUBLIC_MEDIA_LOCATION}/'
 
 PRIVATE_MEDIA_DEFAULT_ACL = 'private'
 PRIVATE_MEDIA_LOCATION = 'media/private'
-PRIVATE_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PRIVATE_MEDIA_LOCATION}/'
+#PRIVATE_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PRIVATE_MEDIA_LOCATION}/'
 
 ###########
 # logging #
@@ -113,10 +115,16 @@ if SENTRY_DSN:
 # DBBACKUP_STORAGE = "safers.core.storage.PublicMediaS3Storage"
 # stores backups at s3://<bucket-root>/backups/
 DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+# For available options, see:
+# https://github.com/jschneier/django-storages/blob/master/storages/backends/s3boto3.py#L306-L338
 DBBACKUP_STORAGE_OPTIONS = {
     "access_key": AWS_ACCESS_KEY_ID,
     "secret_key": AWS_SECRET_ACCESS_KEY,
     "bucket_name": AWS_STORAGE_BUCKET_NAME,
+    "region_name": AWS_S3_REGION_NAME,
+    "endpoint_url": AWS_S3_ENDPOINT_URL,
+    "addressing_style": AWS_S3_ADRESSING_STYLE,
     "default_acl": "private",
     "location": "backups/",
 }
