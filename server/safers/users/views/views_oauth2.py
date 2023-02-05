@@ -277,6 +277,7 @@ class RefreshView(GenericAPIView):
             client_secret=settings.FUSION_AUTH_CLIENT_SECRET,
         )
         if not response.was_successful():
+            logger.info("\n### ERROR REFRESHING OAUTH2 TOKEN ###\n")
             raise AuthenticationException(response.error_response)
 
         logger.info("\n### REFRESHED OAUTH2 TOKEN ###\n")
