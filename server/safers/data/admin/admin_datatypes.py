@@ -107,10 +107,10 @@ class DataTypeAdmin(admin.ModelAdmin):
             "Responsible": "source",
             "Domain": "domain",
             "GetFeatureInfo Format": "feature_string",
-            # "Update frequency": "update_frequency",
-            # "Comments":
-            # "Data example":
-            # "Style":
+            # (this is a CSV column but not a DB field;
+            #  it is used to determine whether to process a CSV row
+            #  - and it is conveniently ignored by the DB.)
+            "When available? [ETA]": "when_available",
         }
 
         class ImportForm(Form):
@@ -138,6 +138,9 @@ class DataTypeAdmin(admin.ModelAdmin):
                     with transaction.atomic():
                         n_created = n_updated = 0
                         for _, row in df.iterrows():
+                            if row.when_available == "not available":
+                                # ingore datatypes that are not available
+                                continue
                             try:
                                 data_type, created = DataType.objects.get_or_create(datatype_id=row.datatype_id, subgroup=row.subgroup, group=row.group)
                             except IntegrityError as e:
