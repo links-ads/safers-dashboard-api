@@ -283,7 +283,7 @@ class Alert(models.Model):
         try:
             with transaction.atomic():
                 message_timestamp = message_body.get("sent")
-                message_status = message_body.get("status")
+                message_status = message_body.get("status", "Actual")
                 message_source = message_body.get("source")
                 if message_source:
                     message_source = AlertSource.find_enum(message_source)
