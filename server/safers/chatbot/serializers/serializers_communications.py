@@ -60,7 +60,7 @@ class CommunicationCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
             "message",
             "start",
             "end",
-            "organizationIdList",
+            "organizationReceiverIds",
             "scope",
             "restriction",
             "duration",
@@ -87,8 +87,8 @@ class CommunicationCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
         microsecond=999999,
     )
 
-    organizationIdList = serializers.SerializerMethodField(
-        method_name="get_organization_id_list"
+    organizationReceiverIds = serializers.SerializerMethodField(
+        method_name="get_target_organization_ids"
     )
 
     duration = serializers.SerializerMethodField()
@@ -101,7 +101,7 @@ class CommunicationCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
             "upperBoundIsInclusive": obj.end_inclusive,
         }
 
-    def get_organization_id_list(self, obj):
+    def get_target_organization_ids(self, obj):
         user = self.context["request"].user
         if user.organization:
             return [user.organization.organization_id]
