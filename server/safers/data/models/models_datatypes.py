@@ -80,6 +80,7 @@ class DataType(models.Model):
                 name="non_null_fields",
             )
         ]
+        ordering = ("datatype_id", )
 
     objects = DataTypeManager.from_queryset(DataTypeQuerySet)()
 
