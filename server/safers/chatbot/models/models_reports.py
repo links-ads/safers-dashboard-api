@@ -205,6 +205,7 @@ class ReportCategory(models.Model):
     class Meta:
         verbose_name = "Report Category"
         verbose_name_plural = "Report Categories"
+        ordering = ("category_id", )
 
     category_id = models.IntegerField(blank=False, null=False, unique=True)
 
