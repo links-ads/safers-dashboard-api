@@ -48,29 +48,14 @@ class NotificationQuerySet(models.QuerySet):
         only return notifications that this user should have access to
         """
 
-        # every user gets public (or None) scoped notificiations...
-        lookup_expr = Q(scope=NotificationScopeChoices.PUBLIC) | Q(scope__isnull=True)  # yapf: disable
+        lookup_expr = Q()
 
-        if user.is_citizen:
-            # every citizen gets public (or None) scoped notifications plus notifications restricted to citizens...
-            lookup_expr |= (
-                Q(scope=NotificationScopeChoices.RESTRICTED) &
-                Q(restriction=NotificationRestrictionChoices.CITIZEN)
-            )
-
-        elif user.is_professional:
-            # every professional gets public (or None) scoped notiications plus notifications restricted to professionals...
-            lookup_expr |= (
-                Q(scope=NotificationScopeChoices.RESTRICTED) &
-                Q(restriction=NotificationRestrictionChoices.PROFESSIONAL)
-            )
-            if user.organization is not None:
-                # ...and notifications restricted to _their_ organization...
-                lookup_expr |= (
-                    Q(scope=NotificationScopeChoices.RESTRICTED) &
-                    Q(restriction=NotificationRestrictionChoices.ORGANIZATION) &
-                    Q(target_organizations__in=[user.organization])
-                )
+        if user.is_professional:
+            # _all_ professionals get DSS notifications...
+            lookup_expr |= Q(source=NotificationSourceChoices.DSS)
+        elif user.is_citizen:
+            # _no_ citizen gets DSS notifications...
+            lookup_expr |= ~Q(source=NotificationSourceChoices.DSS)
 
         return self.filter(lookup_expr)
 
