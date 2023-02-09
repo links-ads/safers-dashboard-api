@@ -470,6 +470,12 @@ SAFERS_DEFAULT_TIMERANGE = DynamicSetting(
     "core.SafersSettings.default_timerange",
     timedelta(days=3),
 )
+
+SAFERS_CAMERA_MEDIA_TRIGGER_ALERT_TIMERANGE = DynamicSetting(
+    "core.SafersSettings.camera_media_trigger_alert_timerange",
+    timedelta(hours=6),
+)
+
 SAFERS_CAMERA_MEDIA_PRESERVE_TIMERANGE = DynamicSetting(
     "core.SafersSettings.camera_media_preserve_timerange",
     timedelta(days=1),

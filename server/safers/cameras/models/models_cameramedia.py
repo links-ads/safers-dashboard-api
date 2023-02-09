@@ -1,5 +1,6 @@
 import requests
 import uuid
+from datetime import timedelta
 from tempfile import TemporaryFile
 from urllib.parse import urlparse
 
@@ -221,7 +222,7 @@ class CameraMedia(gis_models.Model):
 
         return not most_recent_alerted_detected_camera_media or (
             self.timestamp - most_recent_alerted_detected_camera_media.timestamp
-        ) >= settings.SAFERS_DEFAULT_TIMERANGE
+        ) >= settings.SAFERS_CAMERA_MEDIA_TRIGGER_ALERT_TIMERANGE
 
     @staticmethod
     def copy_url_to_file(url, file_field):
