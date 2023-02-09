@@ -55,9 +55,7 @@ def process_messages(message_body, **kwargs):
             ).values_list("name", flat=True)
             geometry_details = message_body.get("fire_location", {})
             lon, lat = (geometry_details.get("longitude"), geometry_details.get("latitude"))
-            geometry_details.update({
-                "geometry": geos.Point(lon, lat) if lon and lat else None
-            })
+            geometry = geos.Point(lon, lat) if lon and lat else None
 
             serializer = CameraMediaSerializer(
                 data={
@@ -78,7 +76,7 @@ def process_messages(message_body, **kwargs):
                     "direction":
                         geometry_details.get("direction") or camera.direction,
                     "geometry":
-                        geometry_details.get("geometry") or camera.geometry,
+                        geometry or camera.geometry,
                     "message":
                         message_body,
                 }
