@@ -248,7 +248,7 @@ def report_categories_view(request):
     """
     Returns the list of possible Report categories.
     """
-    report_categories_groups = ReportCategory.objects.values_list(
+    report_categories_groups = ReportCategory.objects.order_by("group").values_list(
         "group", flat=True
     ).distinct()
     return Response(report_categories_groups, status=status.HTTP_200_OK)
