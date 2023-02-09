@@ -1,6 +1,5 @@
 import requests
 import uuid
-from datetime import timedelta
 from tempfile import TemporaryFile
 from urllib.parse import urlparse
 
