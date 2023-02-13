@@ -11,12 +11,12 @@ from safers.events.tests.factories import *
 
 @pytest.mark.django_db
 class TestEventViews:
-    def test_bbox_filter(self, user, api_client):
+    def test_bbox_filter(self, remote_user, api_client):
 
         event = EventFactory()
-        (xmin, ymin, xmax, ymax) = event.geometry.extent
+        (xmin, ymin, xmax, ymax) = event.geometry_collection.extent
 
-        client = api_client(user)
+        client = api_client(remote_user)
 
         in_bounding_box = [xmin, ymin, xmax, ymax]
         out_bounding_box = [
@@ -27,8 +27,9 @@ class TestEventViews:
         ]
 
         url_params = urllib.parse.urlencode({
-            "geometry__bboverlaps": ",".join(map(str, in_bounding_box))
+            "bbox": ",".join(map(str, in_bounding_box))
         })
+
         url = f"{reverse('events-list')}?{url_params}"
         response = client.get(url, format="json")
         assert status.is_success(response.status_code)
@@ -37,7 +38,7 @@ class TestEventViews:
         assert len(content) == 1
 
         url_params = urllib.parse.urlencode({
-            "geometry__bboverlaps": ",".join(map(str, out_bounding_box))
+            "bbox": ",".join(map(str, out_bounding_box))
         })
         url = f"{reverse('events-list')}?{url_params}"
         response = client.get(url, format="json")
@@ -46,14 +47,14 @@ class TestEventViews:
         content = response.json()
         assert len(content) == 0
 
-    def test_favorite_event(self, user, api_client, safers_settings):
+    def test_favorite_event(self, remote_user, api_client, safers_settings):
 
         safers_settings.max_favorite_events = 1
         safers_settings.save()
 
         event = EventFactory()
 
-        client = api_client(user)
+        client = api_client(remote_user)
         url = reverse("events-favorite", args=[event.id])
         response = client.post(url, format="json")
         assert status.is_success(response.status_code)
@@ -61,17 +62,17 @@ class TestEventViews:
         content = response.json()
         assert content["favorite"] == True
 
-        assert event in user.favorite_events.all()
+        assert event in remote_user.favorite_events.all()
 
-    def test_unfavorite_event(self, user, api_client, safers_settings):
+    def test_unfavorite_event(self, remote_user, api_client, safers_settings):
 
         safers_settings.max_favorite_events = 1
         safers_settings.save()
 
         event = EventFactory()
-        user.favorite_events.add(event)
+        remote_user.favorite_events.add(event)
 
-        client = api_client(user)
+        client = api_client(remote_user)
         url = reverse("events-favorite", args=[event.id])
         response = client.post(url, format="json")
         assert status.is_success(response.status_code)
@@ -79,17 +80,19 @@ class TestEventViews:
         content = response.json()
         assert content["favorite"] == False
 
-        assert event not in user.favorite_events.all()
+        assert event not in remote_user.favorite_events.all()
 
-    def test_cannot_favorite_event(self, user, api_client, safers_settings):
+    def test_cannot_favorite_event(
+        self, remote_user, api_client, safers_settings
+    ):
 
         safers_settings.max_favorite_events = 1
         safers_settings.save()
 
         events = [EventFactory() for _ in range(2)]
-        user.favorite_events.add(events[0])
+        remote_user.favorite_events.add(events[0])
 
-        client = api_client(user)
+        client = api_client(remote_user)
         url = reverse("events-favorite", args=[events[1].id])
         response = client.post(url, format="json")
         assert status.is_client_error(response.status_code)
