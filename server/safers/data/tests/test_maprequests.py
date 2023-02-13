@@ -30,10 +30,10 @@ class TestMapRequests:
         content = serializer.data
 
         assert len(content) == 3
-        for i in in range(3):
+        for i in range(3):
             assert content[i]["title"] == data_types[i].group.title()
-            assert len(content["children"]) == 2
-          
+            assert len(content[i]["children"]) == 2
+
     def test_generate_request_id(self):
 
         map_request_1 = MapRequestFactory()

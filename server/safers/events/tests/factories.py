@@ -25,6 +25,19 @@ class EventFactory(factory.django.DjangoModelFactory):
     causalties = FactoryFaker("pyint", min_value=0, max_value=100)
     estimated_damage = FactoryFaker("pyfloat", min_value=0, max_value=100000)
 
-    geometry = FactoryFaker("polygon")
+    @factory.post_generation
+    def alerts(obj, create, extracted, **kwargs):
 
-    # alerts = models.ManyToManyField("alerts.Alert", related_name="events")
+        from safers.alerts.tests.factories import AlertFactory
+
+        if not create:
+            return
+
+        if extracted:
+            for alert in extracted:
+                obj.alerts.add(alert)
+        else:
+            # by default add 1 alert (b/c an event w/out any alerts makes no sense)
+            # (and will cause other fns to fail eventually)
+            alert = AlertFactory()
+            obj.alerts.add(alert)

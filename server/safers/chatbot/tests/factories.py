@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from safers.core.tests.providers import GeometryProvider
 
-from safers.chatbot.models import Action, ActionActivityTypes, ActionStatusTypes, Communication, Mission, MissionStatusTypes, Report, ReportContentTypes,  ReportStatusTypes
+from safers.chatbot.models import Action, ActionActivityTypes, ActionStatusTypes, Communication, Mission, MissionStatusChoices, Report, ReportContentTypes,  ReportStatusTypes
 
 fake = Faker()
 
@@ -94,12 +94,6 @@ class CommunicationFactory(factory.django.DjangoModelFactory):
     def communication_id(self, n):
         return f"{n}"
 
-    @factory.lazy_attribute
-    def assigned_to(self):
-        return [
-            fake.word() for _ in range(fake.pyint(min_value=0, max_value=4))
-        ]
-
 
 class ActionFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -138,7 +132,7 @@ class MissionFactory(factory.django.DjangoModelFactory):
     end_inclusive = FactoryFaker("pybool")
 
     status = FactoryFaker(
-        "random_element", elements=MissionStatusTypes.values + [None]
+        "random_element", elements=MissionStatusChoices.values + [None]
     )
 
     geometry = FactoryFaker("point")
