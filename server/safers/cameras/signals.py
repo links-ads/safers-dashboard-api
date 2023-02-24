@@ -29,7 +29,7 @@ def post_delete_camera_media_handler(sender, *args, **kwargs):
     camera_media = kwargs.get("instance", None)
     if camera_media:
         camera_media.camera.recalculate_last_update(ignore=[camera_media])
-        camera_media_file = camera_media.file
+        camera_media_file = camera_media.media
         if camera_media_file:
             camera_media_file.delete(save=False)
 

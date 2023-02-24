@@ -132,7 +132,7 @@ class CameraMedia(gis_models.Model):
         max_length=512, blank=True, null=True
     )  # pre-signed AWS URLs can be quite long, hence the max_length kwarg
 
-    file = models.FileField(
+    media = models.FileField(
         blank=True,
         null=True,
         upload_to=camera_media_file_path,
@@ -243,7 +243,7 @@ class CameraMedia(gis_models.Model):
     def save(self, **kwargs):
         retval = super().save(**kwargs)
 
-        if self.url and not self.file:
-            CameraMedia.copy_url_to_file(self.url, self.file)
+        if self.url and not self.media:
+            CameraMedia.copy_url_to_file(self.url, self.media)
 
         return retval

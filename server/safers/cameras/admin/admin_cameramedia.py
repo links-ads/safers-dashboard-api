@@ -57,7 +57,7 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
         "modified",
         "description",
         "url",
-        "file",
+        "media",
         "type",
         "tags",
         "fire_classes",
@@ -126,9 +126,9 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
 
             try:
                 camera_media.copy_url_to_file(
-                    camera_media.url, camera_media.file
+                    camera_media.url, camera_media.media
                 )
-                msg = f"copied {camera_media.id} URL to {camera_media.file}"
+                msg = f"copied {camera_media.id} URL to {camera_media.media}"
                 self.message_user(request, msg, messages.SUCCESS)
             except Exception as e:
                 msg = f"error copying {camera_media.id} URL: {e}"
