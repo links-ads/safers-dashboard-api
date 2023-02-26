@@ -115,7 +115,7 @@ class SafersSettings(SingletonMixin, models.Model):
     )
 
     camera_media_trigger_alert_timerange = models.DurationField(
-        default=timedelta(hours=6),
+        default=timedelta(hours=1),
         help_text=_(
             "Time range between successive smoke/fire camera_medias that will trigger an alert."
         )
