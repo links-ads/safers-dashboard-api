@@ -58,6 +58,11 @@ class LoginView(GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = Oauth2AuthenticateSerializer
 
+    DEFAULT_ERRORS = {
+        "get_auth_token": "Error retrieving authentication token.",
+        "get_auth_user": "Error retrieving user."
+    }
+
     @property
     def is_swagger(self):
         return "api/swagger" in self.request.headers.get("referer", "")
@@ -76,14 +81,20 @@ class LoginView(GenericAPIView):
             client_secret=settings.FUSION_AUTH_CLIENT_SECRET,
         )
         if not response.was_successful():
-            raise AuthenticationException(response.error_response)
+            msg = response.error_response.get(
+                "error_description"
+            ) or self.DEFAULT_ERRORS["get_auth_token"]
+            raise AuthenticationException(msg)
 
         return response.success_response
 
     def _get_auth_user(self, request, data):
         response = AUTH_CLIENT.retrieve_user(data["userId"])
         if not response.was_successful():
-            raise AuthenticationException(response.error_response)
+            msg = response.error_response.get(
+                "error_description"
+            ) or self.DEFAULT_ERRORS["get_auth_user"]
+            raise AuthenticationException(msg)
         return response.success_response["user"]
 
     @swagger_auto_schema(
