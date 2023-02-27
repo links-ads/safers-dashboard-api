@@ -334,11 +334,8 @@ class MapRequest(gis_models.Model):
         try:
 
             for data_type in self.data_types.all():
-                # TODO: DO SOMETHING SPECIAL FOR CIMA
-                if data_type.id == "35006":  # do something special for CIMA
-                    pass
-                routing_key = f"request.{data_type.datatype_id}.{RMQ_USER}.{self.request_id}"
 
+                routing_key = f"request.{data_type.datatype_id}.{RMQ_USER}.{self.request_id}"
                 message_body["datatype_id"] = data_type.datatype_id
 
                 rmq.publish(
