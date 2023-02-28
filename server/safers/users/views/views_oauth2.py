@@ -73,7 +73,7 @@ class LoginView(GenericAPIView):
         ) if self.is_swagger else f"{settings.CLIENT_HOST}/auth/sign-in"
 
         response = AUTH_CLIENT.exchange_o_auth_code_for_access_token(
-            code=data["code"],
+            code=data.get("code"),
             client_id=settings.FUSION_AUTH_CLIENT_ID,
             # redirect_uri=request.build_absolute_uri(reverse("authenticate")),
             # redirect_uri=f"{settings.CLIENT_HOST}/auth/sign-in",
@@ -89,7 +89,7 @@ class LoginView(GenericAPIView):
         return response.success_response
 
     def _get_auth_user(self, request, data):
-        response = AUTH_CLIENT.retrieve_user(data["userId"])
+        response = AUTH_CLIENT.retrieve_user(data.get("userId"))
         if not response.was_successful():
             msg = response.error_response.get(
                 "error_description"
