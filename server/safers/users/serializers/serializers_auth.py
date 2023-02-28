@@ -50,12 +50,11 @@ class JWTSerializer(DjRestAuthJWTSerializer):
 
     # @swagger_serializer_method(serializer_or_field=UserSerializerLite)
     @swagger_serializer_method(
-        serializer_or_field=settings.
-        REST_AUTH_SERIALIZERS["USER_DETAILS_SERIALIZER"]
+        serializer_or_field=settings.REST_AUTH["USER_DETAILS_SERIALIZER"]
     )
     def get_user(self, obj):
 
-        UserDetailsSerializerClass = settings.REST_AUTH_SERIALIZERS[
+        UserDetailsSerializerClass = settings.REST_AUTH[
             "USER_DETAILS_SERIALIZER"]
         user_serializer = UserDetailsSerializerClass(
             obj["user"], context=self.context

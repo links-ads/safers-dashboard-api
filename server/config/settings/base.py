@@ -307,29 +307,32 @@ REST_KNOX = {
     "AUTH_HEADER_PREFIX": "Bearer",
 }
 
-REST_AUTH_TOKEN_MODEL = "knox.models.AuthToken"
-REST_AUTH_TOKEN_CREATOR = "safers.users.utils.create_knox_token"
-
-# REST_USE_JWT = True
-# JWT_AUTH_COOKIE = "safers-dashboard-auth"
-# JWT_AUTH_REFRESH_COOKIE = "safers-dashboard-refresh"
-
-# custom serializers...
-REST_AUTH_SERIALIZERS = {
-    "JWT_SERIALIZER": "safers.users.serializers.JWTSerializer",
-    "JWT_TOKEN_CLAIMS_SERIALIZER": "safers.users.serializers.TokenObtainPairSerializer",
-    "LOGIN_SERIALIZER": "safers.users.serializers.LoginSerializer",
-    "PASSWORD_CHANGE_SERIALIZER": "safers.users.serializers.PasswordChangeSerializer",
-    "PASSWORD_RESET_SERIALIZER": "safers.users.serializers.PasswordResetSerializer",
-    "PASSWORD_RESET_CONFIRM_SERIALIZER": "safers.users.serializers.PasswordResetConfirmSerializer",
-    "TOKEN_SERIALIZER": "safers.users.serializers.KnoxTokenSerializer",
-    "USER_DETAILS_SERIALIZER": "safers.users.serializers.UserDetailsSerializer",
-}  # yapf: disable
-
-# more custom serializers...
-REST_AUTH_REGISTER_SERIALIZERS = {
-    "REGISTER_SERIALIZER": "safers.users.serializers.RegisterSerializer"
-}  # yapf: disable
+REST_AUTH = {
+    "LOGIN_SERIALIZER":
+        "safers.users.serializers.LoginSerializer",
+    "TOKEN_SERIALIZER":
+        "safers.users.serializers.KnoxTokenSerializer",
+    "JWT_SERIALIZER":
+        "safers.users.serializers.JWTSerializer",
+    "JWT_TOKEN_CLAIMS_SERIALIZER":
+        "safers.users.serializers.TokenObtainPairSerializer",
+    "USER_DETAILS_SERIALIZER":
+        "safers.users.serializers.UserDetailsSerializer",
+    "PASSWORD_RESET_SERIALIZER":
+        "safers.users.serializers.PasswordResetSerializer",
+    "PASSWORD_RESET_CONFIRM_SERIALIZER":
+        "safers.users.serializers.PasswordResetConfirmSerializer",
+    "PASSWORD_CHANGE_SERIALIZER":
+        "safers.users.serializers.PasswordChangeSerializer",
+    "REGISTER_SERIALIZER":
+        "safers.users.serializers.RegisterSerializer",
+    "TOKEN_MODEL":
+        "knox.models.AuthToken",
+    "TOKEN_CREATOR":
+        "safers.users.utils.create_knox_token",
+    "OLD_PASSWORD_FIELD_ENABLED":
+        True,
+}
 
 FILTERS_DEFAULT_LOOKUP_EXPR = "iexact"
 
