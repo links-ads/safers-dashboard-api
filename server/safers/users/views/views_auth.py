@@ -11,7 +11,6 @@ from drf_yasg.utils import swagger_auto_schema
 
 from allauth.account.models import EmailAddress
 
-from dj_rest_auth.app_settings import create_token
 from dj_rest_auth.models import get_token_model
 from dj_rest_auth.views import (
     LoginView as DjRestAuthLoginView,
@@ -30,7 +29,7 @@ from dj_rest_auth.registration.views import (
 
 from safers.users.models import Role, Organization
 from safers.users.serializers import KnoxTokenSerializer, JWTSerializer, RegisterSerializer
-from safers.users.utils import AUTH_CLIENT
+from safers.users.utils import AUTH_CLIENT, create_token
 
 #################
 # swagger stuff #
