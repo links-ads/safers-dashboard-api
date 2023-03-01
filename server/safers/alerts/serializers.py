@@ -70,7 +70,9 @@ class AlertSerializer(serializers.ModelSerializer):
         return alert
 
 
-class AlertViewSetSerializer(AlertSerializer):
+class AlertViewSetSerializer(
+    gis_serializers.GeoFeatureModelSerializer, AlertSerializer
+):
     """
     The serializer used by the AlertViewSet.  This is different from the default serializer which is used by
     RMQ.  The latter allows all fields to be updated.  The former only allows "information" & "type"
@@ -78,7 +80,8 @@ class AlertViewSetSerializer(AlertSerializer):
     class Meta:
         model = Alert
         fields = (
-            "id",
+            "alert_id",
+            "sequence_number",
             "title",
             "type",
             "timestamp",
@@ -91,14 +94,15 @@ class AlertViewSetSerializer(AlertSerializer):
             "severity",
             "certainty",
             "description",
-            "geometry",
             "center",
             "bounding_box",
+            "geometry_collection",
             "media",
             "information",
             "favorite",
         )
         extra_kwargs = {
+            "alert_id": {"source": "id", "read_only": True},
             "timestamp": {"read_only": True},
             "status": {"read_only": True},
             "source": {"read_only": True},
@@ -109,8 +113,19 @@ class AlertViewSetSerializer(AlertSerializer):
             "severity": {"read_only": True},
             "certainty": {"read_only": True},
             "description": {"read_only": True},
-            "geometry": {"read_only": True},
+            "center": {"read_only": True},
+            "bounding_box": {"read_only": True},
+            "geometry_collection": {"read_only": True},
         }  # yapf: disable
+        geo_field = "center"
+        id_field = "sequence_number"
+
+    center = gis_serializers.GeometryField(
+        # redefine center field here to use the standard GeoFeatureModelSerializer behavior
+        # instead of the custom SerializerMethod in AlertSerializer above
+        precision=Alert.PRECISION,
+        allow_null=True,
+    )
 
     favorite = serializers.SerializerMethodField(method_name="is_favorite")
 
