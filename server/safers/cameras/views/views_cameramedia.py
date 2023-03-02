@@ -56,7 +56,7 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         }
 
     order = MultiFieldOrderingFilter(
-        fields=(("timestamp", "date"), ), multi_fields=["favorite"]
+        fields=(("timestamp", "date"), ), multi_fields=["-favorite"]
     )
 
     type = CaseInsensitiveChoiceFilter(choices=CameraMediaType.choices)
@@ -181,16 +181,18 @@ class CameraMediaViewSet(
         ensures that favorite camera_medias are at the start of the qs
         """
         user = self.request.user
-        qs = CameraMedia.objects.select_related("camera").prefetch_related(
-            "tags", "fire_classes"
+        favorite_camera_meda_ids = user.favorite_camera_medias.values_list(
+            "id", flat=True
         )
+
+        qs = CameraMedia.objects.all().prefetch_related("tags", "fire_classes")
         qs = qs.annotate(
             favorite=ExpressionWrapper(
-                Q(favorited_users=user), output_field=BooleanField()
+                Q(id__in=favorite_camera_meda_ids),
+                output_field=BooleanField(),
             )
-        ).distinct()
-
-        return qs.order_by("favorite")
+        )
+        return qs.order_by("-favorite")
 
     def get_object(self):
         queryset = self.get_queryset()
