@@ -209,13 +209,16 @@ class EventViewSet(
         ensures that favorite events are at the start of the qs
         """
         user = self.request.user
-        qs = Event.objects.all().prefetch_related("favorited_users")
+        favorite_event_ids = user.favorite_events.values_list("id", flat=True)
+
+        qs = Event.objects.all()
         qs = qs.annotate(
             favorite=ExpressionWrapper(
-                Q(favorited_users=user), output_field=BooleanField()
+                Q(id__in=favorite_event_ids),
+                output_field=BooleanField(),
             )
-        ).distinct()
-        return qs.order_by("favorite")
+        )
+        return qs.order_by("-favorite")
 
     def get_object(self):
         queryset = self.get_queryset()
