@@ -82,7 +82,7 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         fields = {}
 
     order = MultiFieldOrderingFilter(
-        fields=(("start_date", "date"), ), multi_fields=["favorite"]
+        fields=(("start_date", "date"), ), multi_fields=["-favorite"]
     )
 
     status = filters.MultipleChoiceFilter(

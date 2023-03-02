@@ -56,7 +56,7 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         }
 
     order = MultiFieldOrderingFilter(
-        fields=(("timestamp", "date"), ), multi_fields=["favorite"]
+        fields=(("timestamp", "date"), ), multi_fields=["-favorite"]
     )
 
     type = CaseInsensitiveChoiceFilter(choices=CameraMediaType.choices)

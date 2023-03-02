@@ -97,7 +97,7 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
     source = CaseInsensitiveChoiceFilter(choices=AlertSource.choices)
 
     order = MultiFieldOrderingFilter(
-        fields=(("timestamp", "date"), ), multi_fields=["favorite"]
+        fields=(("timestamp", "date"), ), multi_fields=["-favorite"]
     )
 
     start_date = filters.DateFilter(
