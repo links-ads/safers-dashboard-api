@@ -134,3 +134,24 @@ class UserSerializer(UserSerializerLite):
     #     profile = profile_serializer.create(profile_data)
     #     user = User.objects.create(profile=profile, **validated_data)
     #     return user
+
+
+class ReadOnlyUserSerializer(UserSerializer):
+    """
+    A serializer that doesn't allow modifying organization or role
+    """
+    class Meta:
+        model = User
+        fields = UserSerializer.Meta.fields
+
+    organization = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        read_only=True,
+    )
+
+    role = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        read_only=True,
+    )

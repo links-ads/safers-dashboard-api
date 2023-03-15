@@ -6,7 +6,7 @@ from .serializers_oauth2 import (
     RegisterViewSerializer as Oauth2RegisterViewSerializer,
     Oauth2UserSerializer,
 )
-from .serializers_users import UserSerializer, UserSerializerLite
+from .serializers_users import UserSerializerLite, UserSerializer, ReadOnlyUserSerializer
 from .serializers_auth import (
     JWTSerializer,
     LoginSerializer,
