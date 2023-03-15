@@ -11,7 +11,7 @@ from safers.core.decorators import swagger_fake
 
 from safers.users.models import User
 from safers.users.permissions import IsSelfOrAdmin
-from safers.users.serializers import UserSerializerLite, UserSerializer
+from safers.users.serializers import UserSerializerLite, UserSerializer, ReadOnlyUserSerializer
 from safers.users.views import synchronize_profile, SynchronizeProfileDirection
 
 ###########
@@ -77,7 +77,13 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
     # ]  # the client sends data as multipart/form data
     permission_classes = [IsAuthenticated, IsSelfOrAdmin]
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+
+    def get_serializer_class(self):
+        if self.request.method in ["PUT", "PATCH"]:
+            # prevent updating _all_ User fields, since updating organization or role causes problems in API
+            # (b/c this is not a ViewSet, I have to inspect the request methods rather than using ".action")
+            return ReadOnlyUserSerializer
+        return UserSerializer
 
     @swagger_fake(None)
     def get_object(self):
