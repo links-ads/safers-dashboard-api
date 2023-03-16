@@ -185,7 +185,9 @@ class CameraMediaViewSet(
             "id", flat=True
         )
 
-        qs = CameraMedia.objects.all().prefetch_related("tags", "fire_classes")
+        qs = CameraMedia.objects.active().prefetch_related(
+            "tags", "fire_classes"
+        )
         qs = qs.annotate(
             favorite=ExpressionWrapper(
                 Q(id__in=favorite_camera_meda_ids),

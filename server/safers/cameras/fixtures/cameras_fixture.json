@@ -184,7 +184,7 @@
   {
     "model": "cameras.camera",
     "fields": {
-      "is_active": true,
+      "is_active": false,
       "camera_id": "HRT_Mt_Chortiatis_116",
       "name": "Mt_Chortiatis",
       "model": "reolink RLC-823A",
@@ -198,7 +198,7 @@
   {
     "model": "cameras.camera",
     "fields": {
-      "is_active": true,
+      "is_active": false,
       "camera_id": "HRT_Mt_Chortiatis_139",
       "name": "Mt_Chortiatis",
       "model": "reolink RLC-823A",
@@ -207,6 +207,90 @@
       "geometry": "SRID=4326;POINT (23.068407 40.620997)",
       "direction": 139,
       "altitude": 492
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "camera_id": "HRT_Mt_Chortiatis_141",
+      "name": "Mt_Chortiatis",
+      "model": "reolink RLC-823A",
+      "owner": "HRT",
+      "nation": "Greece",
+      "geometry": "SRID=4326;POINT (23.056003 40.633228)",
+      "direction": 141,
+      "altitude": 725
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "camera_id": "HRT_Mt_Chortiatis_182",
+      "name": "Mt_Chortiatis",
+      "model": "reolink RLC-823A",
+      "owner": "HRT",
+      "nation": "Greece",
+      "geometry": "SRID=4326;POINT (23.056003 40.633228)",
+      "direction": 182,
+      "altitude": 725
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "camera_id": "HRT_Mt_Chortiatis_206",
+      "name": "Mt_Chortiatis",
+      "model": "reolink RLC-823A",
+      "owner": "HRT",
+      "nation": "Greece",
+      "geometry": "SRID=4326;POINT (23.056003 40.633228)",
+      "direction": 206,
+      "altitude": 725
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "camera_id": "HRT_Mt_Chortiatis_231",
+      "name": "Mt_Chortiatis",
+      "model": "reolink RLC-823A",
+      "owner": "HRT",
+      "nation": "Greece",
+      "geometry": "SRID=4326;POINT (23.056003 40.633228)",
+      "direction": 231,
+      "altitude": 725
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "camera_id": "HRT_Mt_Chortiatis_259",
+      "name": "Mt_Chortiatis",
+      "model": "reolink RLC-823A",
+      "owner": "HRT",
+      "nation": "Greece",
+      "geometry": "SRID=4326;POINT (23.056003 40.633228)",
+      "direction": 259,
+      "altitude": 725
+    }
+  },
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "is_active": true,
+      "camera_id": "HRT_Mt_Chortiatis_272",
+      "name": "Mt_Chortiatis",
+      "model": "reolink RLC-823A",
+      "owner": "HRT",
+      "nation": "Greece",
+      "geometry": "SRID=4326;POINT (23.056003 40.633228)",
+      "direction": 272,
+      "altitude": 725
     }
   }
 ]
