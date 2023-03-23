@@ -69,6 +69,12 @@ class CameraMediaQuerySet(models.QuerySet):
     def unalerted(self):
         return self.filter(alert__isnull=True)
 
+    def active(self):
+        return self.filter(camera__is_active=True)
+
+    def inactive(self):
+        return self.filter(camera__is_active=False)
+
 
 class CameraMediaFireClass(models.Model):
     class Meta:
