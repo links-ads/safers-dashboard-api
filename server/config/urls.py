@@ -12,6 +12,8 @@ from rest_framework import permissions, routers
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 
+from silk.profiling.profiler import silk_profile
+
 from safers.core.urls import (
     urlpatterns as core_urlpatterns,
     api_urlpatterns as core_api_urlpatterns,
@@ -135,11 +137,15 @@ api_urlpatterns += notifications_api_urlpatterns
 #################
 
 urlpatterns = [
+    # profiling... 
+    path("silk/", include('silk.urls', namespace="silk")),
+
     # admin...
     path(settings.ADMIN_URL, admin.site.urls),
 
+
     # API...
-    path("api/", include(api_urlpatterns)),
+    path("api/", silk_profile(include(api_urlpatterns)),
 
     # app-specific patterns (just in case)...
     path("", include(core_urlpatterns)),
@@ -166,17 +172,16 @@ if settings.ENVIRONMENT == "development":
         document_root=settings.MEDIA_ROOT,
     )
 
-# more profiling
-
-if "silk" in settings.INSTALLED_APPS:
-    urlpatterns = [
-        path("silk/", include('silk.urls', namespace="silk")),
-    ] + urlpatterns
+# if "silk" in settings.INSTALLED_APPS:
+#     from silk.profiling.profiler import silk_profile
+#     urlpatterns = [
+#         path("silk/", include('silk.urls', namespace="silk")),
+#     ] + urlpatterns
 
 
 if settings.DEBUG:
 
-    # enable profiling during development...
+    # enable more profiling during development...
     if "debug_toolbar" in settings.INSTALLED_APPS:
         import debug_toolbar
         urlpatterns = [
