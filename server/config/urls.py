@@ -166,16 +166,17 @@ if settings.ENVIRONMENT == "development":
         document_root=settings.MEDIA_ROOT,
     )
 
+# more profiling
+
+if "silk" in settings.INSTALLED_APPS:
+    urlpatterns = [
+        path("silk/", include('silk.urls', namespace="silk")),
+    ] + urlpatterns
+
+
 if settings.DEBUG:
 
     # enable profiling during development...
-
-    if "silk" in settings.INSTALLED_APPS:
-        import silk
-        urlpatterns = [
-            path("silk/", include('silk.urls', namespace="silk")),
-        ] + urlpatterns
-
     if "debug_toolbar" in settings.INSTALLED_APPS:
         import debug_toolbar
         urlpatterns = [

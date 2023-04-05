@@ -105,6 +105,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 ##############
 
 MIDDLEWARE = [
+    'silk.middleware.SilkyMiddleware', 
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -376,6 +377,21 @@ SWAGGER_SETTINGS = {
 ###########
 
 # logging is configured in development.py and/or deployment.py
+
+#############
+# profiling #
+#############
+
+SILKY_PYTHON_PROFILER = True 
+SILKY_PYTHON_PROFILER_BINARY = False  # (don't bother W/ .prof files yet)
+SILKY_AUTHENTICATION = True 
+SILKY_AUTHORISATION = True 
+SILKY_PERMISSIONS = lambda user: user.is_staff or DEBUG
+SILKY_MAX_REQUEST_BODY_SIZE = -1  # accept all requests
+# SILKY_MAX_RESPONSE_BODY_SIZE = ?! 
+SILKY_MAX_RECORDED_REQUESTS = 10**4
+SILKY_META = True
+SILKY_SENSITIVE_KEYS = {'username', 'email', 'client_id', 'client_secret', 'password'}
 
 ###########
 # backups #
