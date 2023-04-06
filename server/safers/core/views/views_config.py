@@ -5,10 +5,13 @@ from rest_framework.response import Response
 
 from drf_yasg.utils import swagger_auto_schema
 
+from silk.profiling.profiler import silk_profile 
+
 from safers.core.models import SafersSettings
 from safers.core.serializers import SafersSettingsSerializer
 
 
+@silk_profile()
 @swagger_auto_schema(
     methods=["GET"], responses={status.HTTP_200_OK: SafersSettingsSerializer}
 )
