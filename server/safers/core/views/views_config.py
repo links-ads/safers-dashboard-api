@@ -11,7 +11,7 @@ from safers.core.models import SafersSettings
 from safers.core.serializers import SafersSettingsSerializer
 
 
-@silk_profile()
+#@silk_profile()
 @swagger_auto_schema(
     methods=["GET"], responses={status.HTTP_200_OK: SafersSettingsSerializer}
 )
