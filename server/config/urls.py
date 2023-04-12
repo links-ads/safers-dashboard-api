@@ -145,7 +145,8 @@ urlpatterns = [
 
 
     # API...
-    path("api/", silk_profile(include(api_urlpatterns)),
+    path("api/", include(api_urlpatterns)),
+    # path("api/", silk_profile(include(api_urlpatterns)),
 
     # app-specific patterns (just in case)...
     path("", include(core_urlpatterns)),
