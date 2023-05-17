@@ -210,7 +210,7 @@ class DataLayerView(views.APIView):
                     "transparent": True,
                     "width": width,  # max_resolution,
                     "height": height,  # max_resolution,
-                    "format": "image/jpeg",
+                    "format": "image/png",
                 },
                 safe="{}",
             )
@@ -232,7 +232,7 @@ class DataLayerView(views.APIView):
                     "tilematrix": WMTS_CRS + ":{{z}}",
                     "tilecol": "{{x}}",
                     "tilerow": "{{y}}",
-                    "format": "image/jpeg",
+                    "format": "image/png",
                 },
                 safe="{}",
             )
