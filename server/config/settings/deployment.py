@@ -1,17 +1,70 @@
+"""
+Custom settings for "deployment" environment.
+"""
 from .base import *
-from .base import env
 
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
-DEBUG = env("DJANGO_DEBUG", default="false") == "true"
+#########
+# Setup #
+#########
 
+env = environ.Env()
+
+DEBUG = env("DJANGO_DEBUG", default="false") == "true"
 SECRET_KEY = env("DJANGO_SECRET_KEY")
+SECRET_KEY_FALLBACKS = env("DJANGO_SECRET_KEY_FALLBACKS", default=[])
+
+########
+# Apps #
+########
+
+INSTALLED_APPS += []
+
+########################
+# Static & Media Files #
+########################
+
+# Using Bucketeer to allow Heroku to manage storage in AWS S3.  PublicMediaS3Storage is
+# used by default; I can also specify PrivateMediaS3Storage on a field-by-field basis.
+
+STATICFILES_STORAGE = "safers.core.storage.StaticS3Storage"
+DEFAULT_FILE_STORAGE = "safers.core.storage.PublicMediaS3Storage"
+
+AWS_ACCESS_KEY_ID = env("BUCKETEER_AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = env("BUCKETEER_AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = env("BUCKETEER_BUCKET_NAME")
+AWS_S3_REGION_NAME = env("BUCKETEER_AWS_REGION")
+# https://docs.aws.amazon.com/AmazonS3/latest/userguide/dual-stack-endpoints.html#dual-stack-endpoints-description
+AWS_S3_ENDPOINT_URL = f"https://s3.dualstack.{AWS_S3_REGION_NAME}.amazonaws.com"
+AWS_S3_ADDRESSING_STYLE = "virtual"
+AWS_S3_SIGNATURE_VERSION = env("S3_SIGNATURE_VERSION", default="s3v4")
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+AWS_DEFAULT_ACL = None
+
+STATIC_DEFAULT_ACL = 'public-read'
+STATIC_LOCATION = 'static'
+STATIC_URL = f'{AWS_S3_ENDPOINT_URL}/{STATIC_LOCATION}/'
+
+PUBLIC_MEDIA_DEFAULT_ACL = 'public-read'
+PUBLIC_MEDIA_LOCATION = 'media/public'
+#PUBLIC_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PUBLIC_MEDIA_LOCATION}/'
+
+PRIVATE_MEDIA_DEFAULT_ACL = 'private'
+PRIVATE_MEDIA_LOCATION = 'media/private'
+#PRIVATE_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PRIVATE_MEDIA_LOCATION}/'
+
+##################
+# Security, etc. #
+##################
+
+# ALLOWED_HOSTS = ?
 
 CORS_ORIGIN_ALLOW_ALL = True
 
 #########
-# email #
+# Email #
 #########
 
 # TODO: I ACTUALLY WANT TO USE A "PROPER ESP VIA ANYMAIL
@@ -51,41 +104,8 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 
 DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER", default=EMAIL_HOST_USER)
 
-#########
-# media #
-#########
-
-# Using Bucketeer to allow Heroku to manage storage in AWS S3.  PublicMediaS3Storage is
-# used by default; I can also specify PrivateMediaS3Storage on a field-by-field basis.
-
-STATICFILES_STORAGE = "safers.core.storage.StaticS3Storage"
-DEFAULT_FILE_STORAGE = "safers.core.storage.PublicMediaS3Storage"
-
-AWS_ACCESS_KEY_ID = env("BUCKETEER_AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = env("BUCKETEER_AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = env("BUCKETEER_BUCKET_NAME")
-AWS_S3_REGION_NAME = env("BUCKETEER_AWS_REGION")
-# https://docs.aws.amazon.com/AmazonS3/latest/userguide/dual-stack-endpoints.html#dual-stack-endpoints-description
-AWS_S3_ENDPOINT_URL = f"https://s3.dualstack.{AWS_S3_REGION_NAME}.amazonaws.com"
-AWS_S3_ADDRESSING_STYLE = "virtual"
-AWS_S3_SIGNATURE_VERSION = env("S3_SIGNATURE_VERSION", default="s3v4")
-AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
-AWS_DEFAULT_ACL = None
-
-STATIC_DEFAULT_ACL = 'public-read'
-STATIC_LOCATION = 'static'
-STATIC_URL = f'{AWS_S3_ENDPOINT_URL}/{STATIC_LOCATION}/'
-
-PUBLIC_MEDIA_DEFAULT_ACL = 'public-read'
-PUBLIC_MEDIA_LOCATION = 'media/public'
-#PUBLIC_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PUBLIC_MEDIA_LOCATION}/'
-
-PRIVATE_MEDIA_DEFAULT_ACL = 'private'
-PRIVATE_MEDIA_LOCATION = 'media/private'
-#PRIVATE_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PRIVATE_MEDIA_LOCATION}/'
-
 ###########
-# logging #
+# Logging #
 ###########
 
 SENTRY_DSN = env("DJANGO_SENTRY_DSN", default=None)
@@ -109,7 +129,7 @@ if SENTRY_DSN:
     )
 
 ###########
-# backups #
+# Backups #
 ###########
 
 # DBBACKUP_STORAGE = "safers.core.storage.PublicMediaS3Storage"
