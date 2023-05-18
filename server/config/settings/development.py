@@ -1,17 +1,25 @@
+"""
+Custom settings for "development" environment.
+"""
 from .base import *
-from .base import env
 
-DEBUG = env("DJANGO_DEBUG", default="true") == "true"
+#########
+# Setup #
+#########
 
-SECRET_KEY = env("DJANGO_SECRET_KEY")
+env = environ.Env()
+
+DEBUG = True
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="shhh")
+SECRET_KEY_FALLBACKS = env("DJANGO_SECRET_KEY_FALLBACKS", default=[])
+
+########
+# Apps #
+########
+
+INSTALLED_APPS += []
 
 CORS_ORIGIN_ALLOW_ALL = True
-
-#########
-# email #
-#########
-
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ########################
 # static & media files #
@@ -36,8 +44,27 @@ PUBLIC_MEDIA_DEFAULT_ACL = ""
 PRIVATE_MEDIA_LOCATION = ""
 PRIVATE_MEDIA_DEFAULT_ACL = ""
 
+##################
+# Security, etc. #
+##################
+
+ALLOWED_HOSTS = ["*"]
+CORS_ALLOW_ALL_ORIGINS = True
+
+#########
+# Email #
+#########
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+#######
+# API #
+#######
+
+# TODO: DRF-SPECTACULAR [SIDECAR]
+
 ###########
-# logging #
+# Logging #
 ###########
 
 LOGGING = {
@@ -86,19 +113,14 @@ LOGGING = {
     },
 }
 
-###########
-# backups #
-###########
-
-DBBACKUP_STORAGE = "safers.core.storage.LocalMediaStorage"
-DBBACKUP_STORAGE_OPTIONS = {"location": f"{MEDIA_ROOT}/backups/"}
-
 #############
-# profiling #
+# Profiling #
 #############
 
 # see "https://gist.github.com/douglasmiranda/9de51aaba14543851ca3"
 # for tips about making django_debug_toolbar to play nicely w/ Docker
+
+# TODO: DELETE
 
 import socket
 
@@ -140,3 +162,10 @@ DEBUG_TOOLBAR_PANELS = [
 
 INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
 INTERNAL_IPS += [ip[:-1] + "1" for ip in ips]
+
+###########
+# Backups #
+###########
+
+DBBACKUP_STORAGE = "safers.core.storage.LocalMediaStorage"
+DBBACKUP_STORAGE_OPTIONS = {"location": f"{MEDIA_ROOT}/backups/"}

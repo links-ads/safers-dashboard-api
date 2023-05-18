@@ -1,45 +1,54 @@
 import environ
 import glob
-import os
 
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
+from config.types import EnvironmentTypes
+
 ###############
 # setup stuff #
 ###############
 
-BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
+BASE_DIR = Path(__file__).resolve(strict=True).parents[2]  # (server dir)
 
-ENVIRONMENT = os.environ.get("SYS_ENV", "development")
-environment_settings_module = f"config.settings.{ENVIRONMENT}"
+env = environ.Env(
+    DJANGO_ENVIRONMENT=(EnvironmentTypes, EnvironmentTypes.DEVELOPMENT)
+)
 
-##############################
-# load environment variables #
-##############################
+ENVIRONMENT = env("DJANGO_ENVIRONMENT")
 
-env = environ.Env()
+############################################################
+# load environment variables & appropriate settings module #
+############################################################
 
-if ENVIRONMENT == "development":
-    # environment variables for development are stored in files
+if ENVIRONMENT == EnvironmentTypes.DEVELOPMENT:
     for env_file in glob.glob(str(BASE_DIR / ".env*")):
+        # environment variables for development are stored in files
         try:
             env.read_env(env_file)
         except Exception as e:
-            msg = f"Unable to read '{env_file}': {e}."
-            raise ImproperlyConfigured(msg)
+            raise ImproperlyConfigured(f"Unable to read '{env_file}': {e}.")
+
+    from config.settings.development import *
+
+elif ENVIRONMENT == EnvironmentTypes.DEPLOYMENT:
+    pass  # variables for deployment are dynamically created on the server
+
+    from config.settings.deployment import *
+
+elif ENVIRONMENT == EnvironmentTypes.CI:
+    pass  # variables for ci are hard-coded in actions
+
+    from config.settings.ci import *
+
 else:
-    # otherwise, they are dynamically-created during deployment
-    pass
+    raise ImproperlyConfigured(f"Unknown ENVIRONMENT: '{ENVIRONMENT}'")
 
-###################
-# import settings #
-###################
-
-from .base import *
-
-exec(f"from {environment_settings_module} import *") in globals()
+################
+# heroku stuff #
+################
 
 import django_on_heroku
 
