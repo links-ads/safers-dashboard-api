@@ -2,8 +2,8 @@ version: "3"
 
 services:
 
-  db:
-    image: kartoza/postgis:14
+  safers-db:
+    image: kartoza/postgis:latest
     environment:
       POSTGRES_DBNAME: safers_db
       POSTGRES_USER: safers_user
@@ -14,31 +14,49 @@ services:
     ports:
       - "5666:5432"
 
-  # auth:
-  #   image: fusionauth/fusionauth-app:latest
-  #   depends_on:
-  #     - db
-  #   environment:
-  #     # (using the same db service for auth & server in development)
-  #     DATABASE_URL: jdbc:postgresql://db:5432/fusionauth
-  #     DATABASE_ROOT_USERNAME: safers_user
-  #     DATABASE_ROOT_PASSWORD: safers_pwd
-  #     DATABASE_USERNAME: fusionauth
-  #     DATABASE_PASSWORD: fusionauth
-  #     FUSIONAUTH_APP_MEMORY: 512M
-  #     FUSIONAUTH_APP_RUNTIME_MODE: development
-  #     FUSIONAUTH_APP_URL: http://fusionauth:9011
-  #     # ES_JAVA_OPTS: "-Xms512m -Xmx512m"
-  #     SEARCH_TYPE: database
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./auth/fa_config:/usr/local/fusionauth/confg
-  #   networks:
-  #     - safers
-  #   ports:
-  #     - "9011:9011"
+  safers-auth-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: fusionauth_user
+      POSTGRES_PASSWORD: fusionauth_pwd
+    healthcheck:
+      test: "pg_isready -U fusionauth_user"
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - safers
+    restart: unless-stopped
 
-  # broker:
+  safers-auth:
+    image: fusionauth/fusionauth-app:latest
+    depends_on:
+      safers-auth-db:
+        condition: service_healthy
+    env_file:
+      - ./auth/.env
+    environment:
+      DATABASE_URL: jdbc:postgresql://safers-auth-db:5432/fusionauth
+      DATABASE_ROOT_USERNAME: fusionauth_user
+      DATABASE_ROOT_PASSWORD: fusionauth_pwd
+      DATABASE_USERNAME: fusionauth_user
+      DATABASE_PASSWORD: fusionauth_pwd
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+      FUSIONAUTH_APP_KICKSTART_FILE: /usr/local/fusionauth/kickstart/kickstart.json
+      FUSIONAUTH_APP_MEMORY: 512M
+      FUSIONAUTH_APP_RUNTIME_MODE: development
+      FUSIONAUTH_APP_URL: http://fusionauth:9011
+      SEARCH_TYPE: database
+    restart: unless-stopped
+    volumes:
+      - ./auth/config:/usr/local/fusionauth/confg
+      - ./auth/kickstart:/usr/local/fusionauth/kickstart
+    networks:
+      - safers
+    ports:
+      - "9011:9011"
+
+  # safers-broker:
   #   image: rabbitmq:3-management
   #   hostname: broker
   #   # TODO: WILL WANT SOME CONFIG IN DEFINITIONS TO SETUP QUEUES
@@ -57,15 +75,17 @@ services:
   #     - 5672:5672  # internal queue
   #     - 15672:15672  # management client
 
-
-  server:
+  safers-server:
     build:
       context: .
     tty: true
+    env_file:
+      - .env
     environment:
       SYS_ENV: development
       ENABLE_DJANGO: 1
       DJANGO_SETTINGS_MODULE: config.settings
+    working_dir: /home/app/server
     volumes:
       - ./server:/home/app/server
     networks:
@@ -74,7 +94,7 @@ services:
       - "8000:8000"  # API
       - "8080:8080"  # profiling
 
-  worker:
+  safers-worker:
     build: .
     environment:
       SYS_ENV: development
@@ -99,4 +119,5 @@ services:
 
 networks:
   safers:
+    name: safers
     driver: bridge
