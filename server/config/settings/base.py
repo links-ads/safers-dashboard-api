@@ -529,6 +529,12 @@ SAFERS_GEOSERVER_API_URL = env(
     default="https://geoserver-test.safers-project.cloud/",
 )
 
+SAFERS_GEOSERVER_API_URLS = env(
+    "SAFERS_GEOSERVER_API_URLS",
+    default=
+    "https://geoserver-test1.safers-project.cloud/,https://geoserver-test2.safers-project.cloud/,https://geoserver-test3.safers-project.cloud/,https://geoserver-test4.safers-project.cloud/",
+).split(",")
+
 SAFERS_GEODATA_API_URL = env(
     "SAFERS_IMPORTER_API_URL",
     default="https://geoapi-test.safers-project.cloud/",

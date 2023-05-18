@@ -73,9 +73,9 @@ _data_layer_schema = openapi.Schema(
                       "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
                     ],
                     "urls": {
-                      "2022-04-28T12:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T12%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng",
-                      "2022-04-28T13:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T13%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng",
-                      "2022-04-28T14:15:20Z": "https://geoserver-test.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T14%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng",
+                      "2022-04-28T12:15:20Z": ["https://geoserver-test1.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T12%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng" "https://geoserver-test2.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T12%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng"],
+                      "2022-04-28T13:15:20Z": ["https://geoserver-test1.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T13%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng", "https://geoserver-test2.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T13%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng"],
+                      "2022-04-28T14:15:20Z": ["https://geoserver-test1.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T14%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng", "https://geoserver-test2.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T14%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng"],
                     }
                 }
               ]
@@ -210,11 +210,14 @@ class DataLayerView(views.APIView):
                     "transparent": True,
                     "width": width,  # max_resolution,
                     "height": height,  # max_resolution,
-                    "format": "image/jpeg",
+                    "format": "image/png",
                 },
                 safe="{}",
             )
-            geoserver_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_WMS_URL_PATH)}?{geoserver_layer_query_params}"
+            geoserver_layer_urls = [
+                f"{urljoin(geoserver_api_url, GEOSERVER_WMS_URL_PATH)}?{geoserver_layer_query_params}"
+                for geoserver_api_url in settings.SAFERS_GEOSERVER_API_URLS
+            ]
 
         elif safers_settings.geoserver_standard == GeoserverStandards.WMTS:
             geoserver_layer_query_params = urlencode(
@@ -229,11 +232,14 @@ class DataLayerView(views.APIView):
                     "tilematrix": WMTS_CRS + ":{{z}}",
                     "tilecol": "{{x}}",
                     "tilerow": "{{y}}",
-                    "format": "image/jpeg",
+                    "format": "image/png",
                 },
                 safe="{}",
             )
-            geoserver_layer_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_WMTS_URL_PATH)}?{geoserver_layer_query_params}"
+            geoserver_layer_urls = [
+                f"{urljoin(geoserver_api_url, GEOSERVER_WMTS_URL_PATH)}?{geoserver_layer_query_params}"
+                for geoserver_api_url in settings.SAFERS_GEOSERVER_API_URLS
+            ]
 
         geoserver_legend_query_params = urlencode(
             {
@@ -370,10 +376,13 @@ class DataLayerView(views.APIView):
                           [
                             (
                                 timestamp,
-                                geoserver_layer_url.format(
-                                  name=quote_plus(detail["name"]),
-                                  time=quote_plus(timestamp),
-                                )
+                                [
+                                  url.format(
+                                    name=quote_plus(detail["name"]),
+                                    time=quote_plus(timestamp),
+                                  )
+                                  for url in geoserver_layer_urls
+                                ]
                             )
                             for timestamp in map(
                               lambda x: datetime.strptime(x, DATETIME_INPUT_FORMAT).strftime(DATETIME_OUTPUT_FORMAT),
