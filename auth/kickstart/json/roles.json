@@ -1,0 +1,38 @@
+[
+  {
+    "name": "administrator",
+    "description": "Administrator of SAFERS",
+    "isDefault": false,
+    "isSuperRole": true
+  },
+  {
+    "name": "citizen",
+    "description": "citizen",
+    "isDefault": true,
+    "isSuperRole": false
+  },
+  {
+    "name": "decision_maker",
+    "description": "Decision Maker: sits in a control rooms during emergency, monitoring the situation",
+    "isDefault": false,
+    "isSuperRole": false
+  },
+  {
+    "name": "first_responder",
+    "description": "On-field role: First Responders can make reports and accomplish missions",
+    "isDefault": false,
+    "isSuperRole": false
+  },
+  {
+    "name": "organization_manager",
+    "description": "Organization Manager: manages everything within his/her Organization in SAFERS",
+    "isDefault": false,
+    "isSuperRole": false
+  },
+  {
+    "name": "team_leader",
+    "description": "Like First Responder, but with more powers",
+    "isDefault": false,
+    "isSuperRole": false
+  }
+]
