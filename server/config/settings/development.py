@@ -43,19 +43,45 @@ PRIVATE_MEDIA_DEFAULT_ACL = ""
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {},
     "formatters": {
         "standard": {
-            "format": "%(asctime)s [%(levelname)s]: %(message)s"
+            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+        },
+        "colored": {
+            "()": "safers.core.logging.ColoredFormatter",
+            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
         }
     },
     "handlers": {
         "console": {
-            "level": "DEBUG",
             "class": "logging.StreamHandler",
+            "filters": [],
+            "formatter": "colored",
+        },
+        "mail_admins": {
+            "class": "django.utils.log.AdminEmailHandler",
+            "filters": [],
+            "level": "ERROR",
+        },
+    },
+    "loggers": {
+        # change the level of a few particularly verbose loggers
+        "django.db.backends": {
+            "level": "WARNING"
+        },
+        "django.utils.autoreload": {
+            "level": "WARNING"
+        },
+        "faker": {
+            "level": "WARNING"
         },
     },
     "root": {
-        "handlers": ["console"],
+        "handlers": [
+            "console",
+            # "mail_admins",  # don't bother w/ AdminEmailHandler for DEVELOPMENT
+        ],
         "level": "DEBUG",
     },
 }
