@@ -53,11 +53,34 @@ class UserSerializer(UserSerializerLite):
     class Meta:
         model = User
         fields = UserSerializerLite.Meta.fields + (
+            "organization_name",
+            "role_name",
+            "organization",
+            "role",
             "profile",
             "default_aoi",
             "oauth2",
         )
 
+    organization_name = serializers.CharField(
+        required=False,
+        write_only=True,
+    )
+
+    role_name = serializers.CharField(
+        required=False,
+        write_only=True,
+    )
+
+    organization = serializers.SlugRelatedField(
+        slug_field="name",
+        read_only=True,
+    )
+
+    role = serializers.SlugRelatedField(
+        slug_field="name",
+        read_only=True,
+    )
     default_aoi = serializers.PrimaryKeyRelatedField(
         queryset=Aoi.objects.active(), required=False, allow_null=True
     )
