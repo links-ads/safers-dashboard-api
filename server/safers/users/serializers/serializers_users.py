@@ -15,7 +15,7 @@ from safers.events.models import Event
 
 from safers.cameras.models import CameraMedia
 
-from safers.users.models import User, Organization, Role
+from safers.users.models import User
 from safers.users.serializers import Oauth2UserSerializer
 
 
@@ -53,20 +53,10 @@ class UserSerializer(UserSerializerLite):
     class Meta:
         model = User
         fields = UserSerializerLite.Meta.fields + (
-            "organization",
-            "role",
             "profile",
             "default_aoi",
             "oauth2",
         )
-
-    organization = serializers.PrimaryKeyRelatedField(
-        queryset=Organization.objects.active(), required=False, allow_null=True
-    )
-
-    role = serializers.PrimaryKeyRelatedField(
-        queryset=Role.objects.active(), required=False, allow_null=True
-    )
 
     default_aoi = serializers.PrimaryKeyRelatedField(
         queryset=Aoi.objects.active(), required=False, allow_null=True
@@ -99,15 +89,3 @@ class ReadOnlyUserSerializer(UserSerializer):
     class Meta:
         model = User
         fields = UserSerializer.Meta.fields
-
-    organization = serializers.PrimaryKeyRelatedField(
-        required=False,
-        allow_null=True,
-        read_only=True,
-    )
-
-    role = serializers.PrimaryKeyRelatedField(
-        required=False,
-        allow_null=True,
-        read_only=True,
-    )
