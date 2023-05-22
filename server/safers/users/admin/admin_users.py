@@ -35,10 +35,10 @@ class UserAdmin(auth_admin.UserAdmin):
     form = UserChangeForm
     fieldsets = (
         (None, {"fields": ["id", "auth_id", "username", "email", "password", "active_token_key"]}),
-        ("Personal Info", {"fields": ["first_name", "last_name", "role", "organization",]}),
-        ("Permissions", {"fields": ["is_active", "is_staff","is_superuser", "accepted_terms","groups", "user_permissions"] }),
+        ("General Info", {"fields": ["change_password", "accepted_terms"]}),
+        ("Permissions", {"fields": ["is_active", "is_staff","is_superuser", "groups", "user_permissions"] }),
         ("Important Dates", {"fields": ["last_login", "date_joined"]}),
-        ("Safers", {"fields": ["default_aoi", "favorite_alerts", "favorite_events", "favorite_camera_medias"]}),
+        ("Safers", {"fields": ["organization", "role", "profile", "default_aoi", "favorite_alerts", "favorite_events", "favorite_camera_medias"]}),
     )  # yapf: disable
     filter_horizontal = (
         "groups",

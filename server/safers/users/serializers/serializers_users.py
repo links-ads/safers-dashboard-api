@@ -16,7 +16,7 @@ from safers.events.models import Event
 from safers.cameras.models import CameraMedia
 
 from safers.users.models import User, Organization, Role
-from safers.users.serializers import Oauth2UserSerializer, UserProfileSerializer
+from safers.users.serializers import Oauth2UserSerializer
 
 
 class UserSerializerLite(serializers.ModelSerializer):
@@ -55,8 +55,8 @@ class UserSerializer(UserSerializerLite):
         fields = UserSerializerLite.Meta.fields + (
             "organization",
             "role",
-            "default_aoi",
             "profile",
+            "default_aoi",
             "oauth2",
         )
 
@@ -72,16 +72,7 @@ class UserSerializer(UserSerializerLite):
         queryset=Aoi.objects.active(), required=False, allow_null=True
     )
 
-    profile = UserProfileSerializer()
-
     oauth2 = Oauth2UserSerializer(source="auth_user")
-
-    @property
-    def errors(self):
-        errors = defaultdict(list, super().errors)
-        for k, v in errors.pop("profile", {}).items():
-            errors[k].append(*v)
-        return errors
 
     def validate(self, data):
         validated_data = super().validate(data)
@@ -99,41 +90,6 @@ class UserSerializer(UserSerializerLite):
                 f"{value} is not an allowed username"
             )
         return value
-
-    def to_representation(self, instance):
-        """
-        moves serialized profile data up to root level
-        """
-        representation = super().to_representation(instance)
-        representation.update(representation.pop("profile"))
-        return representation
-
-    def to_internal_value(self, data):
-        """
-        moves root level profile fields back into nested object
-        """
-        data["profile"] = {
-            k: data.get(k)
-            for k in UserProfileSerializer.Meta.fields if k in data
-        }
-        return super().to_internal_value(data)
-
-    def update(self, instance, validated_data):
-        profile_serializer = UserProfileSerializer(
-            instance.profile, context=self.context
-        )
-        profile_serializer.update(
-            instance.profile, validated_data.pop("profile", {})
-        )
-        return super().update(instance, validated_data)
-
-    # # no need to override create (safers doesn't create users via DRF)
-    # def create(self, validated_data):
-    #     profile_serializer = UserProfileSerializer(context=self.context)
-    #     profile_data = validated_data.pop("profile", {})
-    #     profile = profile_serializer.create(profile_data)
-    #     user = User.objects.create(profile=profile, **validated_data)
-    #     return user
 
 
 class ReadOnlyUserSerializer(UserSerializer):

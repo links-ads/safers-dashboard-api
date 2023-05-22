@@ -25,10 +25,8 @@ from safers.users.serializers import (
     Oauth2RegisterViewSerializer,
     Oauth2UserSerializer,
     UserSerializerLite,
-    UserProfileSerializer,
 )
 from safers.users.utils import AUTH_CLIENT, create_knox_token
-from safers.users.views import synchronize_profile, SynchronizeProfileDirection
 
 logger = logging.getLogger(__name__)
 """
@@ -138,28 +136,6 @@ class LoginView(GenericAPIView):
                     setattr(auth_user, AUTH_TOKEN_FIELDS[k], v)
             auth_user.save()
 
-            try:
-                user_profile = user.profile
-                if created_user:
-                    # this user must have registered outside the dashboard (ie: the chatbot)
-                    synchronize_profile(
-                        user_profile,
-                        direction=SynchronizeProfileDirection.REMOTE_TO_LOCAL
-                    )
-
-                else:
-                    # this user must have been through this fn before (registered via dashbaord and/or already has profile info)
-                    synchronize_profile(
-                        user_profile,
-                        direction=SynchronizeProfileDirection.LOCAL_TO_REMOTE
-                    )
-            except Exception as e:
-                exception_message = "Unable to set profile fields on authentication server"
-                logger.error(exception_message)
-                return Response(
-                    exception_message, status=status.HTTP_400_BAD_REQUEST
-                )
-
             token_dataclass = create_knox_token(None, user, None)
             token_serializer = KnoxTokenSerializer(token_dataclass)
 
@@ -256,14 +232,6 @@ class RegisterView(GenericAPIView):
                 }
             )
         )
-        if created_user:
-            profile_serializer = UserProfileSerializer()
-            profile_data = {
-                AUTH_PROFILE_FIELDS[k]: v
-                for k,
-                v in auth_user_data.items() if k in AUTH_PROFILE_FIELDS
-            }
-            profile_serializer.update(user.profile, profile_data)
 
         user_serializer = UserSerializerLite(user)
 
