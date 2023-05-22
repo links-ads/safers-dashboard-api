@@ -6,8 +6,9 @@ from safers.users.models import Organization
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
-        fields = (
+        fields = [
             "id",
             "name",
             "description",
-        )
+            "title",
+        ]
