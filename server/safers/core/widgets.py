@@ -1,4 +1,8 @@
+import json
+from collections import OrderedDict
+
 from django import forms
+from django.forms import widgets
 
 
 class DataListWidget(forms.TextInput):
@@ -22,3 +26,29 @@ class DataListWidget(forms.TextInput):
         data_list += "</datalist>"
 
         return rendered_html + data_list
+
+
+class JSONWidget(widgets.Textarea):
+    """
+    renders JSON in a pretty (indented/sorted) way
+    """
+    def __init__(self, attrs=None):
+        default_attrs = {
+            # make things a bit bigger
+            "cols": "80",
+            "rows": "20",
+            "class": "vLargeTextField",
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
+
+    def format_value(self, value) -> str:
+        try:
+            value = json.dumps(
+                json.loads(value, object_pairs_hook=OrderedDict),
+                indent=2,
+            )
+        except Exception:
+            pass
+        return value
