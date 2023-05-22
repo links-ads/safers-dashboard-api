@@ -144,12 +144,12 @@ class RegisterSerializer(serializers.Serializer):
     )
     role = serializers.SlugRelatedField(
         slug_field="name",
-        queryset=Role.objects.active(),
+        queryset=Role.objects.all(),
         required=True,
     )
     organization = serializers.SlugRelatedField(
         slug_field="name",
-        queryset=Organization.objects.active(),
+        queryset=Organization.objects.all(),
         required=False,
         allow_null=True,
     )
