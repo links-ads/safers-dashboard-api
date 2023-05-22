@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 import django.utils.timezone
-import safers.users.models.models_profiles
+# import safers.users.models.models_profiles
 
 
 class Migration(migrations.Migration):
@@ -17,7 +17,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='oauth2user',
             name='created',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
@@ -43,7 +45,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='userprofile',
             name='avatar',
-            field=models.ImageField(blank=True, null=True, upload_to=safers.users.models.models_profiles.avatar_file_path, validators=[safers.users.models.models_profiles.validate_avatar_dimensions]),
+            field=models.ImageField(
+                blank=True,
+                null=True,
+                upload_to="profiles/avatars",
+                validators=[]
+            ),
         ),
         migrations.AddField(
             model_name='userprofile',
@@ -88,11 +95,22 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='oauth2user',
             name='user',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='auth_user', to=settings.AUTH_USER_MODEL),
+            field=models.OneToOneField(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='auth_user',
+                to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AlterField(
             model_name='user',
             name='auth_id',
-            field=models.UUIDField(blank=True, editable=False, help_text='The corresponding id of the FusionAuth User', null=True, unique=True),
+            field=models.UUIDField(
+                blank=True,
+                editable=False,
+                help_text='The corresponding id of the FusionAuth User',
+                null=True,
+                unique=True
+            ),
         ),
     ]

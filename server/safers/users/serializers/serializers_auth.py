@@ -33,7 +33,6 @@ from drf_yasg.utils import swagger_serializer_method
 
 from safers.users.forms import PasswordResetForm
 from safers.users.models import Role, Organization
-from safers.users.serializers import UserProfileSerializer
 
 #######################################
 # redefined drf-rest-auth serializers #
@@ -181,10 +180,6 @@ class RegisterSerializer(serializers.Serializer):
         user.role = self.validated_data.get("role")
         user.organization = self.validated_data.get("organization")
         user.save()
-
-        # and any extra profile fields...
-        profile_serializer = UserProfileSerializer()
-        profile_serializer.update(user.profile, self.validated_data)
 
     @property
     def cleaned_data(self):

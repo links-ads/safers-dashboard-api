@@ -12,7 +12,6 @@ from safers.core.decorators import swagger_fake
 from safers.users.models import User
 from safers.users.permissions import IsSelfOrAdmin
 from safers.users.serializers import UserSerializerLite, UserSerializer, ReadOnlyUserSerializer
-from safers.users.views import synchronize_profile, SynchronizeProfileDirection
 
 ###########
 # swagger #
@@ -31,14 +30,15 @@ _user_request_schema = openapi.Schema(
         "organization": "7791f5fa-bb0a-42da-8fea-8c81ab614ee4",
         "role": "a5ec15be-67bc-43d3-9c5d-049f788bf163",
         "default_aoi": 2,
-        "first_name": "Miles",
-        "last_name": "Dyson",
-        "company": "Cyberdyne Systems",
-        "address": "123 Main Street",
-        "city": "Los Angeles",
-        "country": "USA",
-        "avatar": None,
-        "remote_profile_fields": []
+        "profile": {
+            "first_name": "Miles",
+            "last_name": "Dyson",
+            "company": "Cyberdyne Systems",
+            "address": "123 Main Street",
+            "city": "Los Angeles",
+            "country": "USA",
+            "avatar": None,
+        },
     }
 )
 
@@ -91,20 +91,6 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
             return self.request.user
         return super().get_object()
 
-    # TODO: GOING TO ALLOW USERS TO UPDATE PROFILE FIELDS FOR NOW
-    # @swagger_fake({})
-    # def get_serializer_context(self):
-    #     # if this is a remote user, I want to prevent updating any
-    #     # profile fields which come from the remote auth_user
-    #     context = super().get_serializer_context()
-    #     user = self.get_object()
-    #     if user.is_remote:
-    #         context["prevent_remote_profile_fields"] = {
-    #             field: getattr(user.profile, field)
-    #             for field in user.auth_user.profile_fields
-    #         }
-    #     return context
-
     def delete(self, request, *args, **kwargs):
         retval = super().delete(request, *args, **kwargs)
         # TODO: delete user from FusionAuth and logout
@@ -112,19 +98,5 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         retval = super().perform_update(serializer)
-
-        if "default_aoi" not in serializer.validated_data:
-
-            user = self.get_object()
-
-            if user.is_remote:
-                try:
-                    synchronize_profile(
-                        user.profile,
-                        SynchronizeProfileDirection.LOCAL_TO_REMOTE
-                    )
-                except Exception as e:
-                    msg = "Unable to update profile fields on authentication server."
-                    raise APIException(msg)
-
+        # TODO: update profile in FusionAuth & Gateway
         return retval

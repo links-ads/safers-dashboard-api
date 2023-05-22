@@ -1,4 +1,4 @@
-from email.headerregistry import HeaderRegistry
+from enum import Enum
 import uuid
 
 from django.apps import apps
@@ -13,6 +13,31 @@ from django.utils.translation import gettext_lazy as _
 from allauth.account.models import EmailAddress
 
 from safers.users.utils import AUTH_CLIENT
+
+###########
+# helpers #
+###########
+
+PROFILE_FIELDS = [
+    # profile fields to retain from gateway
+    "user",
+    "organizationId",
+    "teamId",
+    "personId",
+    "isFirstLogin",
+    "isNewUser",
+    "taxCode",
+]
+
+
+class ProfileDirection(str, Enum):
+    """
+    Indicates whether to synchronize the profile from the dashboard
+    (local) to the gateway (remote).
+    """
+    LOCAL_TO_REMOTE = "local_to_remote"
+    REMOTE_TO_LOCAL = "remote_to_local"
+
 
 ########################
 # managers & querysets #
@@ -101,6 +126,10 @@ class User(AbstractUser):
 
     objects = UserManager()
 
+    # remove these fields, as they should form part of the profile
+    first_name = None
+    last_name = None
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -146,6 +175,13 @@ class User(AbstractUser):
         null=True,
         on_delete=models.PROTECT,
         related_name="users",
+    )
+
+    profile = models.JSONField(
+        default=dict,
+        help_text=_(
+            "JSON representation of profile; used for synchronization w/ gateway."
+        ),
     )
 
     default_aoi = models.ForeignKey(
@@ -225,3 +261,9 @@ class User(AbstractUser):
 
         except Exception as e:
             raise e  # I AM HERE
+
+    def synchronize_profile(
+        self, token: str, direction: ProfileDirection
+    ) -> None:
+        # TODO: IMPLEMENT THIS ONCE GATEWAY_CLIENT HAS BEEN ADDED
+        raise NotImplementedError()
