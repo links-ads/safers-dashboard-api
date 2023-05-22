@@ -38,7 +38,7 @@ class UserAdmin(auth_admin.UserAdmin):
         ("General Info", {"fields": ["change_password", "accepted_terms"]}),
         ("Permissions", {"fields": ["is_active", "is_staff","is_superuser", "groups", "user_permissions"] }),
         ("Important Dates", {"fields": ["last_login", "date_joined"]}),
-        ("Safers", {"fields": ["organization", "role", "profile", "default_aoi", "favorite_alerts", "favorite_events", "favorite_camera_medias"]}),
+        ("Safers", {"fields": ["profile", "default_aoi", "favorite_alerts", "favorite_events", "favorite_camera_medias"]}),
     )  # yapf: disable
     filter_horizontal = (
         "groups",
@@ -52,15 +52,9 @@ class UserAdmin(auth_admin.UserAdmin):
         "id",
         "is_verified_for_list_display",
         "accepted_terms",
-        "role",
-        "organization",
         "get_authentication_type_for_list_display",
     ]
-    list_filter = (
-        LocalOrRemoteFilter,
-        "role",
-        "organization",
-    ) + auth_admin.UserAdmin.list_filter
+    list_filter = (LocalOrRemoteFilter, ) + auth_admin.UserAdmin.list_filter
     readonly_fields = (
         "id",
         "auth_id",

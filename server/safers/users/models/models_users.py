@@ -161,21 +161,21 @@ class User(AbstractUser):
         help_text=_("Has this user accepted the terms & conditions?")
     )
 
-    role = models.ForeignKey(
-        "Role",
-        blank=True,
-        null=True,
-        on_delete=models.PROTECT,
-        related_name="users",
-    )
+    # role = models.ForeignKey(
+    #     "Role",
+    #     blank=True,
+    #     null=True,
+    #     on_delete=models.PROTECT,
+    #     related_name="users",
+    # )
 
-    organization = models.ForeignKey(
-        "Organization",
-        blank=True,
-        null=True,
-        on_delete=models.PROTECT,
-        related_name="users",
-    )
+    # organization = models.ForeignKey(
+    #     "Organization",
+    #     blank=True,
+    #     null=True,
+    #     on_delete=models.PROTECT,
+    #     related_name="users",
+    # )
 
     profile = models.JSONField(
         default=dict,
