@@ -83,7 +83,8 @@ class UserAdmin(DjangoUserAdmin):
                 "password1",
                 "password2",
                 "accepted_terms",
-                "change_password",  # "status",
+                "change_password",
+                "status",
             )
         }
     ))
@@ -102,6 +103,7 @@ class UserAdmin(DjangoUserAdmin):
         (
             _("General Info"), {
                 "fields": (
+                    "status",
                     "change_password",
                     "accepted_terms",
                 )
@@ -157,12 +159,14 @@ class UserAdmin(DjangoUserAdmin):
         "is_staff",
         "is_active",
         "accepted_terms",
+        "status",
         "get_authentication_type_for_list_display",
         "organization_name",
         "role_name",
     )
     list_filter = (
-        LocalOrRemoteFilter,  # "status",
+        LocalOrRemoteFilter,  
+        "status",
         "organization_name",
         "role_name",
     ) + DjangoUserAdmin.list_filter
