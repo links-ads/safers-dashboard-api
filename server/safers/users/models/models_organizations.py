@@ -1,63 +1,53 @@
-import uuid
-
 from django.db import models
 
+from safers.core.clients import GATEWAY_CLIENT
+from safers.core.managers import CachedTransientModelManager, TransientModelQuerySet
 
-class OrganizationManager(models.Manager):
-    def get_by_natural_key(self, name):
-        return self.get(name=name)
-
-    def safe_get(self, *args, **kwargs):
-        """
-        models that aren't stored locally (like the chatbot models)
-        sometimes try to reference Organizations that might not exist
-        this allows me to cope w/ those cases
-        """
-        try:
-            return Organization.objects.get(*args, **kwargs)
-        except Organization.DoesNotExist:
-            return None
+from safers.users.tests.mocks import MOCK_ORGANIZATIONS_DATA
 
 
-class OrganizationQuerySet(models.QuerySet):
-    def active(self):
-        return self.filter(is_active=True)
+class OrganizationQuerySet(TransientModelQuerySet):
+    pass
 
-    def inactive(self):
-        return self.filter(is_active=False)
+
+class OrganizationManager(CachedTransientModelManager):
+
+    queryset_class = OrganizationQuerySet
+
+    cache_key = "organizations"
+
+    def get_transient_queryset_data(self):
+        response = GATEWAY_CLIENT.get_organizations(timeout=10)
+        organizations_data = response["data"]
+
+        # organizations_data = MOCK_ORGANIZATIONS_DATA
+
+        return organizations_data
 
 
 class Organization(models.Model):
     class Meta:
-        ordering = ("name", )
-        verbose_name = "Organization"
-        verbose_name_plural = "Organizations"
+        managed = False
 
     objects = OrganizationManager.from_queryset(OrganizationQuerySet)()
 
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    organization_id = models.SlugField(
-        blank=True,
-        null=True,
-    )
-    name = models.CharField(
-        max_length=128,
-        blank=False,
-        null=False,
-        unique=True,
-    )
-    description = models.TextField(
-        blank=True,
-        null=True,
-    )
-    is_active = models.BooleanField(default=True)
+    id = models.IntegerField(primary_key=True)
+    shortName = models.CharField(max_length=32)
+    name = models.CharField(max_length=128)
+    description = models.TextField(null=True)
+    webSite = models.URLField(null=True)
+    logoUrl = models.URLField(null=True)
+    parentId = models.IntegerField(null=True)
+    parentName = models.CharField(max_length=128, null=True)
+    membersHaveTaxCode = models.BooleanField(null=True)
+    hasChildren = models.BooleanField(null=True)
 
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return str(self.name)
 
-    def natural_key(self):
-        return (self.name, )
+    @property
+    def title(self) -> str:
+        """
+        Return a pretty name for the organization
+        """
+        return str(self).title()

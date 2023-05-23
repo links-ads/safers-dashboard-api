@@ -5,6 +5,7 @@ from django.apps import apps
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import models
 from django.db.models.expressions import ExpressionWrapper
 from django.db.models.query_utils import Q
@@ -12,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 
 from allauth.account.models import EmailAddress
 
+from safers.users.models import Organization, Role
 from safers.users.utils import AUTH_CLIENT
 
 ###########
@@ -161,20 +163,16 @@ class User(AbstractUser):
         help_text=_("Has this user accepted the terms & conditions?")
     )
 
-    role = models.ForeignKey(
-        "Role",
+    organization_name = models.CharField(
+        max_length=128,
         blank=True,
         null=True,
-        on_delete=models.PROTECT,
-        related_name="users",
     )
 
-    organization = models.ForeignKey(
-        "Organization",
+    role_name = models.CharField(
+        max_length=128,
         blank=True,
         null=True,
-        on_delete=models.PROTECT,
-        related_name="users",
     )
 
     profile = models.JSONField(
@@ -261,6 +259,20 @@ class User(AbstractUser):
 
         except Exception as e:
             raise e  # I AM HERE
+
+    @property
+    def organization(self) -> Organization | None:
+        try:
+            return Organization.objects.get(name=self.organization_name)
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
+            pass
+
+    @property
+    def role(self) -> Role | None:
+        try:
+            return Role.objects.get(name=self.role_name)
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
+            pass
 
     def synchronize_profile(
         self, token: str, direction: ProfileDirection

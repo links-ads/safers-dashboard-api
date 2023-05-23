@@ -27,8 +27,6 @@ _user_request_schema = openapi.Schema(
         "last_login": "2022-03-31T08:55:16.377335Z",
         "is_local": True,
         "is_remote": False,
-        "organization": "7791f5fa-bb0a-42da-8fea-8c81ab614ee4",
-        "role": "a5ec15be-67bc-43d3-9c5d-049f788bf163",
         "default_aoi": 2,
         "profile": {
             "first_name": "Miles",

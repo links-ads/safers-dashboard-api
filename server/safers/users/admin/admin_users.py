@@ -1,10 +1,15 @@
 from django.contrib import admin
-from django.contrib.auth import admin as auth_admin
-from django.contrib.auth.models import Group, Permission
+from django.contrib import messages
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.forms import UserChangeForm as DjangoUserAdminForm
 from django.utils.translation import gettext_lazy as _
 
-from safers.users.forms import UserCreationForm, UserChangeForm
-from safers.users.models import User
+from safers.core.widgets import DataListWidget, JSONWidget
+from safers.users.models import User, Organization, Role
+
+###########
+# filters #
+###########
 
 
 class LocalOrRemoteFilter(admin.SimpleListFilter):
@@ -24,22 +29,127 @@ class LocalOrRemoteFilter(admin.SimpleListFilter):
         return qs
 
 
+#########
+# forms #
+#########
+
+
+class UserAdminForm(DjangoUserAdminForm):
+    """
+    Custom form w/ some pretty fields; formats the profile
+    and lets me choose from valid Organizations & Roles
+    """
+    class Meta:
+        model = User
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["organization_name"].help_text = _(
+            "The name of the organization this user belongs to."
+        )
+        self.fields["organization_name"].widget = DataListWidget(
+            name="organization_name",
+            options=[
+                organization.name for organization in Organization.objects.all()
+            ],
+        )
+        self.fields["role_name"].help_text = _(
+            "The name of the role this user belongs to."
+        )
+        self.fields["role_name"].widget = DataListWidget(
+            name="role_name",
+            options=[role.name for role in Role.objects.all()],
+        )
+        self.fields["profile"].widget = JSONWidget()
+
+
+##########
+# admins #
+##########
+
+
 @admin.register(User)
-class UserAdmin(auth_admin.UserAdmin):
+class UserAdmin(DjangoUserAdmin):
     actions = (
         "toggle_accepted_terms",
         "toggle_verication",
     )
     model = User
-    add_form = UserCreationForm
-    form = UserChangeForm
+    form = UserAdminForm
+    add_fieldsets = ((
+        None,
+        {
+            "classes": ("wide", ),
+            "fields": (
+                "email",
+                "password1",
+                "password2",
+                "accepted_terms",
+                "change_password",  # "status",
+            )
+        }
+    ))
     fieldsets = (
-        (None, {"fields": ["id", "auth_id", "username", "email", "password", "active_token_key"]}),
-        ("General Info", {"fields": ["change_password", "accepted_terms"]}),
-        ("Permissions", {"fields": ["is_active", "is_staff","is_superuser", "groups", "user_permissions"] }),
-        ("Important Dates", {"fields": ["last_login", "date_joined"]}),
-        ("Safers", {"fields": ["organization", "role", "profile", "default_aoi", "favorite_alerts", "favorite_events", "favorite_camera_medias"]}),
-    )  # yapf: disable
+        (
+            None,
+            {
+                "fields": (
+                    "id",
+                    "auth_id",
+                    "email",
+                    "username",
+                    "password",
+                    "active_token_key",
+                )
+            }
+        ),
+        (
+            _("General Info"), {
+                "fields": (
+                    "change_password",
+                    "accepted_terms",
+                )
+            }
+        ),
+        (
+            _("Permissions"),
+            {
+                "classes": ("collapse", ),
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            }
+        ),
+        (
+            _("Important Dates"),
+            {
+                "classes": ("collapse", ),
+                "fields": (
+                    "last_login",
+                    "date_joined",
+                )
+            }
+        ),
+        (
+            _("Safers"),
+            {
+                "fields": (
+                    "organization_name",
+                    "role_name",
+                    "profile",
+                    "default_aoi",
+                    "favorite_alerts",
+                    "favorite_events",
+                    "favorite_camera_medias",
+                )
+            }
+        ),
+    )
     filter_horizontal = (
         "groups",
         "user_permissions",
@@ -47,25 +157,26 @@ class UserAdmin(auth_admin.UserAdmin):
         "favorite_events",
         "favorite_camera_medias",
     )
-    list_display = [
+    list_display = (
         "email",
-        "id",
-        "is_verified_for_list_display",
+        "is_staff",
+        "is_active",
         "accepted_terms",
-        "role",
-        "organization",
+        "is_verified_for_list_display",
         "get_authentication_type_for_list_display",
-    ]
+        "organization_name",
+        "role_name",
+    )
     list_filter = (
-        LocalOrRemoteFilter,
-        "role",
-        "organization",
-    ) + auth_admin.UserAdmin.list_filter
+        LocalOrRemoteFilter,  # "status",
+        "organization_name",
+        "role_name",
+    ) + DjangoUserAdmin.list_filter
     readonly_fields = (
         "id",
         "auth_id",
         "active_token_key",
-    ) + auth_admin.UserAdmin.readonly_fields
+    ) + DjangoUserAdmin.readonly_fields
 
     def toggle_accepted_terms(self, request, queryset):
         # TODO: doing this cleverly w/ negated F expressions is not supported (https://code.djangoproject.com/ticket/16211)
@@ -107,17 +218,9 @@ class UserAdmin(auth_admin.UserAdmin):
 
     @admin.display(description="AUTHENTICATION TYPE")
     def get_authentication_type_for_list_display(self, instance):
+        authentication_type = "unknown"
         if instance.is_local:
-            return "local"
+            authentication_type = "local"
         elif instance.is_remote:
-            return "remote"
-
-
-try:
-    admin.site.register(Group)
-except admin.sites.AlreadyRegistered:
-    pass
-try:
-    admin.site.register(Permission)
-except admin.sites.AlreadyRegistered:
-    pass
+            authentication_type = "remote"
+        return authentication_type

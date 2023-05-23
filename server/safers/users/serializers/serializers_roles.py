@@ -6,10 +6,9 @@ from safers.users.models import Role
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        fields = (
+        fields = [
             "id",
-            "role_id",
             "name",
-            "label",
             "description",
-        )
+            "title",
+        ]
