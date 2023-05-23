@@ -5,14 +5,12 @@ Global URL Configuration
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.auth.decorators import user_passes_test
 from django.urls import include, path, re_path
 
-from rest_framework import permissions, routers
+from rest_framework import routers
 
-from drf_yasg import openapi
-from drf_yasg.views import get_schema_view
-
-from silk.profiling.profiler import silk_profile
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from safers.core.urls import (
     urlpatterns as core_urlpatterns,
@@ -69,13 +67,10 @@ from safers.notifications.urls import (
     api_urlpatterns as notifications_api_urlpatterns,
 )
 
-from safers.core.permissions import default_admin_site_has_permission
-
 ################
 # admin config #
 ################
 
-admin.site.has_permission = default_admin_site_has_permission
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.site_title = settings.ADMIN_SITE_TITLE
 admin.site.index_title = settings.ADMIN_INDEX_TITLE
@@ -83,31 +78,22 @@ admin.site.index_title = settings.ADMIN_INDEX_TITLE
 #################
 # swagger stuff #
 #################
-
-api_schema_view = get_schema_view(
-    openapi.Info(
-        title=f"{settings.PROJECT_NAME}",
-        default_version='v1',
-    ),
-    public=True,
-    permission_classes=[permissions.AllowAny],  # TODO: IsAdminOrDebug
+swagger_restriction = user_passes_test(
+    # prevent ordinary users from accessing swagger unless DEBUG is True
+    lambda user: (settings.DEBUG or user.is_admin),
+    login_url="admin:login",
 )
 
 api_schema_views = [
-    re_path(
-        r'^swagger/?(?P<format>\.json|\.yaml)$',
-        api_schema_view.without_ui(cache_timeout=0),
-        name='schema-json'
+    path(
+        "swagger/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger",
     ),
-    re_path(
-        r'^swagger/?$',
-        api_schema_view.with_ui('swagger', cache_timeout=0),
-        name='schema-swagger-ui'
-    ),
-    re_path(
-        r'^redoc/?$',
-        api_schema_view.with_ui('redoc', cache_timeout=0),
-        name='schema-redoc'
+    path(
+        "schema/",
+        SpectacularAPIView.as_view(),
+        name="schema",
     ),
 ]
 
@@ -140,7 +126,7 @@ urlpatterns = [
     # profiling... 
     path("silk/", include('silk.urls', namespace="silk")),
 
-    # admin...
+    # django admin...
     path(settings.ADMIN_URL, admin.site.urls),
 
 
@@ -172,19 +158,3 @@ if settings.ENVIRONMENT == "development":
         settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT,
     )
-
-# if "silk" in settings.INSTALLED_APPS:
-#     from silk.profiling.profiler import silk_profile
-#     urlpatterns = [
-#         path("silk/", include('silk.urls', namespace="silk")),
-#     ] + urlpatterns
-
-
-if settings.DEBUG:
-
-    # enable more profiling during development...
-    if "debug_toolbar" in settings.INSTALLED_APPS:
-        import debug_toolbar
-        urlpatterns = [
-            path("__debug__/", include(debug_toolbar.urls))
-        ] + urlpatterns

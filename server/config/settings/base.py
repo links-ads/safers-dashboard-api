@@ -62,6 +62,8 @@ THIRD_PARTY_APPS = [
     "dbbackup",
     "django_filters",
     "drf_yasg",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     "rest_framework",
     "rest_framework_gis",
     "sequences",
@@ -315,21 +317,20 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 FILTERS_DEFAULT_LOOKUP_EXPR = "iexact"
 
-# TODO: REMOVE
-SWAGGER_SETTINGS = {
-    # "USE_SESSION_AUTH": False,
-    "DEFAULT_MODEL_RENDERING": "example",
-    "DOC_EXPANSION": "none",
-    "OPERATIONS_SORTER": None,
-    "TAGS_SORTER": "alpha",
-}   # yapf: disable
-
-# TODO: DRF-SPECTACULAR
-
+# See more configuration options at https://drf-spectacular.readthedocs.io/en/latest/settings.html#settings
+SPECTACULAR_SETTINGS = {
+    "TITLE": f"{PROJECT_NAME} API",
+    "DESCRIPTION": f"Documentation of API endpoints of {PROJECT_NAME}",
+    # sidecar allows for local UI configuration...
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+}
 ###########
 # Logging #
 ###########
