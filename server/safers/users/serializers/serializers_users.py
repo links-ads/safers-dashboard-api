@@ -28,7 +28,6 @@ class UserSerializerLite(serializers.ModelSerializer):
             "last_login",
             "is_local",
             "is_remote",
-            "is_professional",
             "is_citizen",
         )
 

@@ -74,6 +74,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "safers.core",
     "safers.users",
+    "safers.auth",
     "safers.rmq",
     "safers.aois",
     "safers.alerts",
@@ -227,19 +228,19 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # TODO: RENAME THESE...
-FUSION_AUTH_API_KEY = env("FUSION_AUTH_API_KEY", default="")
-FUSION_AUTH_APPLICATION_ID = env("FUSION_AUTH_APPLICATION_ID", default="")
-FUSION_AUTH_CLIENT_ID = env("FUSION_AUTH_CLIENT_ID", default="")
-FUSION_AUTH_CLIENT_SECRET = env("FUSION_AUTH_CLIENT_SECRET", default="")
-FUSION_AUTH_TENANT_ID = env("FUSION_AUTH_TENANT_ID", default="")
-FUSION_AUTH_URL = env("FUSION_AUTH_URL", default="")
-FUSION_AUTH_EXTERNAL_BASE_URL = env(
-    "FUSION_AUTH_EXTERNAL_BASE_URL", default=FUSION_AUTH_URL
+FUSIONAUTH_API_KEY = env("FUSIONAUTH_API_KEY", default="")
+FUSIONAUTH_APPLICATION_ID = env("FUSIONAUTH_APPLICATION_ID", default="")
+FUSIONAUTH_CLIENT_ID = env("FUSIONAUTH_CLIENT_ID", default="")
+FUSIONAUTH_CLIENT_SECRET = env("FUSIONAUTH_CLIENT_SECRET", default="")
+FUSIONAUTH_TENANT_ID = env("FUSIONAUTH_TENANT_ID", default="")
+FUSIONAUTH_URL = env("FUSIONAUTH_URL", default="")
+FUSIONAUTH_EXTERNAL_URL = env(
+    "FUSIONAUTH_EXTERNAL_BASE_URL", default=FUSIONAUTH_URL
 )
-FUSION_AUTH_INTERNAL_BASE_URL = env(
-    "FUSION_AUTH_INTERNAL_BASE_URL", default=FUSION_AUTH_URL
+FUSIONAUTH_INTERNAL_URL = env(
+    "FUSION_AUTH_INTERNAL_BASE_URL", default=FUSIONAUTH_URL
 )
-FUSION_AUTH_REDIRECT_URL = env("FUSION_AUTH_REDIRECT_URL", default="")
+FUSIONAUTH_REDIRECT_URL = env("FUSIONAUTH_REDIRECT_URL", default="")
 
 #############
 # Passwords #
@@ -312,10 +313,11 @@ DEFAULT_FROM_EMAIL = f"{PROJECT_NAME} <{PROJECT_EMAIL.format(role='noreply')}>" 
 
 # TODO: UPDATE W/ AUTH
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
+        # "rest_framework.authentication.TokenAuthentication",
+        "safers.auth.authentication.OAuth2Authentication",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
@@ -324,7 +326,7 @@ FILTERS_DEFAULT_LOOKUP_EXPR = "iexact"
 
 # See more configuration options at https://drf-spectacular.readthedocs.io/en/latest/settings.html#settings
 SPECTACULAR_SETTINGS = {
-    "TITLE": f"{PROJECT_NAME} API",
+    "TITLE": PROJECT_NAME,
     "DESCRIPTION": f"Documentation of API endpoints of {PROJECT_NAME}",
     # sidecar allows for local UI configuration...
     "SWAGGER_UI_DIST": "SIDECAR",

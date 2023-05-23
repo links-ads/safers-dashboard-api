@@ -3,9 +3,8 @@ from enum import Enum
 from django.conf import settings
 from django.db import models
 
-from safers.users.utils import AUTH_CLIENT
-# TODO: WRITE THIS...
-# from safers.auth.utils import reshape_auth_errors
+from safers.auth.clients import AUTH_CLIENT
+from safers.auth.utils import reshape_auth_errors
 
 from safers.core.managers import CachedTransientModelManager, TransientModelQuerySet
 
@@ -29,16 +28,15 @@ class RoleManager(CachedTransientModelManager):
 
     def get_transient_queryset_data(self):
         auth_response = AUTH_CLIENT.retrieve_application(
-            settings.FUSION_AUTH_APPLICATION_ID
+            settings.FUSIONAUTH_APPLICATION_ID
         )
         if not auth_response.was_successful():
-            # TODO: errors = reshape_auth_errors(auth_response.error_response)
-            errors = str(auth_response.error_response)
+            errors = reshape_auth_errors(auth_response.error_response)
             raise Exception(errors)
 
-        auth_applications = auth_response.success_response.get("applications")
-        assert len(auth_applications) == 1
-        roles_data = auth_applications[0].get("roles", [])
+        auth_application = auth_response.success_response.get("application")
+        assert auth_application is not None
+        roles_data = auth_application.get("roles", [])
 
         # roles_data = MOCK_ROLES_DATA
 
