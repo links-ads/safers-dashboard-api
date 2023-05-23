@@ -11,8 +11,6 @@ from django.db.models.expressions import ExpressionWrapper
 from django.db.models.query_utils import Q
 from django.utils.translation import gettext_lazy as _
 
-from allauth.account.models import EmailAddress
-
 from safers.users.models import Organization, Role
 from safers.users.utils import AUTH_CLIENT
 
@@ -145,12 +143,6 @@ class User(AbstractUser):
         help_text=_("The corresponding id of the FusionAuth User"),
     )
 
-    active_token_key = models.TextField(
-        blank=True,
-        null=True,
-        help_text=_("TODO: THIS IS A SECURITY RISK; REMOVE IN PRODUCTION")
-    )
-
     email = models.EmailField(_('email address'), unique=True)
 
     change_password = models.BooleanField(
@@ -202,35 +194,6 @@ class User(AbstractUser):
         "cameras.CameraMedia", related_name="favorited_users", blank=True
     )
 
-    def verify(self):
-        """
-        Manually verifies a user's primary email address
-        """
-
-        emailaddresses = self.emailaddress_set.all()
-
-        try:
-            primary_emailaddress = emailaddresses.get(primary=True)
-        except EmailAddress.DoesNotExist:
-            primary_emailaddress, _ = EmailAddress.objects.get_or_create(
-                user=self, email=self.email
-            )
-            primary_emailaddress.set_as_primary(conditional=True)
-
-        primary_emailaddress.verified = True
-        primary_emailaddress.save()
-
-    @property
-    def is_verified(self):
-        """
-        Checks if the primary email address belonging to this user has been verified.
-        """
-        return (
-            self.emailaddress_set.only("verified", "primary").filter(
-                primary=True, verified=True
-            ).exists()
-        )
-
     @property
     def is_local(self):
         return self.auth_id is None
@@ -246,19 +209,6 @@ class User(AbstractUser):
     @property
     def is_professional(self):
         return self.role and self.role.name != "citizen"
-
-    @property
-    def auth_user_data(self):
-
-        try:
-            auth_user_response = AUTH_CLIENT.retrieve_user(self.auth_id)
-            if auth_user_response.was_successful():
-                return auth_user_response.success_response["user"]
-            else:
-                raise Exception(auth_user_response.error_response)
-
-        except Exception as e:
-            raise e  # I AM HERE
 
     @property
     def organization(self) -> Organization | None:

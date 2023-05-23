@@ -71,10 +71,7 @@ class UserAdminForm(DjangoUserAdminForm):
 
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
-    actions = (
-        "toggle_accepted_terms",
-        "toggle_verication",
-    )
+    actions = ("toggle_accepted_terms", )
     model = User
     form = UserAdminForm
     add_fieldsets = ((
@@ -92,15 +89,13 @@ class UserAdmin(DjangoUserAdmin):
     ))
     fieldsets = (
         (
-            None,
-            {
+            None, {
                 "fields": (
                     "id",
                     "auth_id",
                     "email",
                     "username",
                     "password",
-                    "active_token_key",
                 )
             }
         ),
@@ -162,7 +157,6 @@ class UserAdmin(DjangoUserAdmin):
         "is_staff",
         "is_active",
         "accepted_terms",
-        "is_verified_for_list_display",
         "get_authentication_type_for_list_display",
         "organization_name",
         "role_name",
@@ -175,9 +169,11 @@ class UserAdmin(DjangoUserAdmin):
     readonly_fields = (
         "id",
         "auth_id",
-        "active_token_key",
     ) + DjangoUserAdmin.readonly_fields
 
+    @admin.display(
+        description="Toggles the term acceptance of the selected users"
+    )
     def toggle_accepted_terms(self, request, queryset):
         # TODO: doing this cleverly w/ negated F expressions is not supported (https://code.djangoproject.com/ticket/16211)
         # queryset.update(accepted_terms=not(F("accepted_terms")))
@@ -187,34 +183,6 @@ class UserAdmin(DjangoUserAdmin):
 
             msg = f"{obj} {'has not' if not obj.accepted_terms else 'has'} accepted terms."
             self.message_user(request, msg)
-
-    toggle_accepted_terms.short_description = (
-        "Toggles the term acceptance of the selected users"
-    )
-
-    def toggle_verication(self, request, queryset):
-
-        for obj in queryset:
-
-            emailaddress, created = obj.emailaddress_set.get_or_create(
-                user=obj, email=obj.email
-            )
-            if not emailaddress.primary:
-                emailaddress.set_as_primary(conditional=True)
-
-            emailaddress.verified = not emailaddress.verified
-            emailaddress.save()
-
-            msg = f"{emailaddress} {'created and' if created else ''} {'not' if not emailaddress.verified else ''} verified."
-            self.message_user(request, msg)
-
-    toggle_verication.short_description = (
-        "Toggles the verification of the selected users' primary email addresses"
-    )
-
-    @admin.display(boolean=True, description="IS VERIFIED")
-    def is_verified_for_list_display(self, instance):
-        return instance.is_verified
 
     @admin.display(description="AUTHENTICATION TYPE")
     def get_authentication_type_for_list_display(self, instance):
