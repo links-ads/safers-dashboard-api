@@ -14,6 +14,8 @@ class TransientModelQuerySet(UserList):
     """
     A QuerySet for a TransientModels which aren't stored in the db.
     """
+    model = None  # (required for drf-spectacular schema generation)
+
     def get(self, **kwargs):
 
         matching_models = [
