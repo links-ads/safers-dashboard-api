@@ -117,51 +117,7 @@ LOGGING = {
 # Profiling #
 #############
 
-# see "https://gist.github.com/douglasmiranda/9de51aaba14543851ca3"
-# for tips about making django_debug_toolbar to play nicely w/ Docker
-
-# TODO: DELETE
-
-import socket
-
-hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-
-INSTALLED_APPS += ["debug_toolbar"]
-MIDDLEWARE += [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-    "config.middleware.JSONDebugToolbarMiddleware",
-    # "silk.middleware.SilkyMiddleware",
-    # "django_cprofile_middleware.middleware.ProfilerMiddleware",
-]
-
-DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False
-
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TEMPLATE_CONTEXT": True,
-    "SHOW_COLLAPSED": True,
-    # "SHOW_TOOLBAR_CALLBACK": "safers.utils.show_toolbar",
-}
-DEBUG_TOOLBAR_PANELS = [
-    "debug_toolbar.panels.versions.VersionsPanel",
-    "debug_toolbar.panels.timer.TimerPanel",
-    "debug_toolbar.panels.settings.SettingsPanel",
-    "debug_toolbar.panels.headers.HeadersPanel",
-    "debug_toolbar.panels.request.RequestPanel",
-    "debug_toolbar.panels.sql.SQLPanel",
-    "debug_toolbar.panels.profiling.ProfilingPanel",
-    # TODO: THIS WILL NOT WORK B/C OF https://github.com/pympler/pympler/pull/99
-    # TODO: IN THE MEANTIME I'VE WRITTEN MY OWN DECORATOR THAT ACCOMPLISHES THE SAME THING
-    # 'pympler.panels.MemoryPanel',
-    "debug_toolbar.panels.cache.CachePanel",
-    "debug_toolbar.panels.signals.SignalsPanel",
-    "debug_toolbar.panels.staticfiles.StaticFilesPanel",
-    "debug_toolbar.panels.templates.TemplatesPanel",
-    "debug_toolbar.panels.logging.LoggingPanel",
-    "debug_toolbar.panels.redirects.RedirectsPanel",
-]
-
-INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
-INTERNAL_IPS += [ip[:-1] + "1" for ip in ips]
+# TODO:
 
 ###########
 # Backups #
