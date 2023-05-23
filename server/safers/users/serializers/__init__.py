@@ -1,3 +1,3 @@
 from .serializers_organizations import OrganizationSerializer
 from .serializers_roles import RoleSerializer
-from .serializers_users import UserSerializerLite, UserSerializer, ReadOnlyUserSerializer
+from .serializers_users import UserSerializer
