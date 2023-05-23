@@ -1,11 +1,6 @@
-from collections import defaultdict
-
 from django.conf import settings
 
 from rest_framework import serializers
-from rest_framework.utils.serializer_helpers import ReturnDict
-
-from drf_yasg.utils import swagger_serializer_method
 
 from safers.aois.models import Aoi
 
@@ -16,7 +11,6 @@ from safers.events.models import Event
 from safers.cameras.models import CameraMedia
 
 from safers.users.models import User
-from safers.users.serializers import Oauth2UserSerializer
 
 
 class UserSerializerLite(serializers.ModelSerializer):
@@ -31,7 +25,6 @@ class UserSerializerLite(serializers.ModelSerializer):
             "email",
             "username",
             "accepted_terms",
-            "is_verified",
             "last_login",
             "is_local",
             "is_remote",
@@ -40,10 +33,6 @@ class UserSerializerLite(serializers.ModelSerializer):
         )
 
     last_login = serializers.DateTimeField(read_only=True)
-
-    @swagger_serializer_method(serializer_or_field=serializers.BooleanField)
-    def is_verified(self, obj):
-        return obj.is_verified
 
 
 class UserSerializer(UserSerializerLite):
@@ -59,7 +48,6 @@ class UserSerializer(UserSerializerLite):
             "role",
             "profile",
             "default_aoi",
-            "oauth2",
         )
 
     organization_name = serializers.CharField(
@@ -84,8 +72,6 @@ class UserSerializer(UserSerializerLite):
     default_aoi = serializers.PrimaryKeyRelatedField(
         queryset=Aoi.objects.active(), required=False, allow_null=True
     )
-
-    oauth2 = Oauth2UserSerializer(source="auth_user")
 
     def validate(self, data):
         validated_data = super().validate(data)

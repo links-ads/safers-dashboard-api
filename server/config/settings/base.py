@@ -57,17 +57,11 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
     "anymail",
     "corsheaders",
     "dbbackup",
-    "dj_rest_auth",
-    "dj_rest_auth.registration",
     "django_filters",
     "drf_yasg",
-    "knox",
     "rest_framework",
     "rest_framework_gis",
     "sequences",
@@ -218,8 +212,8 @@ MIDDLEWARE = [
 # Authentiation #
 #################
 
-LOGIN_URL = "login"
-LOGOUT_URL = "logout"
+LOGIN_URL = "admin:login"
+LOGOUT_URL = "admin:logout"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
@@ -228,24 +222,7 @@ AUTH_USER_MODEL = "users.User"
 AUTHENTICATION_BACKENDS = [
     # TODO: REFACTOR THIS
     "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
 ]
-
-ACCOUNT_ADAPTER = "safers.users.adapters.AccountAdapter"
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "none"  # "mandatory" | "optional" | "none"
-ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
-ACCOUNT_USERNAME_BLACKLIST = ["admin", "current", "sentinel"]
-
-ACCOUNT_CONFIRM_EMAIL_CLIENT_URL = env(
-    "ACCOUNT_CONFIRM_EMAIL_CLIENT_URL", default=""
-)
-ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL = env(
-    "ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL", default=""
-)
-
-OLD_PASSWORD_FIELD_ENABLED = True
 
 # TODO: RENAME THESE...
 FUSION_AUTH_API_KEY = env("FUSION_AUTH_API_KEY", default="")
@@ -334,82 +311,16 @@ DEFAULT_FROM_EMAIL = f"{PROJECT_NAME} <{PROJECT_EMAIL.format(role='noreply')}>" 
 # TODO: UPDATE W/ AUTH
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
-        # 'rest_framework.authentication.TokenAuthentication',
-        'knox.auth.TokenAuthentication',
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # 'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
-        # 'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-        # 'drf_social_oauth2.authentication.SocialAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
 }
 
 FILTERS_DEFAULT_LOOKUP_EXPR = "iexact"
 
 # TODO: REMOVE
-REST_KNOX = {
-    "SECURE_HASH_ALGORITHM": "cryptography.hazmat.primitives.hashes.SHA512",
-    "AUTH_TOKEN_CHARACTER_LENGTH": 64,
-    "TOKEN_TTL": timedelta(hours=10),
-    "USER_SERIALIZER": "safers.users.serializers.UserSerializer",
-    "TOKEN_LIMIT_PER_USER": None,
-    "AUTO_REFRESH": False,
-    "AUTH_HEADER_PREFIX": "Bearer",
-}
-
-# TODO: REMOVE
-REST_AUTH = {
-    "LOGIN_SERIALIZER":
-        "safers.users.serializers.LoginSerializer",
-    "TOKEN_SERIALIZER":
-        "safers.users.serializers.KnoxTokenSerializer",
-    "JWT_SERIALIZER":
-        "safers.users.serializers.JWTSerializer",
-    "JWT_TOKEN_CLAIMS_SERIALIZER":
-        "safers.users.serializers.TokenObtainPairSerializer",
-    "USER_DETAILS_SERIALIZER":
-        "safers.users.serializers.UserDetailsSerializer",
-    "PASSWORD_RESET_SERIALIZER":
-        "safers.users.serializers.PasswordResetSerializer",
-    "PASSWORD_RESET_CONFIRM_SERIALIZER":
-        "safers.users.serializers.PasswordResetConfirmSerializer",
-    "PASSWORD_CHANGE_SERIALIZER":
-        "safers.users.serializers.PasswordChangeSerializer",
-    "REGISTER_SERIALIZER":
-        "safers.users.serializers.RegisterSerializer",
-    "TOKEN_MODEL":
-        "knox.models.AuthToken",
-    "TOKEN_CREATOR":
-        "safers.users.utils.create_knox_token",
-    "OLD_PASSWORD_FIELD_ENABLED":
-        True,
-}
-
-# TODO: REMOVE
 SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS": {
-        "Token": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header",
-            "description": escape("Enter 'Bearer <token>'"),
-        },
-        "OAuth2": {
-            "type": "oauth2",
-            "flow": "authorizationCode",
-            "authorizationUrl": f"{FUSION_AUTH_EXTERNAL_BASE_URL}/oauth2/authorize",
-            "tokenUrl": "/api/oauth2/login",
-        },
-        # "Basic": {
-        #     "type": "basic"
-        # },
-    },
-    "OAUTH2_CONFIG": {
-      "clientId": FUSION_AUTH_CLIENT_ID,
-      "clientSecret": FUSION_AUTH_CLIENT_SECRET,
-      "appName": "safers-dashboard",  # PROJECT_SLUG
-    },
     # "USE_SESSION_AUTH": False,
     "DEFAULT_MODEL_RENDERING": "example",
     "DOC_EXPANSION": "none",
@@ -484,10 +395,12 @@ SAFERS_ALLOW_SIGNUP = DynamicSetting(
     "core.SafersSettings.allow_signup",
     True,
 )
-SAFERS_REQUIRE_VERIFICATION = DynamicSetting(
-    "core.SafersSettings.require_verification",
+
+SAFERS_ALLOW_SIGNIN = DynamicSetting(
+    "core.SafersSettings.allow_signin",
     True,
 )
+
 SAFERS_REQUIRE_TERMS_ACCEPTANCE = DynamicSetting(
     "core.SafersSettings.require_terms_acceptance",
     True,

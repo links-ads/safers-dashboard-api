@@ -1,7 +1,6 @@
 from django.utils.decorators import method_decorator
 
 from rest_framework import generics, status
-from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 
 from drf_yasg import openapi
@@ -23,7 +22,6 @@ _user_request_schema = openapi.Schema(
         "id": "a788996c-424b-4021-bec9-a963fd37a8f2",
         "email": "admin@astrosat.net",
         "accepted_terms": True,
-        "is_verified": True,
         "last_login": "2022-03-31T08:55:16.377335Z",
         "is_local": True,
         "is_remote": False,

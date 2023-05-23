@@ -16,31 +16,19 @@ class SafersSettings(SingletonMixin, models.Model):
         verbose_name = "Safers Settings"
         verbose_name_plural = "Safers Settings"
 
-    allow_local_signin = models.BooleanField(
-        default=False,
-        help_text=_("Allow users to signin locally."),
-    )
-
-    allow_remote_signin = models.BooleanField(
-        default=True,
-        help_text=_("Allow users to signin remotely (via SSO)."),
-    )
-
     allow_signup = models.BooleanField(
         default=True,
-        help_text=_("Allow users to register w/ Safers."),
+        help_text=_("Allow users to register w/ the dashboard."),
+    )
+
+    allow_signin = models.BooleanField(
+        default=True,
+        help_text=_("Allow users to signin w/ the dashboard."),
     )
 
     allow_password_change = models.BooleanField(
         default=False,
         help_text=_("Allow users to change their password via the dashboard.")
-    )
-
-    require_verification = models.BooleanField(
-        default=True,
-        help_text=_(
-            "Require an email verification step to the sign up process."
-        ),
     )
 
     require_terms_acceptance = models.BooleanField(
