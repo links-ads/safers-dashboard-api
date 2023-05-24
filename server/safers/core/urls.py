@@ -11,7 +11,8 @@ from .views import (
 api_router = routers.DefaultRouter()
 api_urlpatterns = [
     path("", include(api_router.urls)),
-    path("settings", settings_view, name="settings"),
+    # TODO: REFACTOR FRONTEND IN ORDER TO CHANGE PATH TO "settings"
+    path("config", settings_view, name="settings"),
     path("sentry-debug", trigger_error, name="sentry-debug"),
     path(
         "documents/<slug:document_slug>",
