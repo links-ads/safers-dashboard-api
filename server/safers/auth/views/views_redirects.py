@@ -41,6 +41,8 @@ def logout_view(request):
         return HttpResponseNotAllowed(["POST"])
 
     user = request.user
+    # TODO: NEED TO BE A BIT MORE JUDICIOUS W/ WHAT GETS DELETED
+    user.access_tokens.all().delete()
     user.refresh_tokens.all().delete()
     logout(request)
 

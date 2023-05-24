@@ -2,7 +2,7 @@
 Custom Authentication Extensions to ensure DRF Authentication is correctly configured in swagger.
 drf-spectacular looks at `settings.REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] to try and 
 automatically populate the "Available Authorizations" Dialog Box.  But if any of those classes are
-not recognized, or if orbison's implementation of them is non-standard, then these schemes can be
+not recognized, or if safer's implementation of them is non-standard, then these schemes can be
 used instead (as long as the "target_class" matches and "priority" is <= any other matching schemes).
 
 (see: https://drf-spectacular.readthedocs.io/en/latest/faq.html#where-should-i-put-my-extensions-my-extensions-are-not-detected)
