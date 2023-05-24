@@ -18,9 +18,9 @@ class IsExpiredFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         value = self.value()
         if value == "Yes":
-            return queryset.filter()
+            return queryset.expired()
         elif value == "No":
-            return queryset.exclude()
+            return queryset.unexpired()
         return queryset
 
 
@@ -36,6 +36,7 @@ class AccessTokenAdmin(admin.ModelAdmin):
         "user",
         IsExpiredFilter,
     )
+    readonly_fields = ("created", )
 
     @admin.display(description="TOKEN")
     def get_token_for_list_display(self, obj):
