@@ -11,8 +11,12 @@ from django.db.models.expressions import ExpressionWrapper
 from django.db.models.query_utils import Q
 from django.utils.translation import gettext_lazy as _
 
+from model_utils import FieldTracker
+
+from safers.core.authentication import TokenAuthentication
+from safers.core.clients import GATEWAY_CLIENT
+
 from safers.users.models import Organization, Role
-from safers.users.utils import AUTH_CLIENT
 
 ###########
 # helpers #
@@ -39,6 +43,11 @@ class ProfileDirection(str, Enum):
     REMOTE_TO_LOCAL = "remote_to_local"
 
 
+class UserStatus(models.TextChoices):
+    PENDING = "PENDING", _("Pending")
+    COMPLETED = "COMPLETED", _("Completed")
+
+
 ########################
 # managers & querysets #
 ########################
@@ -52,17 +61,6 @@ class UserManager(BaseUserManager):
 
         if not email:
             raise ValueError('The given email must be set')
-        if not username:
-            username = email
-
-        # Lookup the real model class from the global app registry so this
-        # manager method can be used in migrations. This is fine because
-        # managers are by definition working on the real model.
-        GlobalUserModel = apps.get_model(
-            self.model._meta.app_label, self.model._meta.object_name
-        )
-        username = GlobalUserModel.normalize_username(username)
-        email = self.normalize_email(email)
 
         user = self.model(username=username, email=email, **extra_fields)
         user.password = make_password(password)
@@ -82,9 +80,6 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        if not username:
-            username = email
-
         return self.create_user(username, email, password, **extra_fields)
 
     def get_queryset(self):
@@ -102,12 +97,19 @@ class UserManager(BaseUserManager):
             )
         )
 
-    class UserQuerySet(models.QuerySet):
-        def local(self):
-            return self.filter(_is_local=True)
 
-        def remote(self):
-            return self.filter(_is_remote=True)
+class UserQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_active=True)
+
+    def inactive(self):
+        return self.filter(is_active=False)
+
+    def local(self):
+        return self.filter(_is_local=True)
+
+    def remote(self):
+        return self.filter(_is_remote=True)
 
 
 ##########
@@ -116,15 +118,13 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    """
-    A custom user w/ a UUID for pk, a required (unique) email address, 
-    and a custom manager that uses the email address for username as a default.
-    """
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
 
-    objects = UserManager()
+    objects = UserManager.from_queryset(UserQuerySet)()
+
+    tracker = FieldTracker()
 
     # remove these fields, as they should form part of the profile
     first_name = None
@@ -135,6 +135,13 @@ class User(AbstractUser):
         default=uuid.uuid4,
         editable=False,
     )
+
+    email = models.EmailField(
+        _('email address'),
+        blank=False,
+        unique=True,
+    )
+
     auth_id = models.UUIDField(
         blank=True,
         editable=False,
@@ -143,16 +150,21 @@ class User(AbstractUser):
         help_text=_("The corresponding id of the FusionAuth User"),
     )
 
-    email = models.EmailField(_('email address'), unique=True)
-
     change_password = models.BooleanField(
         default=False,
-        help_text=_("Force user to change password at next login.")
+        help_text=_("Force user to change password at next login."),
     )
 
     accepted_terms = models.BooleanField(
         default=False,
-        help_text=_("Has this user accepted the terms & conditions?")
+        help_text=_("Has this user accepted the terms & conditions?"),
+    )
+
+    status = models.CharField(
+        max_length=64,
+        choices=UserStatus.choices,
+        default=UserStatus.PENDING,
+        help_text=_("What stage of registration is this user at?"),
     )
 
     organization_name = models.CharField(
@@ -203,12 +215,9 @@ class User(AbstractUser):
         return self.auth_id is not None
 
     @property
-    def is_citizen(self):
-        return self.role and self.role.name == "citizen"
-
-    @property
-    def is_professional(self):
-        return self.role and self.role.name != "citizen"
+    def is_citizen(self) -> bool:
+        role = self.role
+        return role and role.is_citizen
 
     @property
     def organization(self) -> Organization | None:
@@ -227,5 +236,46 @@ class User(AbstractUser):
     def synchronize_profile(
         self, token: str, direction: ProfileDirection
     ) -> None:
-        # TODO: IMPLEMENT THIS ONCE GATEWAY_CLIENT HAS BEEN ADDED
-        raise NotImplementedError()
+        """
+        synchronize UserProfile information bewteen the dashboard and gateway
+        """
+        if direction == ProfileDirection.REMOTE_TO_LOCAL:
+            remote_profile_data = GATEWAY_CLIENT.get_profile(
+                auth=TokenAuthentication(token)
+            )
+            self.profile = {
+                k: v
+                for k,
+                v in remote_profile_data["profile"].items()
+                if k in PROFILE_FIELDS
+            }
+            # don't forget to update role & organization...
+            role = next(
+                iter(remote_profile_data["profile"]["user"].get("roles", [])),
+                None
+            )
+            if role is not None:
+                self.role_name = role
+            organization = remote_profile_data["profile"].get("organization")
+            if organization is not None:
+                self.organization_name = organization.get("name")
+
+        elif direction == ProfileDirection.LOCAL_TO_REMOTE:
+            local_profile_data = dict(
+                organizationId=self.organization.id
+                if self.organization else None,
+                **(self.profile)
+            )
+            GATEWAY_CLIENT.update_profile(
+                auth=TokenAuthentication(token), data=local_profile_data
+            )
+
+        else:
+            raise ValueError(f"Unknown direction: '{direction}'.")
+
+    def save(self, *args, **kwargs):
+        if self.tracker.has_changed("status"):
+            # TODO: DO SOMETHING WITH SIGNALS HERE ?
+            old_status = self.tracker.previous("status")
+            new_status = self.status
+        return super().save(*args, **kwargs)

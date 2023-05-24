@@ -17,6 +17,11 @@ from safers.core.urls import (
     api_urlpatterns as core_api_urlpatterns,
 )
 
+from safers.auth.urls import (
+    urlpatterns as auth_urlpatterns,
+    api_urlpatterns as auth_api_urlpatterns,
+)
+
 from safers.rmq.urls import (
     urlpatterns as rmq_urlpatterns,
     api_urlpatterns as rmq_api_urlpatterns,
@@ -107,6 +112,7 @@ api_urlpatterns = [
     path("", include(api_router.urls)),
 ]
 api_urlpatterns += core_api_urlpatterns
+api_urlpatterns += auth_api_urlpatterns
 api_urlpatterns += users_api_urlpatterns
 api_urlpatterns += rmq_api_urlpatterns
 api_urlpatterns += aois_api_urlpatterns
@@ -136,6 +142,7 @@ urlpatterns = [
 
     # app-specific patterns (just in case)...
     path("", include(core_urlpatterns)),
+    path("auth/", include(auth_urlpatterns)),
     path("users/", include(users_urlpatterns)),
     path("messages/", include(rmq_urlpatterns)),
     path("aois/", include(aois_urlpatterns)),
