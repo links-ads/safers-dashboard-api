@@ -5,6 +5,7 @@ from itertools import repeat
 from urllib.parse import quote_plus, urlencode, urljoin
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 
 from rest_framework import mixins, status, viewsets
@@ -26,9 +27,11 @@ from safers.data.utils import extent_to_scaled_resolution
 
 from safers.rmq import RMQ_USER
 
-from safers.users.authentication import ProxyAuthentication
+from safers.core.authentication import TokenAuthentication
 from safers.users.exceptions import AuthenticationException
 from safers.users.permissions import IsRemote
+
+UserModel = get_user_model()
 
 ###########
 # swagger #
@@ -131,16 +134,16 @@ _map_request_domains_schema = openapi.Schema(
 #########
 
 
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _map_request_schema}),
-    name="create",
-)
-@method_decorator(
-    swagger_auto_schema(
-        responses={status.HTTP_200_OK: _map_request_list_schema}
-    ),
-    name="list",
-)
+# @method_decorator(
+#     swagger_auto_schema(responses={status.HTTP_200_OK: _map_request_schema}),
+#     name="create",
+# )
+# @method_decorator(
+#     swagger_auto_schema(
+#         responses={status.HTTP_200_OK: _map_request_list_schema}
+#     ),
+#     name="list",
+# )
 class MapRequestViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -154,7 +157,7 @@ class MapRequestViewSet(
     lookup_field = "id"
     lookup_url_kwarg = "map_request_id"
 
-    permission_classes = [IsAuthenticated, IsRemote, IsReadOnlyOrOwner]
+    permission_classes = [IsAuthenticated, IsReadOnlyOrOwner]
     serializer_class = MapRequestSerializer
 
     DATETIME_INPUT_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -176,10 +179,10 @@ class MapRequestViewSet(
         return all MapRequests owned by this user / organization
         """
         current_user = self.request.user
-        if current_user.is_professional:
-            organization_users = current_user.organization.users.filter(
-                is_active=True
-            )
+        if current_user.organization_name:
+            organization_users = UserModel.objects.filter(
+                organization_name=current_user.organization_name
+            ).active()
             queryset = MapRequest.objects.filter(user__in=organization_users)
         else:
             queryset = current_user.map_requests.all()
@@ -349,8 +352,8 @@ class MapRequestViewSet(
 
         try:
             response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_PATH),
-                auth=ProxyAuthentication(request.user),
+                urljoin(settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_PATH),
+                auth=TokenAuthentication(request.auth),
                 params=proxy_params,
             )
             response.raise_for_status()

@@ -8,8 +8,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
+
+from safers.core.clients import GATEWAY_CLIENT
 
 from safers.chatbot.models import Action, ActionActivityTypes, ActionStatusTypes
 from safers.chatbot.serializers import ActionSerializer, ActionViewSerializer
@@ -26,16 +27,19 @@ class ActionListView(ActionView):
 
     GATEWAY_URL_PATH = "/api/services/app/Actions/GetActions"
 
-    @swagger_auto_schema(
-        query_serializer=ActionViewSerializer,
-        responses={status.HTTP_200_OK: ActionSerializer},
-    )
+    # @swagger_auto_schema(
+    #     query_serializer=ActionViewSerializer,
+    #     responses={status.HTTP_200_OK: ActionSerializer},
+    # )
+    @extend_schema(responses={
+        status.HTTP_200_OK: ActionSerializer,
+    })
     def get(self, request, *args, **kwargs):
 
         proxy_data = self.get_proxy_list_data(
             request,
             proxy_url=urljoin(
-                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_PATH
+                settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_PATH
             ),
         )
 
@@ -59,14 +63,14 @@ class ActionListView(ActionView):
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
 
 
-_action_activities_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-)
-
-
-@swagger_auto_schema(
-    responses={status.HTTP_200_OK: _action_activities_schema}, method="get"
-)
+# _action_activities_schema = openapi.Schema(
+#     type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
+# )
+#
+#
+# @swagger_auto_schema(
+#     responses={status.HTTP_200_OK: _action_activities_schema}, method="get"
+# )
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def action_activities_view(request):
@@ -78,14 +82,14 @@ def action_activities_view(request):
     )
 
 
-_action_statuses_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-)
-
-
-@swagger_auto_schema(
-    responses={status.HTTP_200_OK: _action_statuses_schema}, method="get"
-)
+# _action_statuses_schema = openapi.Schema(
+#     type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
+# )
+#
+#
+# @swagger_auto_schema(
+#     responses={status.HTTP_200_OK: _action_statuses_schema}, method="get"
+# )
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def action_statuses_view(request):
