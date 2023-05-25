@@ -90,7 +90,7 @@ class ReportListView(ReportView):
         proxy_data = self.get_proxy_list_data(
             request,
             proxy_url=urljoin(
-                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_LIST_PATH
+                settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_LIST_PATH
             ),
         )
 
@@ -248,9 +248,11 @@ def report_categories_view(request):
     """
     Returns the list of possible Report categories.
     """
-    report_categories_groups = ReportCategory.objects.order_by("group").values_list(
-        "group", flat=True
-    ).distinct()
+    report_categories_groups = ReportCategory.objects.order_by("group"
+                                                              ).values_list(
+                                                                  "group",
+                                                                  flat=True
+                                                              ).distinct()
     return Response(report_categories_groups, status=status.HTTP_200_OK)
 
 

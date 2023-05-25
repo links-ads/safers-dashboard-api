@@ -8,8 +8,7 @@ from rest_framework import ISO_8601, views
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 
-from safers.users.authentication import ProxyAuthentication
-from safers.users.permissions import IsRemote
+from safers.core.authentication import TokenAuthentication
 
 
 def parse_none(value):
@@ -43,7 +42,7 @@ class ChatbotView(views.APIView):
     So this single class can be used as the basis for all chatbot views.
     """
 
-    permission_classes = [IsAuthenticated, IsRemote]
+    permission_classes = [IsAuthenticated]
 
     view_serializer_class = None
     model_serializer_class = None
@@ -97,7 +96,7 @@ class ChatbotView(views.APIView):
         try:
             response = requests.get(
                 proxy_url,
-                auth=ProxyAuthentication(request.user),
+                auth=TokenAuthentication(self.request.auth),
                 params=proxy_params,
                 timeout=4,  # 4 seconds as per https://requests.readthedocs.io/en/stable/user/advanced/#timeouts
             )  # yapf: disable

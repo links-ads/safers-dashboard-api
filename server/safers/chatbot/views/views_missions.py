@@ -83,7 +83,7 @@ class MissionListView(MissionView):
         proxy_data = self.get_proxy_list_data(
             request,
             proxy_url=urljoin(
-                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_LIST_PATH
+                settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_LIST_PATH
             ),
         )
 
