@@ -58,6 +58,7 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     "anymail",
+    "colorfield",
     "corsheaders",
     "dbbackup",
     "django_filters",

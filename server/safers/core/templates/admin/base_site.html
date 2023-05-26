@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+
+{% load tags_sites %}
+
+{% block extrastyle %}
+
+{{ block.super }}
+
+{% site as site %}
+
+{% if site.profile and site.profile.show_admin_notice %}
+
+<!-- show site-specific notice in the Admin -->
+
+<style type="text/css">
+    body::before {
+        display: block;
+        top: 0;
+        z-index: 1000;
+        position: sticky;
+        line-height: 35px;
+        text-align: center;
+        text-transform: uppercase;
+        font-weight: bold;
+        color: #000000;
+
+        background-color: {{ site.profile.admin_notice_color  }};
+        content: "{{ site.name }}";
+    }
+</style>
+
+{% endif %}
+
+{% endblock %}
