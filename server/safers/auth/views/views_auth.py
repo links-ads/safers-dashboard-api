@@ -203,6 +203,8 @@ class AuthenticateView(GenericAPIView):
         token_serializer.is_valid(raise_exception=True)
         token_serializer.save()
 
+        logger.info(token_serializer.validated_data)
+
         return Response(
             token_serializer.validated_data,
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
@@ -247,6 +249,8 @@ class RefreshView(GenericAPIView):
         )
         token_serializer.is_valid(raise_exception=True)
         token_serializer.save()
+
+        logger.info(token_serializer.validated_data)
 
         return Response(
             token_serializer.validated_data, status=status.HTTP_200_OK

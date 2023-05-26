@@ -3,10 +3,10 @@ from django.urls import include, path
 from rest_framework import routers
 
 from safers.data.views import (
-    DataLayerView,
-    data_layer_domains_view,
+    OperationalLayerView,
+    operational_layer_domains_view,
+    on_demand_layer_domains_view,
     MapRequestViewSet,
-    map_request_domains_view,
     DataLayerMetadataView,
 )
 
@@ -18,18 +18,18 @@ api_urlpatterns = [
     path("", include(api_router.urls)),
     path(
         "data/layers",
-        DataLayerView.as_view(),
-        name="data-layers-list",
+        OperationalLayerView.as_view(),
+        name="operational-layers-list",
     ),
     path(
         "data/layers/domains",
-        data_layer_domains_view,
-        name="data-layers-domains-list"
+        operational_layer_domains_view,
+        name="operational-layers-domains-list",
     ),
     path(
         "data/maprequests/domains",
-        map_request_domains_view,
-        name="map-requests-domains-list"
+        on_demand_layer_domains_view,
+        name="ondemand-layers-domains-list",
     ),
     path(
         "data/layers/metadata/<slug:metadata_id>",
