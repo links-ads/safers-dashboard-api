@@ -73,7 +73,21 @@ class GatewayClient(object):
             timeout=timeout,
         )
         response.raise_for_status()
-        return response.json()
+
+        # follow all parent organizations...
+        organizations_data = response.json()["data"]
+        for organization in organizations_data:
+            if organization["hasChildren"]:
+                organizations_data += self.get_organizations(
+                    params=dict(
+                        parentId=organization["id"],
+                        **default_params,
+                    ),
+                    auth=auth,
+                    timeout=timeout,
+                )
+
+        return organizations_data
 
     def get_layers(
         self, params=None, auth=None, timeout=REQUEST_TIMEOUT

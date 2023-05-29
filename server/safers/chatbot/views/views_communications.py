@@ -69,11 +69,11 @@ class CommunicationListView(CommunicationView):
                 # source= (source has a default value so no need to parse from proxy_data)
                 scope=data.get("scope"),
                 restriction=data.get("restriction"),
-                source_organization=Organization.objects.safe_get(name=data.get("organizationName")),
+                source_organization=Organization.objects.get(name=data.get("organizationName")),
                 target_organizations=filter(
                     None,
                     [
-                        Organization.objects.safe_get(organization_id=organization_id)
+                        Organization.objects.get(id=organization_id)
                         for organization_id in data.get("organizationIdList") or []
                     ]
                 ),

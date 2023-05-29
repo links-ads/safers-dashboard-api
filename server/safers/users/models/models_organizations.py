@@ -17,8 +17,7 @@ class OrganizationManager(CachedTransientModelManager):
     cache_key = "organizations"
 
     def get_transient_queryset_data(self):
-        response = GATEWAY_CLIENT.get_organizations(timeout=10)
-        organizations_data = response["data"]
+        organizations_data = GATEWAY_CLIENT.get_organizations(timeout=10)
 
         # organizations_data = MOCK_ORGANIZATIONS_DATA
 
