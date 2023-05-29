@@ -1,5 +1,4 @@
 import logging
-from urllib.parse import urljoin, urlencode
 
 from django.conf import settings
 from django.contrib.auth import logout
@@ -255,3 +254,28 @@ class RefreshView(GenericAPIView):
         return Response(
             token_serializer.validated_data, status=status.HTTP_200_OK
         )
+
+
+class LogoutView(GenericAPIView):
+    """
+    Logout user locally from the dashboard by deleting all authentication
+    tokens.  The user must still be logged out via FusionAuth, and any
+    relevant state should still be deleted from the dashboard client.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=None,
+        responses={status.HTTP_200_OK: None},
+    )
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        # TODO: NEED TO BE A BIT MORE JUDICIOUS W/ WHAT GETS DELETED
+        user.access_tokens.all().delete()
+        user.refresh_tokens.all().delete()
+        logout(request)
+
+        logger.info(f"user '{user}' logged out.")
+
+        return Response(status=status.HTTP_200_OK)
