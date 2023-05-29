@@ -4,8 +4,7 @@ from .views import (
     RegisterView,
     AuthenticateView,
     RefreshView,
-    login_view,
-    logout_view,
+    LogoutView,
 )
 
 api_urlpatterns = [
@@ -24,9 +23,11 @@ api_urlpatterns = [
         RefreshView.as_view(),
         name="auth-refresh",
     ),
+    path(
+        "auth/logout",
+        LogoutView.as_view(),
+        name="auth-logout",
+    ),
 ]
 
-urlpatterns = [
-    path("login", login_view, name="auth-login"),
-    path("logout", logout_view, name="auth-logout"),
-]
+urlpatterns = []
