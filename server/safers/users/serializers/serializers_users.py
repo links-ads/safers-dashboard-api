@@ -20,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
             "role",
             "profile",
             "is_citizen",
+            "is_professional",
             "default_aoi",
         )
 
