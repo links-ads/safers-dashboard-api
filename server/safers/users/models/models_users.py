@@ -220,6 +220,11 @@ class User(AbstractUser):
         return role and role.is_citizen
 
     @property
+    def is_professional(self) -> bool:
+        role = self.role
+        return (not role) or (not role.is_citizen)
+
+    @property
     def organization(self) -> Organization | None:
         try:
             return Organization.objects.get(name=self.organization_name)
