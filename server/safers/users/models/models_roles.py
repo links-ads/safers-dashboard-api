@@ -63,7 +63,7 @@ class Role(models.Model):
         """
         Return a pretty name for the role
         """
-        return str(self).title()
+        return str(self).title().replace("_", " ")
 
     @property
     def is_citizen(self) -> bool:
