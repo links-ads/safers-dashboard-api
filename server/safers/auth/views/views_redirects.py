@@ -7,6 +7,8 @@ from django.views.decorators.http import require_http_methods
 
 from safers.core.models import SafersSettings
 
+# TODO: MAY WANT TO CALL THESE METHODS DIRECTLY FROM THE CLIENT AT SOME POINT
+
 
 @require_http_methods(["GET"])
 def login_view(request):
