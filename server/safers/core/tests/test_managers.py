@@ -84,6 +84,23 @@ class TestTransientModelQuerySet:
         test_model = test_queryset.last()
         assert test_model is None
 
+    def test_filter(self):
+        test_models = map(TestModel, [1, 2, 3])
+        test_queryset = TestModelQuerySet(test_models)
+
+        filtered_queryset = test_queryset.filter(id=1)
+        assert len(filtered_queryset) == 1
+        assert filtered_queryset.first().id == 1
+
+    def test_exclude(self):
+        test_models = map(TestModel, [1, 2, 3])
+        test_queryset = TestModelQuerySet(test_models)
+
+        excluded_queryset = test_queryset.exclude(id=1)
+        assert len(excluded_queryset) == 2
+        assert excluded_queryset.first().id != 1
+        assert excluded_queryset.last() != 1
+
 
 @pytest.mark.django_db
 class TestCachedTransientModelManager:
