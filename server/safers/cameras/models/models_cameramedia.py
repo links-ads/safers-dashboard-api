@@ -1,14 +1,17 @@
+import os
 import requests
 import uuid
+from PIL import Image
 from tempfile import TemporaryFile
 from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Q, ExpressionWrapper
 from django.contrib.gis.db import models as gis_models
 from django.utils.translation import gettext_lazy as _
+
+CAMERA_MEDIA_THUMBNAIL_SIZE = (256, 256)
 
 
 def camera_media_file_path(instance, filename):
@@ -23,22 +26,6 @@ class CameraMediaType(models.TextChoices):
 class CameraMediaManager(models.Manager):
     pass
 
-    # def get_queryset(self):
-    #     queryset = CameraMediaQuerySet(self.model, using=self._db).all()
-    #     annotated_queryset = queryset.annotate(
-    #         _is_fire=ExpressionWrapper(
-    #             Q(tags__name__in=["fire"]), output_field=models.BooleanField()
-    #         ),
-    #         _is_smoke=ExpressionWrapper(
-    #             Q(tags__name__in=["smoke"]), output_field=models.BooleanField()
-    #         ),
-    #         _is_detected=ExpressionWrapper(
-    #             Q(tags__name__in=["fire", "smoke"]),
-    #             output_field=models.BooleanField()
-    #         ),
-    #     )
-    #     return annotated_queryset
-
 
 class CameraMediaQuerySet(models.QuerySet):
     def images(self):
@@ -49,19 +36,15 @@ class CameraMediaQuerySet(models.QuerySet):
 
     def fire(self):
         return self.filter(tags__name__in=["fire"])
-        # return self.filter(_is_fire=True)
 
     def smoke(self):
         return self.filter(tags__name__in=["smoke"])
-        # return self.filter(_is_smoke=True)
 
     def detected(self):
         return self.filter(tags__name__in=["fire", "smoke"]).distinct()
-        # return self.filter(Q(_is_fire=True) | Q(_is_smoke=True))
 
     def undetected(self):
         return self.exclude(tags__name__in=["fire", "smoke"]).distinct()
-        # return self.filter(Q(_is_fire=False) & Q(_is_smoke=False))
 
     def alerted(self):
         return self.filter(alert__isnull=False)
@@ -127,7 +110,11 @@ class CameraMedia(gis_models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     type = models.CharField(
-        max_length=64, choices=CameraMediaType.choices, blank=False, null=False
+        max_length=64,
+        choices=CameraMediaType.choices,
+        blank=False,
+        null=False,
+        help_text="What type of media is this?",
     )
 
     timestamp = models.DateTimeField(blank=True, null=True)
@@ -139,6 +126,12 @@ class CameraMedia(gis_models.Model):
     )  # pre-signed AWS URLs can be quite long, hence the max_length kwarg
 
     media = models.FileField(
+        blank=True,
+        null=True,
+        upload_to=camera_media_file_path,
+    )
+
+    thumbnail = models.ImageField(
         blank=True,
         null=True,
         upload_to=camera_media_file_path,
@@ -230,7 +223,7 @@ class CameraMedia(gis_models.Model):
         ) >= settings.SAFERS_CAMERA_MEDIA_TRIGGER_ALERT_TIMERANGE
 
     @staticmethod
-    def copy_url_to_file(url, file_field):
+    def copy_url_to_media(url, media_field):
 
         assert url, "URL does not exist"
 
@@ -241,15 +234,43 @@ class CameraMedia(gis_models.Model):
             for response_chunk in response.iter_content(chunk_size=4096):
                 temp_file.write(response_chunk)
             temp_file.seek(0)
-            file_field.save(
+            media_field.save(
                 file_name,
                 temp_file,
+                save=True,
+            )
+
+    @staticmethod
+    def copy_media_to_thumbnail(media_file, thumbnail_field):
+        assert media_file, "media_file does not exist"
+
+        image = Image.open(media_file)
+        image.thumbnail(CAMERA_MEDIA_THUMBNAIL_SIZE, Image.ANTIALIAS)
+
+        image_file_basename = os.path.basename(media_file.name)
+        _, image_file_ext = os.path.splitext(image_file_basename)
+        if image_file_ext == ".jpg":
+            PIL_FORMAT = "jpeg"
+        elif image_file_ext == ".png":
+            PIL_FORMAT = "png"
+        else:
+            raise ValueError(f"Unknown media extension: '{image_file_ext}'.")
+
+        with TemporaryFile() as temp_file:
+            image.save(temp_file, format=PIL_FORMAT)
+            thumbnail_field.save(
+                f"thumbnail_{image_file_basename}",
+                temp_file,
+                save=True,
             )
 
     def save(self, **kwargs):
         retval = super().save(**kwargs)
 
         if self.url and not self.media:
-            CameraMedia.copy_url_to_file(self.url, self.media)
+            CameraMedia.copy_url_to_media(self.url, self.media)
+
+        if self.media and not self.thumbnail:
+            CameraMedia.copy_media_to_thumbnail(self.media.file, self.thumbnail)
 
         return retval
