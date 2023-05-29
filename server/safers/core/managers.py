@@ -4,7 +4,7 @@ from typing import Any
 
 from django.core.cache import caches
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.db import models
+from django.db import models, ProgrammingError
 from django.utils.functional import cached_property
 
 logger = logging.getLogger(__name__)
@@ -72,7 +72,12 @@ class CachedTransientModelManager(models.Manager):
         return self.model or self._model_class
 
     def get_queryset(self) -> TransientModelQuerySet:
-        queryset_data = self.cache.get(self.cache_key, self.cache_sentinel)
+        try:
+            queryset_data = self.cache.get(self.cache_key, self.cache_sentinel)
+        except ProgrammingError as exception:
+            # cache is not yet setup...
+            queryset_data = []
+
         if queryset_data is self.cache_sentinel:
             logger.info("caching '%s'", self.cache_key)
             queryset_data = self.get_transient_queryset_data()
