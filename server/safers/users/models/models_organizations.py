@@ -49,4 +49,4 @@ class Organization(models.Model):
         """
         Return a pretty name for the organization
         """
-        return str(self).title()
+        return str(self).title().replace("_", " ")
