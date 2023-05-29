@@ -16,12 +16,29 @@ class TransientModelQuerySet(UserList):
     """
     model = None  # (required for drf-spectacular schema generation)
 
-    def get(self, **kwargs):
-
+    def filter(self, **kwargs):
+        """
+        Allow simple (ie: no lookup expressions) filtering on TransientModels
+        """
         matching_models = [
             model for model in self
             if all((getattr(model, k) == v for k, v in kwargs.items()))
         ]
+        return self.__class__(matching_models)
+
+    def exclude(self, **kwargs):
+        """
+        Allow simple (ie: no lookup expressions) exclusions on TransientModels
+        """
+        matching_models = [
+            model for model in self
+            if not all((getattr(model, k) == v for k, v in kwargs.items()))
+        ]
+        return self.__class__(matching_models)
+
+    def get(self, **kwargs):
+
+        matching_models = self.filter(**kwargs)
 
         n_matching_models = len(matching_models)
         if n_matching_models == 0:
@@ -86,11 +103,3 @@ class CachedTransientModelManager(models.Manager):
         return self.queryset_class([
             self.model_class(**data) for data in queryset_data
         ])
-
-    def filter(self, *args: Any, **kwargs: Any):
-        """
-        Don't allow generic filtering as the underlying TransientModel
-        isn't stored in the db.  Rather than monkey-patch this, just 
-        don't call it.
-        """
-        raise NotImplementedError()
