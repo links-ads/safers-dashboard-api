@@ -1,4 +1,4 @@
-from rest_framework.settings import settings as drf_settings
+from rest_framework.settings import api_settings as drf_settings
 
 
 def reshape_auth_errors(auth_error_response):
