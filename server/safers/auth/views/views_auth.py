@@ -68,10 +68,10 @@ class RegisterView(GenericAPIView):
         )
         serializer.is_valid(raise_exception=True)
 
-        organization = serializer.validated_data.pop("organization")
+        organization = serializer.validated_data.pop("organization", None)
         team = None  # TODO: CANNOT SET TEAM IN DASHBOARD YET
-        role = serializer.validated_data.pop("role")
-        accepted_terms = serializer.validated_data.pop("accepted_terms")
+        role = serializer.validated_data.pop("role", None)
+        accepted_terms = serializer.validated_data.pop("accepted_terms", False)
 
         # register w/ FusionAuth...
         auth_response = AUTH_CLIENT.register({
