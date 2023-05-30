@@ -93,6 +93,7 @@ class CachedTransientModelManager(models.Manager):
             queryset_data = self.cache.get(self.cache_key, self.cache_sentinel)
         except ProgrammingError as exception:
             # cache is not yet setup...
+            logger.error("unable to access '%s' from cache", self.cache_key)
             queryset_data = []
 
         if queryset_data is self.cache_sentinel:
