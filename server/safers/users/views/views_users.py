@@ -1,5 +1,9 @@
-from rest_framework import generics as drf_generics
+from rest_framework import status, generics as drf_generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from safers.auth.clients import AUTH_CLIENT
+from safers.auth.utils import reshape_auth_errors
 
 from safers.core import generics as safers_generics
 from safers.core.decorators import swagger_fake
@@ -37,7 +41,12 @@ class UserView(
         auth_token = self.request.auth
         user.synchronize_profile(auth_token, ProfileDirection.LOCAL_TO_REMOTE)
 
-    def delete(self, request, *args, **kwargs):
-        retval = super().delete(request, *args, **kwargs)
-        # TODO: (logout and) delete user from auth
-        return retval
+    def perform_destroy(self, instance):
+        """
+        delete user from FusionAuth
+        """
+        auth_response = AUTH_CLIENT.delete_user(user_id=instance.auth_id)
+        if not auth_response.was_successful():
+            errors = reshape_auth_errors(auth_response.error_response)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        instance.delete()
