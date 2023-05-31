@@ -33,6 +33,13 @@ class SafersSettings(SingletonMixin, models.Model):
         ),
     )
 
+    allow_remote_deletion = models.BooleanField(
+        default=False,
+        help_text=_(
+            "When deleting a user from the dashboard also delete a user from all of safers."
+        ),
+    )
+
     polling_frequency = models.FloatField(
         default=10,
         validators=[MinValueValidator(0)],

@@ -11,6 +11,7 @@ class SafersSettingsSerializer(serializers.ModelSerializer):
             "allow_signin",
             "allow_password_change",
             "require_terms_acceptance",
+            "allow_remote_deletion",
             "polling_frequency",
             "request_timeout",
             "max_favorite_alerts",
