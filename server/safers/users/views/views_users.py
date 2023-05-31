@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import status, generics as drf_generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -7,10 +9,13 @@ from safers.auth.utils import reshape_auth_errors
 
 from safers.core import generics as safers_generics
 from safers.core.decorators import swagger_fake
+from safers.core.models import SafersSettings
 
 from safers.users.models import User, ProfileDirection
 from safers.users.permissions import IsSelf
 from safers.users.serializers import UserSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class UserView(
@@ -35,7 +40,7 @@ class UserView(
 
     def perform_update(self, serializer):
         """
-        propagate profile changes to gateway 
+        update user and propagate profile changes to gateway 
         """
         user = serializer.save()
         auth_token = self.request.auth
@@ -43,10 +48,14 @@ class UserView(
 
     def perform_destroy(self, instance):
         """
-        delete user from FusionAuth
+        delete user and optionally remove them from FusionAuth
         """
-        auth_response = AUTH_CLIENT.delete_user(user_id=instance.auth_id)
-        if not auth_response.was_successful():
-            errors = reshape_auth_errors(auth_response.error_response)
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        safers_settings = SafersSettings.load()
+        if safers_settings.allow_remote_deletion:
+            auth_response = AUTH_CLIENT.delete_user(user_id=instance.auth_id)
+            if not auth_response.was_successful():
+                errors = reshape_auth_errors(auth_response.error_response)
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            logger.info(f"deleted {instance} from authentication server.")
+
         instance.delete()
