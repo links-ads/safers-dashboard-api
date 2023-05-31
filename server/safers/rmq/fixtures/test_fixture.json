@@ -26,6 +26,7 @@
         "link": "https://upload.wikimedia.org/wikipedia/commons/0/05/Burnout_ops_on_Mangum_Fire_McCall_Smokejumpers.jpg",
         "camera": {
           "ID": "TEST_MUSSELBURGH_000",
+          "name": "TEST_MUSSELBURGH",
           "type": "PTZ",
           "model": "reolink RLC-823A",
           "owner": "TEST",
