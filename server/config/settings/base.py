@@ -11,8 +11,11 @@ from django.utils.text import slugify
 
 import dj_database_url
 
-from safers.core.utils import DynamicSetting
-from safers.core.utils import backup_filename_template
+from safers.core.utils import (
+    DynamicSetting,
+    RegexPathMatcher,
+    backup_filename_template,
+)
 
 #########
 # Setup #
@@ -344,21 +347,28 @@ SPECTACULAR_SETTINGS = {
 # Profiling #
 #############
 
-# set in environment module
-
-# TODO: MOVE TO ENVIRONMENT MODULES
-SILKY_PYTHON_PROFILER = True
-SILKY_PYTHON_PROFILER_BINARY = False  # (don't bother W/ .prof files yet)
 SILKY_AUTHENTICATION = True
 SILKY_AUTHORISATION = True
-#SILKY_PERMISSIONS = lambda user: user.is_staff or DEBUG
-SILKY_MAX_REQUEST_BODY_SIZE = -1  # accept all requests
-# SILKY_MAX_RESPONSE_BODY_SIZE = ?!
-SILKY_MAX_RECORDED_REQUESTS = 10**4
+SILKY_PERMISSIONS = lambda user: user.is_staff or DEBUG
 SILKY_META = True
+SILKY_IGNORE_PATHS = RegexPathMatcher([
+    r"\/?admin\/.*",
+    r"\/?api\/schema.*",
+    r"\/?api\/swagger.*",
+    r"\/?silk\/.*",
+])
 SILKY_SENSITIVE_KEYS = {
-    'username', 'email', 'client_id', 'client_secret', 'password'
+    "username",
+    "email",
+    "password",
+    "password_confirmation",
+    "access_token",
+    "refresh_token",
+    "client_id",
+    "client_secret",
 }
+
+# futher profiling details set in environment module
 
 ###########
 # Backups #
