@@ -1,3 +1,4 @@
+import logging
 import os
 import requests
 import uuid
@@ -10,6 +11,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.utils.translation import gettext_lazy as _
+
+logger = logging.getLogger(__name__)
 
 CAMERA_MEDIA_THUMBNAIL_SIZE = (256, 256)
 
@@ -249,9 +252,9 @@ class CameraMedia(gis_models.Model):
 
         image_file_basename = os.path.basename(media_file.name)
         _, image_file_ext = os.path.splitext(image_file_basename)
-        if image_file_ext == ".jpg":
+        if image_file_ext in [".jpg", ".jpeg"]:
             PIL_FORMAT = "jpeg"
-        elif image_file_ext == ".png":
+        elif image_file_ext in [".png"]:
             PIL_FORMAT = "png"
         else:
             raise ValueError(f"Unknown media extension: '{image_file_ext}'.")
@@ -267,10 +270,15 @@ class CameraMedia(gis_models.Model):
     def save(self, **kwargs):
         retval = super().save(**kwargs)
 
-        if self.url and not self.media:
-            CameraMedia.copy_url_to_media(self.url, self.media)
-
-        if self.media and not self.thumbnail:
-            CameraMedia.copy_media_to_thumbnail(self.media.file, self.thumbnail)
+        try:
+            if self.url and not self.media:
+                CameraMedia.copy_url_to_media(self.url, self.media)
+            if self.media and not self.thumbnail:
+                CameraMedia.copy_media_to_thumbnail(
+                    self.media.file, self.thumbnail
+                )
+        except Exception as exception:
+            logger.error(str(exception))
+            pass
 
         return retval
