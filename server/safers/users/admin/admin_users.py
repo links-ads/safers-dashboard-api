@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserChangeForm as DjangoUserAdminForm
 from django.utils.translation import gettext_lazy as _
 
 from safers.core.widgets import DataListWidget, JSONWidget
-from safers.users.models import User, Organization, Role
+from safers.users.models import User, ProfileDirection, Organization, Role
 
 ###########
 # filters #
@@ -71,7 +71,11 @@ class UserAdminForm(DjangoUserAdminForm):
 
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
-    actions = ("toggle_accepted_terms", )
+    actions = (
+        "toggle_accepted_terms",
+        "synchronize_profiles_local_to_remote",
+        "synchronize_profiles_remote_to_local",
+    )
     model = User
     form = UserAdminForm
     add_fieldsets = ((
@@ -165,7 +169,7 @@ class UserAdmin(DjangoUserAdmin):
         "role_name",
     )
     list_filter = (
-        LocalOrRemoteFilter,  
+        LocalOrRemoteFilter,
         "status",
         "organization_name",
         "role_name",
@@ -174,6 +178,15 @@ class UserAdmin(DjangoUserAdmin):
         "id",
         "auth_id",
     ) + DjangoUserAdmin.readonly_fields
+
+    @admin.display(description="AUTHENTICATION TYPE")
+    def get_authentication_type_for_list_display(self, instance):
+        authentication_type = "unknown"
+        if instance.is_local:
+            authentication_type = "local"
+        elif instance.is_remote:
+            authentication_type = "remote"
+        return authentication_type
 
     @admin.display(
         description="Toggles the term acceptance of the selected users"
@@ -188,11 +201,38 @@ class UserAdmin(DjangoUserAdmin):
             msg = f"{obj} {'has not' if not obj.accepted_terms else 'has'} accepted terms."
             self.message_user(request, msg)
 
-    @admin.display(description="AUTHENTICATION TYPE")
-    def get_authentication_type_for_list_display(self, instance):
-        authentication_type = "unknown"
-        if instance.is_local:
-            authentication_type = "local"
-        elif instance.is_remote:
-            authentication_type = "remote"
-        return authentication_type
+    @admin.display(
+        description=
+        "Synchronize the selected users profiles from the DASHBOARD to the GATEWAY."
+    )
+    def synchronize_profiles_local_to_remote(self, request, queryset):
+        self.synchronize_profiles(
+            request, queryset, direction=ProfileDirection.LOCAL_TO_REMOTE
+        )
+
+    @admin.display(
+        description=
+        "Synchronize the selected users profiles from the GATEWAY to the DASHBOARD."
+    )
+    def synchronize_profiles_remote_to_local(self, request, queryset):
+        self.synchronize_profiles(
+            request, queryset, direction=ProfileDirection.REMOTE_TO_LOCAL
+        )
+
+    def synchronize_profiles(self, request, queryset, direction=None):
+        for obj in queryset:
+            auth_token = obj.access_tokens.unexpired().first()
+            if auth_token:
+                try:
+                    obj.synchronize_profile(auth_token.token, direction)
+                    obj.save()
+                    msg = f"{obj} has updated their profile."
+                    msg_level = messages.SUCCESS
+                except Exception as exception:
+                    msg = f"{obj} failed to update their profile."
+                    msg_level = messages.ERROR
+            else:
+                msg = f"{obj} cannot update their profile; no tokens are available."
+                msg_level = messages.WARNING
+
+            self.message_user(request, msg, level=msg_level)
