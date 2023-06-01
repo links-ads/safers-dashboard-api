@@ -211,10 +211,5 @@ Localization is enabled in **safers-dashboard-app**.  This localizes text used i
 
 ## profiling
 
-Profiling is handled using cProfile & django-cprofile-middleware & snakeviz & silk.
+Profiling is handled using **silk*.  Request info can be monitored by going to "http://localhost:8000/silk".  All requests will provide high level timing information.  Actual profiling must be enabled on a per-view basis using the `silk_profile` decorator and/or context manager.
 
-- appending `&prof` to a URL will give a profile summary (in development only)
-- appending `&prof&download` to a URL will create a file called "view.prof" which can be inspected by running `snakeviz ./path/to/view.prof` outside of docker
-- db queries can be monitored by going to "http://localhost:8000/silk"
-
-Alternatively - b/c the above is a bit "unuser-friendly" - django-debug-toolbar is also enabled.  It is a bit limited, obviously, b/c of Django Rest Framework.  For GETs, usage is: `localhost:8000/api/<whatever>/?format=json&debug-toolbar`
