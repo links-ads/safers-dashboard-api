@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from rest_framework import status
 from rest_framework.exceptions import APIException
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, get_object_or_404 as drf_get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -124,7 +124,6 @@ class AuthenticateView(GenericAPIView):
     code from FusionAuth and returns an access_token for safers-dashboard.
     Creates/updates a local user as needed.
     """
-    authentication_classes = []
     permission_classes = [AllowLoginPermission]
     serializer_class = AuthenticateViewSerializer
 
@@ -216,16 +215,15 @@ class RefreshView(GenericAPIView):
     Deletes the old access_token from the server.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = RefreshViewSerializer
 
+    @transaction.atomic
     @extend_schema(
         request=RefreshViewSerializer,
         responses={status.HTTP_200_OK: TokenSerializer},
     )
     def post(self, request, *args, **kwargs):
-        user = request.user
-        auth_token = request.auth
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -240,8 +238,12 @@ class RefreshView(GenericAPIView):
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         auth_token_data = auth_token_response.success_response
 
-        # delete the now invalid access_token...
-        user.access_tokens.filter(token=auth_token).delete()
+        # delete any existing access_tokens...
+        user = drf_get_object_or_404(
+            User.objects.active(),
+            auth_id=auth_token_data["userId"],
+        )
+        user.access_tokens.all().delete()
 
         token_serializer = TokenSerializer(
             data=dict(user_id=user.id, **auth_token_data)
