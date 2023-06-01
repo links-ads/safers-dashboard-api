@@ -211,37 +211,37 @@ class AuthenticateView(GenericAPIView):
 
 
 class RefreshView(GenericAPIView):
+    """
+    Takes a refresh_token and generates a new access_token for the client.
+    Deletes the old access_token from the server.
+    """
 
+    permission_classes = [IsAuthenticated]
     serializer_class = RefreshViewSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        # TODO: MAYBE ADD REFRESH_TOKEN TO CONTEXT ?
-        # context["refresh_token"] = ? BUT IF USER IS DOING THIS THEY CANNOT BE AUTHENTICATED
-        return context
 
     @extend_schema(
         request=RefreshViewSerializer,
         responses={status.HTTP_200_OK: TokenSerializer},
     )
     def post(self, request, *args, **kwargs):
+        user = request.user
+        auth_token = request.auth
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         auth_token_response = AUTH_CLIENT.exchange_refresh_token_for_access_token(
             refresh_token=serializer.validated_data["refresh_token"],
             client_id=settings.FUSIONAUTH_CLIENT_ID,
-            client_secret=settings.FUSION_AUTH_CLIENT_SECRET,
+            client_secret=settings.FUSIONAUTH_CLIENT_SECRET,
         )
         if not auth_token_response.was_successful():
             errors = reshape_auth_errors(auth_token_response.error_response)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         auth_token_data = auth_token_response.success_response
 
-        user = User.objects.get(auth_id=auth_token_data["userId"])
-        user.refresh_tokens.filter(
-            token=serializer.validated_data["refresh_token"]
-        ).delete()
+        # delete the now invalid access_token...
+        user.access_tokens.filter(token=auth_token).delete()
 
         token_serializer = TokenSerializer(
             data=dict(user_id=user.id, **auth_token_data)
