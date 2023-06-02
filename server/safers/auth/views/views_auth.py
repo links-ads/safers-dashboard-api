@@ -124,7 +124,6 @@ class AuthenticateView(GenericAPIView):
     code from FusionAuth and returns an access_token for safers-dashboard.
     Creates/updates a local user as needed.
     """
-    authentication_classes = []
     permission_classes = [AllowLoginPermission]
     serializer_class = AuthenticateViewSerializer
 
@@ -219,6 +218,7 @@ class RefreshView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RefreshViewSerializer
 
+    @transaction.atomic
     @extend_schema(
         request=RefreshViewSerializer,
         responses={status.HTTP_200_OK: TokenSerializer},
