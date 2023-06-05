@@ -124,7 +124,7 @@ class CameraMedia(gis_models.Model):
 
     description = models.TextField(blank=True, null=True)
 
-    url = models.URLField(
+    remote_url = models.URLField(
         max_length=512, blank=True, null=True
     )  # pre-signed AWS URLs can be quite long, hence the max_length kwarg
 
@@ -271,8 +271,8 @@ class CameraMedia(gis_models.Model):
         retval = super().save(**kwargs)
 
         try:
-            if self.url and not self.media:
-                CameraMedia.copy_url_to_media(self.url, self.media)
+            if self.remote_url and not self.media:
+                CameraMedia.copy_url_to_media(self.remote_url, self.media)
             if self.media and not self.thumbnail:
                 CameraMedia.copy_media_to_thumbnail(
                     self.media.file, self.thumbnail

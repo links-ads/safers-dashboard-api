@@ -7,18 +7,27 @@ import safers.cameras.models.models_cameramedia
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cameras', '0017_rename_file_cameramedia_media'),
+        ('cameras', '0017_rename_cameramedia_file_url'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='cameramedia',
             name='thumbnail',
-            field=models.ImageField(blank=True, null=True, upload_to=safers.cameras.models.models_cameramedia.camera_media_file_path),
+            field=models.ImageField(
+                blank=True,
+                null=True,
+                upload_to=safers.cameras.models.models_cameramedia.
+                camera_media_file_path
+            ),
         ),
         migrations.AlterField(
             model_name='cameramedia',
             name='type',
-            field=models.CharField(choices=[('IMAGE', 'Image'), ('VIDEO', 'Video')], help_text='What type of media is this?', max_length=64),
+            field=models.CharField(
+                choices=[('IMAGE', 'Image'), ('VIDEO', 'Video')],
+                help_text='What type of media is this?',
+                max_length=64
+            ),
         ),
     ]

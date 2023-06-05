@@ -18,7 +18,7 @@ class CameraMediaSerializer(serializers.ModelSerializer):
             "direction",
             "distance",
             "geometry",
-            "url",
+            "remote_url",
             "media_url",
             "thumbnail_url",
             "favorite",  # note "favorite" is an annotated field
