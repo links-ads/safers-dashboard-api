@@ -118,7 +118,7 @@ class CommunicationListView(CommunicationView):
         }
 
         proxy_url = urljoin(
-            settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_CREATE_PATH
+            settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_CREATE_PATH
         )
 
         try:

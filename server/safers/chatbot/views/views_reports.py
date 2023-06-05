@@ -168,7 +168,7 @@ class ReportDetailView(ReportView):
         }
         try:
             response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_DETAIL_PATH),
+                urljoin(settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_DETAIL_PATH),
                 auth=ProxyAuthentication(request.user),
                 params=proxy_params,
                 timeout=4,  # 4 seconds as per https://requests.readthedocs.io/en/stable/user/advanced/#timeouts

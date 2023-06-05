@@ -49,7 +49,7 @@ def teams_view(request):
     if user.is_remote and user.is_professional:
         response = requests.get(
             urljoin(
-                settings.SAFERS_GATEWAY_API_URL,
+                settings.SAFERS_GATEWAY_URL,
                 GET_TEAMS_URL_PATH,
             ),
             auth=ProxyAuthentication(user),

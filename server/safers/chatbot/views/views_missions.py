@@ -154,7 +154,7 @@ class MissionListView(MissionView):
         try:
             response = requests.post(
                 urljoin(
-                    settings.SAFERS_GATEWAY_API_URL,
+                    settings.SAFERS_GATEWAY_URL,
                     self.GATEWAY_URL_CREATE_PATH,
                 ),
                 auth=ProxyAuthentication(request.user),

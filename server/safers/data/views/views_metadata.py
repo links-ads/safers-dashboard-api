@@ -44,7 +44,7 @@ class DataLayerMetadataView(views.APIView):
 
         try:
             response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, GATEWAY_URL_PATH),
+                urljoin(settings.SAFERS_GATEWAY_URL, GATEWAY_URL_PATH),
                 auth=ProxyAuthentication(request.user),
                 params={"MetadataId": self.kwargs["metadata_id"]},
             )
