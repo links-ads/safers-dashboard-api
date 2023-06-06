@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.users.authentication import ProxyAuthentication
+from safers.core.authentication import TokenAuthentication
 
 from safers.chatbot.models import Mission, MissionStatusChoices
 from safers.chatbot.serializers import MissionSerializer, MissionCreateSerializer, MissionViewSerializer
@@ -157,7 +157,7 @@ class MissionListView(MissionView):
                     settings.SAFERS_GATEWAY_URL,
                     self.GATEWAY_URL_CREATE_PATH,
                 ),
-                auth=ProxyAuthentication(request.user),
+                auth=TokenAuthentication(request.auth),
                 headers={"Content-Type": "application/json"},
                 json=proxy_data,
                 timeout=4,

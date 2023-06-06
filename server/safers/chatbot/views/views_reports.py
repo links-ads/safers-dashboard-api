@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.users.authentication import ProxyAuthentication
+from safers.core.authentication import TokenAuthentication
 
 from safers.chatbot.models import Report, ReportCategory
 from safers.chatbot.serializers import ReportSerializer, ReportViewSerializer
@@ -169,9 +169,9 @@ class ReportDetailView(ReportView):
         try:
             response = requests.get(
                 urljoin(settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_DETAIL_PATH),
-                auth=ProxyAuthentication(request.user),
+                auth=TokenAuthentication(request.auth),
                 params=proxy_params,
-                timeout=4,  # 4 seconds as per https://requests.readthedocs.io/en/stable/user/advanced/#timeouts
+                timeout=4,
             )  # yapf: disable
             response.raise_for_status()
             proxy_data = response.json()

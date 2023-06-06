@@ -11,7 +11,8 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.users.authentication import ProxyAuthentication
+from safers.core.authentication import TokenAuthentication
+
 from safers.users.permissions import IsRemote
 
 METADATA_FORMAT_TYPES = ["json", "text"]
@@ -45,7 +46,7 @@ class DataLayerMetadataView(views.APIView):
         try:
             response = requests.get(
                 urljoin(settings.SAFERS_GATEWAY_URL, GATEWAY_URL_PATH),
-                auth=ProxyAuthentication(request.user),
+                auth=TokenAuthentication(request.auth),
                 params={"MetadataId": self.kwargs["metadata_id"]},
             )
             response.raise_for_status()

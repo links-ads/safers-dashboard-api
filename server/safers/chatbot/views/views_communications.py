@@ -15,8 +15,9 @@ from rest_framework.utils.encoders import JSONEncoder
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from safers.core.authentication import TokenAuthentication
+
 from safers.users.models import Organization
-from safers.users.authentication import ProxyAuthentication
 
 from safers.chatbot.models import Communication
 from safers.chatbot.serializers import CommunicationSerializer, CommunicationCreateSerializer, CommunicationViewSerializer
@@ -124,7 +125,7 @@ class CommunicationListView(CommunicationView):
         try:
             response = requests.post(
                 proxy_url,
-                auth=ProxyAuthentication(request.user),
+                auth=TokenAuthentication(request.auth),
                 headers={"Content-Type": "application/json"},
                 json=proxy_data,
                 timeout=4,
