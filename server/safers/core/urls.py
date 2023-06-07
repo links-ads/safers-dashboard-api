@@ -3,7 +3,7 @@ from django.urls import include, path, re_path
 from rest_framework import routers
 
 from .views import (
-    config_view,
+    settings_view,
     trigger_error,
     DocumentView,
 )
@@ -11,7 +11,8 @@ from .views import (
 api_router = routers.DefaultRouter()
 api_urlpatterns = [
     path("", include(api_router.urls)),
-    path("config", config_view, name="config"),
+    # TODO: REFACTOR FRONTEND IN ORDER TO CHANGE PATH TO "settings"
+    path("config", settings_view, name="settings"),
     path("sentry-debug", trigger_error, name="sentry-debug"),
     path(
         "documents/<slug:document_slug>",

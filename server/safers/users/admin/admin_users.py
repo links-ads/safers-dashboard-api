@@ -1,10 +1,15 @@
 from django.contrib import admin
-from django.contrib.auth import admin as auth_admin
-from django.contrib.auth.models import Group, Permission
+from django.contrib import messages
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.forms import UserChangeForm as DjangoUserAdminForm
 from django.utils.translation import gettext_lazy as _
 
-from safers.users.forms import UserCreationForm, UserChangeForm
-from safers.users.models import User
+from safers.core.widgets import DataListWidget, JSONWidget
+from safers.users.models import User, ProfileDirection, Organization, Role
+
+###########
+# filters #
+###########
 
 
 class LocalOrRemoteFilter(admin.SimpleListFilter):
@@ -24,22 +29,128 @@ class LocalOrRemoteFilter(admin.SimpleListFilter):
         return qs
 
 
+#########
+# forms #
+#########
+
+
+class UserAdminForm(DjangoUserAdminForm):
+    """
+    Custom form w/ some pretty fields; formats the profile
+    and lets me choose from valid Organizations & Roles
+    """
+    class Meta:
+        model = User
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["organization_name"].help_text = _(
+            "The name of the organization this user belongs to."
+        )
+        self.fields["organization_name"].widget = DataListWidget(
+            name="organization_name",
+            options=[
+                organization.name for organization in Organization.objects.all()
+            ],
+        )
+        self.fields["role_name"].help_text = _(
+            "The name of the role this user belongs to."
+        )
+        self.fields["role_name"].widget = DataListWidget(
+            name="role_name",
+            options=[role.name for role in Role.objects.all()],
+        )
+        self.fields["profile"].widget = JSONWidget()
+
+
+##########
+# admins #
+##########
+
+
 @admin.register(User)
-class UserAdmin(auth_admin.UserAdmin):
+class UserAdmin(DjangoUserAdmin):
     actions = (
         "toggle_accepted_terms",
-        "toggle_verication",
+        "synchronize_profiles_local_to_remote",
+        "synchronize_profiles_remote_to_local",
     )
     model = User
-    add_form = UserCreationForm
-    form = UserChangeForm
+    form = UserAdminForm
+    add_fieldsets = ((
+        None,
+        {
+            "classes": ("wide", ),
+            "fields": (
+                "email",
+                "password1",
+                "password2",
+                "accepted_terms",
+                "change_password",
+                "status",
+            )
+        }
+    ))
     fieldsets = (
-        (None, {"fields": ["id", "auth_id", "username", "email", "password", "active_token_key"]}),
-        ("Personal Info", {"fields": ["first_name", "last_name", "role", "organization",]}),
-        ("Permissions", {"fields": ["is_active", "is_staff","is_superuser", "accepted_terms","groups", "user_permissions"] }),
-        ("Important Dates", {"fields": ["last_login", "date_joined"]}),
-        ("Safers", {"fields": ["default_aoi", "favorite_alerts", "favorite_events", "favorite_camera_medias"]}),
-    )  # yapf: disable
+        (
+            None, {
+                "fields": (
+                    "id",
+                    "auth_id",
+                    "email",
+                    "username",
+                    "password",
+                )
+            }
+        ),
+        (
+            _("General Info"), {
+                "fields": (
+                    "status",
+                    "change_password",
+                    "accepted_terms",
+                )
+            }
+        ),
+        (
+            _("Permissions"),
+            {
+                "classes": ("collapse", ),
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            }
+        ),
+        (
+            _("Important Dates"),
+            {
+                "classes": ("collapse", ),
+                "fields": (
+                    "last_login",
+                    "date_joined",
+                )
+            }
+        ),
+        (
+            _("Safers"),
+            {
+                "fields": (
+                    "organization_name",
+                    "role_name",
+                    "profile",
+                    "default_aoi",
+                    "favorite_alerts",
+                    "favorite_events",
+                    "favorite_camera_medias",
+                )
+            }
+        ),
+    )
     filter_horizontal = (
         "groups",
         "user_permissions",
@@ -47,26 +158,39 @@ class UserAdmin(auth_admin.UserAdmin):
         "favorite_events",
         "favorite_camera_medias",
     )
-    list_display = [
+    list_display = (
         "email",
-        "id",
-        "is_verified_for_list_display",
+        "is_staff",
+        "is_active",
         "accepted_terms",
-        "role",
-        "organization",
+        "status",
         "get_authentication_type_for_list_display",
-    ]
+        "organization_name",
+        "role_name",
+    )
     list_filter = (
         LocalOrRemoteFilter,
-        "role",
-        "organization",
-    ) + auth_admin.UserAdmin.list_filter
+        "status",
+        "organization_name",
+        "role_name",
+    ) + DjangoUserAdmin.list_filter
     readonly_fields = (
         "id",
         "auth_id",
-        "active_token_key",
-    ) + auth_admin.UserAdmin.readonly_fields
+    ) + DjangoUserAdmin.readonly_fields
 
+    @admin.display(description="AUTHENTICATION TYPE")
+    def get_authentication_type_for_list_display(self, instance):
+        authentication_type = "unknown"
+        if instance.is_local:
+            authentication_type = "local"
+        elif instance.is_remote:
+            authentication_type = "remote"
+        return authentication_type
+
+    @admin.display(
+        description="Toggles the term acceptance of the selected users"
+    )
     def toggle_accepted_terms(self, request, queryset):
         # TODO: doing this cleverly w/ negated F expressions is not supported (https://code.djangoproject.com/ticket/16211)
         # queryset.update(accepted_terms=not(F("accepted_terms")))
@@ -77,47 +201,38 @@ class UserAdmin(auth_admin.UserAdmin):
             msg = f"{obj} {'has not' if not obj.accepted_terms else 'has'} accepted terms."
             self.message_user(request, msg)
 
-    toggle_accepted_terms.short_description = (
-        "Toggles the term acceptance of the selected users"
+    @admin.display(
+        description=
+        "Synchronize the selected users profiles from the DASHBOARD to the GATEWAY."
     )
+    def synchronize_profiles_local_to_remote(self, request, queryset):
+        self.synchronize_profiles(
+            request, queryset, direction=ProfileDirection.LOCAL_TO_REMOTE
+        )
 
-    def toggle_verication(self, request, queryset):
+    @admin.display(
+        description=
+        "Synchronize the selected users profiles from the GATEWAY to the DASHBOARD."
+    )
+    def synchronize_profiles_remote_to_local(self, request, queryset):
+        self.synchronize_profiles(
+            request, queryset, direction=ProfileDirection.REMOTE_TO_LOCAL
+        )
 
+    def synchronize_profiles(self, request, queryset, direction=None):
         for obj in queryset:
+            auth_token = obj.access_tokens.unexpired().first()
+            if auth_token:
+                try:
+                    obj.synchronize_profile(auth_token.token, direction)
+                    obj.save()
+                    msg = f"{obj} has updated their profile."
+                    msg_level = messages.SUCCESS
+                except Exception as exception:
+                    msg = f"{obj} failed to update their profile."
+                    msg_level = messages.ERROR
+            else:
+                msg = f"{obj} cannot update their profile; no tokens are available."
+                msg_level = messages.WARNING
 
-            emailaddress, created = obj.emailaddress_set.get_or_create(
-                user=obj, email=obj.email
-            )
-            if not emailaddress.primary:
-                emailaddress.set_as_primary(conditional=True)
-
-            emailaddress.verified = not emailaddress.verified
-            emailaddress.save()
-
-            msg = f"{emailaddress} {'created and' if created else ''} {'not' if not emailaddress.verified else ''} verified."
-            self.message_user(request, msg)
-
-    toggle_verication.short_description = (
-        "Toggles the verification of the selected users' primary email addresses"
-    )
-
-    @admin.display(boolean=True, description="IS VERIFIED")
-    def is_verified_for_list_display(self, instance):
-        return instance.is_verified
-
-    @admin.display(description="AUTHENTICATION TYPE")
-    def get_authentication_type_for_list_display(self, instance):
-        if instance.is_local:
-            return "local"
-        elif instance.is_remote:
-            return "remote"
-
-
-try:
-    admin.site.register(Group)
-except admin.sites.AlreadyRegistered:
-    pass
-try:
-    admin.site.register(Permission)
-except admin.sites.AlreadyRegistered:
-    pass
+            self.message_user(request, msg, level=msg_level)

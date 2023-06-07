@@ -31,6 +31,7 @@ class MessageAdmin(admin.ModelAdmin):
         "timestamp",
         "routing_key",
         "status",
+        "is_demo",
     )
     list_filter = (
         "status",

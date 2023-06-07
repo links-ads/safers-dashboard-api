@@ -4,32 +4,76 @@ This API provides the backend for the safers-dashboard-app.
 
 - [safers-dashboard-api](#safers-dashboard-api)
   - [components](#components)
-    - [server](#server)
+    - [database](#database)
     - [auth](#auth)
     - [broker](#broker)
     - [worker](#worker)
     - [scheduler](#scheduler)
+    - [server](#server)
     - [storage](#storage)
-  - [configuration](#configuration)
-    - [superuser](#superuser)
-    - [environment variables](#environment-variables)
-    - [RMQ Keys](#rmq-keys)
-    - [Fixtures](#fixtures)
-    - [DataTypes](#datatypes)
+  - [Development](#development)
+    - [IDE Integration](#ide-integration)
+    - [Virtual Environment](#virtual-environment)
+    - [Local Settings](#local-settings)
+    - [Permissions](#permissions)
+    - [Testing](#testing)
+    - [Running](#running)
+      - [Configure the Superuser](#configure-the-superuser)
+      - [Configure the Site](#configure-the-site)
+      - [Configure DataTypes](#configure-datatypes)
+      - [Run the Services](#run-the-services)
   - [backups](#backups)
   - [localization](#localization)
   - [profiling](#profiling)
-  - [logging](#logging)
 
 ## components
 
-### server
+### database
 
-Django / Django-Rest-Framework
-
+**PostGIS** database is used for safers-dashboard-api.
 ### auth
 
-FusionAuth
+**FusionAuth** is used for authentication.  This can be run locally for development (but not much else will work in safers because all the other components need to authenticate against tokens genreated from the _deployed_ authentication server).
+
+When run locally, the local **PostGres** database, "safers-auth-db", must also be run.
+
+The local instance of **FusionAuth** is bootstrapped using **kickstart**.  Kickstart will only run if the default API Key is unset.  This means that even if you change the "auth/kickstart.json" file you will have to manually recreate the authentication database.  The following command will do this: `docker container ls | grep safers-auth | awk '{print $1}' | xargs docker rm --force`.
+
+When using the lcoal instance of **FusionAuth**, you must also populate "auth/.env" with the following environment variables:
+
+```
+FUSIONAUTH_ADMIN_EMAIL="admin@astrosat.net"
+FUSIONAUTH_ADMIN_PASSWORD="password" 
+FUSIONAUTH_API_KEY
+FUSIONAUTH_APPLICATION_ID
+FUSIONAUTH_CLIENT_ID
+FUSIONAUTH_CLIENT_SECRET
+FUSIONAUTH_TENANT_ID
+FUSIONAUTH_TENANT_NAME
+FUSIONAUTH_URL
+FUSIONAUTH_INTERNAL_URL
+FUSIONAUTH_EXTERNAL_URL
+FUSIONAUTH_REDIRECT_URL
+```
+
+(These should match the values in "server/.env" and "client/.env".)
+
+If bootstrapping succeeeds, you should see the following sort of output:
+
+```
+--------------------------------------------------------------------------------------
+----------------------------------- Kickstarting ? -----------------------------------
+--------------------------------------------------------------------------------------
+io.fusionauth.api.service.system.kickstart.KickstartRunner - Summary:
+- Created API key ending in [...HSnO]
+- Completed [POST] request to [/api/tenant/<tenant-id>]
+- Completed [POST] request to [/api/application/<applications-id>]
+- Completed [POST] request to [/api/user/registration/]
+```
+
+The **FusionAuth** Admin should be available at https://localhost:9011.
+
+As mentioned above, though, all of this is probably superfluous since very little of the dashboard will actually work if not authenticated using the _deployed_ instace of **FusionAuth**.
 
 ### broker
 
@@ -47,31 +91,49 @@ The managemnt comamnd `manage.py purge_camera_media` should be run periodically 
 
 In development this is done by a separate **scheduler** service that uses `cron` to run `./scheduler/scripts/purge_camera_media.development.sh`.  In deployment, this is done by **heroku scheduler** which runs `./scheduler/scripts/purge_camera_media.deployment.sh`.
 
+
+### server
+
+Django / Django-Rest-Framework
+
 ### storage
 
 AWS S3
 
-## configuration
+## Development
 
-### superuser
+### IDE Integration
 
-To setup the `admin` user so as to log into the `Django Admin Console` on http://localhost:8000/admin. Run the command to create the superuser `docker-compose exec server pipenv run ./server/manage.py createsuperuser`, this will create the user, but by default, the user will not be authorized, so you also need to run `docker-compose exec server pipenv run ./server/manage.py assign_groups --username admin --regex --groups admin`
-### environment variables
 
-several environment variables are required for **safers-dashboard-api**:
+A standard configuration for **VSCode** is included w/ this repository at ".vscode/settings.json" and ".editorconfig".  This ensures that linting, etc. works the same for all developers; It prevents local configuration discrepencies from cluttering up git diffs.
+
+A standard set of extensions should also be used in **VSCode** by all developers.  These can be loaded in one go by using the [Astrosat VSCode Extensions Repository](https://github.com/astrosat/astrosat-vscode-extensions).
+
+### Virtual Environment
+
+This project uses `pdm`.  Unlike traditional python package and dependency managers, it doesn't create a complete virutal environment - instead it uses the existing python interpreter and isolates python packages in a local directory.  Docker mounts that directory ("server/__pypackages__") into the container.
+
+One annoyance about this is that the binaries in the venv (like `yapf` for instance) will use the python interpreter from the container; VSCode, which runs on the local filesystem, cannot access that interpreter.  Therefore, those binaries should be re-installed using the global interpreter specified by pyenv.  This is not ideal, but it works.
+
+One other minor annoyance is that although `pdm` is build to support PEP-582 it will default to using standard virtual environments unless PEP-582 is enabled globally.  Rather than impose that restriction on developers, this repository includes an empty "server/__pypackages__" directory which will force `pdm` to use PEP-582. More information can be found here: [https://pdm.fming.dev/latest/usage/pep582/](https://pdm.fming.dev/latest/usage/pep582/)
+
+To add a package use `pdm add <package>` or `pdm add -dG <group> <package>`.
+
+### Local Settings
+
+The Django Server uses various environment variables as settings.  These are all automatically generated for CI and deployment.  But during development, users must provide them in "server/.env".  Here are some examples:
 
 * DJANGO_SECRET_KEY
-* DATABASE_URL="postgis://safers_user:safers_pwd@db:5432/safers_db"
-* ACCOUNT_CONFIRM_EMAIL_CLIENT_URL="http://localhost:3000/auth/confirm-email/{key}"
-* ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL="http://localhost:3000/auth/password/reset/{key}/{uid}"
-* CLIENT_HOST="http://localhost:3000"
-* FUSION_AUTH_API_KEY
-* FUSION_AUTH_CLIENT_ID
-* FUSION_AUTH_CLIENT_SECRET
-* FUSION_AUTH_TENANT_ID
-* FUSION_AUTH_TENANT_NAME
-* FUSION_AUTH_EXTERNAL_BASE_URL="https://auth.safers-project.cloud"
-* FUSION_AUTH_INTERNAL_BASE_URL="https://auth.safers-project.cloud"
+* DATABASE_URL="postgis://safers_user:safers_pwd@safers-db:5432/safers_db"
+* FUSIONAUTH_API_KEY
+* FUSIONAUTH_APPLICATION_ID
+* FUSIONAUTH_CLIENT_ID
+* FUSIONAUTH_CLIENT_SECRET
+* FUSIONAUTH_TENANT_ID
+* FUSIONAUTH_TENANT_NAME
+* FUSIONAUTH_URL="https://auth.safers-project.cloud"
+* FUSION_AUTH_EXTERNAL_URL="https://auth.safers-project.cloud"
+* FUSION_AUTH_INTERNAL_URL="https://auth.safers-project.cloud"
 * DJANGO_RMQ_TRANSPORT="amqp"
 * DJANGO_RMQ_HOST="bus.safers-project.cloud"
 * DJANGO_RMQ_PORT=5674
@@ -81,29 +143,58 @@ several environment variables are required for **safers-dashboard-api**:
 * DJANGO_RMQ_USERNAME
 * DJANGO_RMQ_PASSWORD
 * DJANGO_RMQ_APP_ID="dsh"
-* DJANGO_SENTRY_DSN
-* DJANGO_SENTRY_EVN
 
-### RMQ Keys
+### Permissions
 
-In addition, in order to ensure uniqueness among message ids, a `SiteProfile` should be configured.  This can be done in the Django Admin; simply ensure the profiles `code` is a unique string value.
+The server directory is mounted as a volume inside the docker container.  In order to facilitate this, though, the "app" user in the container must have the same user id and group id as the local user.  A ".env" file at the same level as the Dockerfile is used to store these values.  The following command can generate that ".env" file:
 
-### Fixtures
+```bash
+echo -e "RUN_AS_UID=$(id -u)\nRUN_AS_GID=$(id -g)"  >> .env
+```
 
-Finally, several fixtures are used to bootstrap the application:
-* ./server/safers/users/fixtures/roles_fixture.json
-* ./server/safers/users/fixtures/organizations_fixture.json
-* ./server/safers/data/fixtures/datatypes_fixtures.json
-* ./server/safers/aois/fixtures/aois_fixture.json
-* ./server/safers/cameras/fixtures/cameras_fixture.json
-* ./server/safers/chatbot/fixtures/chatbot_categories_fixture.json
+Failure to do this may result in permissions errors when Django tries to copy static or media files or when the local user tries to modify files in the virtual environment.
 
-these can all be added by running: `docker-compose exec server pipenv run ./server/manage.py configure`
 
-### DataTypes
+### Testing
+
+This project uses `pytest` rather than the built-in Django testing framework to test the server code.  This can be run locally via `pdm run test`.  This will provide terminal output detailing each test run and providing a stack trace for any failing test.  It will also produce a pretty HTML report for that test run.  Previous test runs are archived in "server/archive" and the report allows you to compare current test results with archived tests.
+
+The test are run in **github** whenever code is pushed.  Again, this will provide both terminal output in the workflow trace and an HTML report as an artifact.  The latter can be downloaded and viewed in the browser.  At this time, reports genreated in CI will not include any archived test results.
+
+
+### Running
+
+#### Configure the Superuser
+
+In order to interact with the Django Admin you must first create a superuser:
+
+`docker-compose exec safers-server pdm run ./manage.py createsuperuser`
+
+You will be prompted for an email and password.  It is recommended to use "admin@astrosat.net" and "password" during development.
+
+
+#### Configure the Site
+
+Every domain that a Django Project is deployed to is associated with a `Site` instance.  In **orbison** every `Site` has a `SiteProfile` associated with it.  
+
+It is a good idea to set the default site (the one that `settings.SITE_ID` references) to the development server by running `docker-compose exec orbison-server pdm run ./manage.py update_site --domain localhost:8000 --name DEVELOPMENT`.
+
+Additionally, in order to ensure uniqueness among message ids in RabbitMQ, the `SiteProfile` contains a `code` attribute.  This should be set in the Django Admin; just ensure the code is also registered with the deployed instance of **RabbitMQ**.
+
+#### Configure DataTypes
 
 In order to show both operational and on-demand Data Layers, a `DataType` must be registerd.  The current set of data_types is stored in a remote spreadsheet [[datamappingform_imp.xlsx](https://istitutoboella.sharepoint.com/:x:/r/sites/ProjectSAFERS/_layouts/15/Doc.aspx?sourcedoc=%7BCB97483F-5F2A-473A-B5D8-EA7DE982E5BF%7D&file=datamappingform_imp.xlsx&action=default&mobileredirect=true)].  The admin action "Import DataTypes from CSV" can take that content and import it into the database; Note this is a brittle process, so backing up the database beforehand is recommended.
+#### Run the Services
 
+safers-dashboard-api is run locally via docker-compose.  It is recommended, though not necessary, to run each service in a separate terminal pane so that each container's output is easily distinguished.
+
+Prior to running make sure that you have followed the instructions in [Local Settings](#local-settings) and [Permissions](#permissions).
+
+The following command will run a service: `docker-compose up <service-name>`
+
+Having run the server, if you need to interact with it via the termnial you may use the following command:  `docker-compose exec safers-server pdm run ./manage.py <command>`
+
+The server should be available in the browser at **[http://localhost:8000](http://localhost:8000)**.
 ## backups
 
 Periodic backups of the database and the media files are taken by the scheduler.  This utilises the "django-dbbackup" library.  
@@ -120,16 +211,5 @@ Localization is enabled in **safers-dashboard-app**.  This localizes text used i
 
 ## profiling
 
-Profiling is handled using cProfile & django-cprofile-middleware & snakeviz & silk.
+Profiling is handled using **silk*.  Request info can be monitored by going to "http://localhost:8000/silk".  All requests will provide high level timing information.  Actual profiling must be enabled on a per-view basis using the `silk_profile` decorator and/or context manager.
 
-- appending `&prof` to a URL will give a profile summary (in development only)
-- appending `&prof&download` to a URL will create a file called "view.prof" which can be inspected by running `snakeviz ./path/to/view.prof` outside of docker
-- db queries can be monitored by going to "http://localhost:8000/silk"
-
-Alternatively - b/c the above is a bit "unuser-friendly" - django-debug-toolbar is also enabled.  It is a bit limited, obviously, b/c of Django Rest Framework.  For GETs, usage is: `localhost:8000/api/<whatever>/?format=json&debug-toolbar`
-
-## logging
-
-In development, stream-based logging is enabled.
-
-In deployment, `sentry.io` is enabled.  This requires the environment variables `DJANGO_SENTRY_DSN` and `DJANGO_SENTRY_ENV` to be set.

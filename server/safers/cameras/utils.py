@@ -65,7 +65,7 @@ def process_messages(message_body, **kwargs):
                         CameraMediaType.IMAGE,
                     "timestamp":
                         message_body["timestamp"],
-                    "url":
+                    "remote_url":
                         message_body["link"],
                     "fire_classes":
                         fire_classes,
@@ -123,7 +123,7 @@ def process_messages(message_body, **kwargs):
                             "properties": {},
                             "geometry": json.loads(camera.geometry.json)
                         }],
-                        "media": [camera_media.url],
+                        "media": [camera_media.remote_url],
                         "message": message_body,
                     }
                 )

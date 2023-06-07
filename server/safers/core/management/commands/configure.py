@@ -66,20 +66,6 @@ class Command(BaseCommand):
             help="Whether or not to skip the DataType fixtures.",
         )
 
-        parser.add_argument(
-            "--skip-organizations",
-            dest="load_organizations",
-            action="store_false",
-            help="Whether or not to skip the users.Organization fixtures.",
-        )
-
-        parser.add_argument(
-            "--skip-roles",
-            dest="load_roles",
-            action="store_false",
-            help="Whether or not to skip the users.Role fixtures.",
-        )
-
     def handle(self, *args, **options):
 
         try:
@@ -124,18 +110,6 @@ class Command(BaseCommand):
                 load_fixture(
                     apps.get_app_config("data"),
                     "datatypes_fixture.json",
-                )
-
-            if options["load_organizations"]:
-                load_fixture(
-                    apps.get_app_config("users"),
-                    "organizations_fixture.json",
-                )
-
-            if options["load_roles"]:
-                load_fixture(
-                    apps.get_app_config("users"),
-                    "roles_fixture.json",
                 )
 
         except Exception as e:

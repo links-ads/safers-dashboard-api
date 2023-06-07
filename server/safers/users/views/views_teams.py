@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.users.authentication import ProxyAuthentication
+from safers.core.authentication import TokenAuthentication
 
 logger = logging.getLogger(__file__)
 
@@ -49,10 +49,10 @@ def teams_view(request):
     if user.is_remote and user.is_professional:
         response = requests.get(
             urljoin(
-                settings.SAFERS_GATEWAY_API_URL,
+                settings.SAFERS_GATEWAY_URL,
                 GET_TEAMS_URL_PATH,
             ),
-            auth=ProxyAuthentication(user),
+            auth=TokenAuthentication(user.auth),
             params={"MaxResultCount": 1000}
         )
         response.raise_for_status()

@@ -1,0 +1,99 @@
+[
+  {
+    "model": "cameras.camera",
+    "fields": {
+      "camera_id": "TEST_MUSSELBURGH_000",
+      "is_active": true,
+      "name": "TEST_MUSSELBURGH",
+      "model": "reolink RLC-823A",
+      "owner": "TEST",
+      "nation": "United Kingdom",
+      "altitude": 10,
+      "direction": 0.0,
+      "geometry": "SRID=4326;POINT (-3.054029039054466 55.941947850798876)",
+      "last_update": null
+    }
+  },
+  {
+    "model": "rmq.message",
+    "fields": {
+      "name": "sample camera event: fire detected",
+      "is_demo": true,
+      "timestamp": "2023-05-29T18:43:02",
+      "status": "PENDING",
+      "routing_key": "event.camera.test",
+      "body": {
+        "link": "https://upload.wikimedia.org/wikipedia/commons/0/05/Burnout_ops_on_Mangum_Fire_McCall_Smokejumpers.jpg",
+        "camera": {
+          "ID": "TEST_MUSSELBURGH_000",
+          "name": "TEST_MUSSELBURGH",
+          "type": "PTZ",
+          "model": "reolink RLC-823A",
+          "owner": "TEST",
+          "altitude": 10,
+          "latitude": 55.9419478,
+          "longitude": -3.054029039054466,
+          "cam_direction": 0
+        },
+        "detection": {
+          "fire": true,
+          "smoke": true,
+          "not_available": false
+        },
+        "timestamp": "2023-05-29T12:00:00.000+0100",
+        "class_of_fire": {
+          "class_1": false,
+          "class_2": false,
+          "class_3": false,
+          "not_available": true
+        },
+        "fire_location": {
+          "distance": null,
+          "latitude": null,
+          "direction": null,
+          "longitude": null,
+          "not_available": false
+        }
+      }
+    }
+  },
+  {
+    "model": "rmq.message",
+    "fields": {
+      "name": "sample notification",
+      "is_demo": true,
+      "timestamp": "2023-05-30T12:00:00",
+      "status": "PENDING",
+      "routing_key": "notification.sem.astro",
+      "body": {
+        "code": [],
+        "info": [
+          {
+            "area": [
+              {
+                "polygon": "55.97502246550161, -3.2700743257294107 55.92558311089033, -3.327100431359213 55.88949377257535, -3.2627161185515376 55.892588460480766, -3.1633803216499246 55.921460314752295, -3.0401303514206006 55.941039690848555, -3.056686317570467 55.96163887332432, -3.137626596528065 55.98737244208729, -3.1670594252394437 55.97502246550161, -3.2700743257294107 55.97502246550161, -3.2700743257294107",
+                "areaDesc": "areaDesc"
+              }
+            ],
+            "event": "Probability of fire",
+            "expires": "2023-05-31T12:00:00+01:00",
+            "category": "Met",
+            "language": "en",
+            "description": "Estimated alert level YELLOW.\r\nThe following prescriptions apply:\r\nDo not throw away cigarette butts or matches that are still lit.\r\nDo not light fires in the woods, except in designated areas.\r\nDo not park our cars over grass or dry leaves.\r\nDo not abandon litter in the woods.\r\nDo not burn stubble or agricultural residues near the forest or uncultivated areas.\r\nIn case of a forest fire, we immediately notify the appropriate authorities at 112.\r\nDo not stop to watch the fire along the road or in areas above the fire or downwind.\r\nLet's facilitate the intervention of emergency vehicles.\r\nIf we are in the fire, let's secure an escape route to the already burned area.\r\nDo not stop the vehicle in open areas free of vegetation with lights on, close windows and vents.\r\nAll citizens can defend the territory in the event of fire by promptly reporting the first signs of a possible forest fire to the single emergency number 112.\n We suggest to create a communication to citizens in the reference area: 123"
+          }
+        ],
+        "sent": "2023-05-30T12:00:00+01:00",
+        "scope": "Restricted",
+        "areaID": "123",
+        "region": "United Kingdom",
+        "sender": "DSS",
+        "source": "DSS",
+        "status": "Actual",
+        "msgType": "Notification",
+        "identifier": "identifier",
+        "restriction": "Citizen",
+        "organizationIds": []
+      }
+    }
+  }
+]

@@ -18,14 +18,17 @@ class CameraMediaSerializer(serializers.ModelSerializer):
             "direction",
             "distance",
             "geometry",
-            "url",
+            "remote_url",
             "media_url",
+            "thumbnail_url",
             "favorite",  # note "favorite" is an annotated field
         )
         extra_kwargs = {
             "media_url": {
-                "source": "media",
-                "read_only": True,
+                "source": "media", "read_only": True
+            },
+            "thumbnail_url": {
+                "source": "thumbnail", "read_only": True
             }
         }
 
@@ -52,4 +55,6 @@ class CameraMediaSerializer(serializers.ModelSerializer):
     #     precision=CameraMedia.PRECISION, allow_null=True, required=False
     # )
 
-    favorite = serializers.NullBooleanField(read_only=True, required=False)
+    favorite = serializers.BooleanField(
+        read_only=True, required=False, allow_null=True
+    )
