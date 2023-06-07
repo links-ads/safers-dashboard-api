@@ -169,7 +169,15 @@ class AuthenticateView(GenericAPIView):
         )
 
         # update user as needed...
-        if user.status == UserStatus.PENDING:
+        if user.status == UserStatus.LEGACY:
+            # just a one-off for legacy (pre-refactor) users
+            user.profile = {}
+            user.synchronize_profile(
+                auth_token_data["access_token"],
+                ProfileDirection.REMOTE_TO_LOCAL
+            )
+            user.status = UserStatus.COMPLETED
+        elif user.status == UserStatus.PENDING:
             if created:
                 # user was not yet created in the dashboard...
                 # (therefore get remote details and save locally)
