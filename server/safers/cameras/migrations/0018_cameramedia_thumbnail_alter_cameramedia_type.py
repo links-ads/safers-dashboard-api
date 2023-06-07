@@ -7,7 +7,7 @@ import safers.cameras.models.models_cameramedia
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cameras', '0017_rename_cameramedia_file_url'),
+        ('cameras', '0017_rename_file_cameramedia_media'),
     ]
 
     operations = [
@@ -29,5 +29,10 @@ class Migration(migrations.Migration):
                 help_text='What type of media is this?',
                 max_length=64
             ),
+        ),
+        migrations.RenameField(
+            model_name='cameramedia',
+            old_name='url',
+            new_name='remote_url',
         ),
     ]
