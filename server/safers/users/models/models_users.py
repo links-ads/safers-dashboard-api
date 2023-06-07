@@ -46,6 +46,7 @@ class ProfileDirection(str, Enum):
 class UserStatus(models.TextChoices):
     PENDING = "PENDING", _("Pending")
     COMPLETED = "COMPLETED", _("Completed")
+    LEGACY = "LEGACY", _("Legacy")
 
 
 ########################
