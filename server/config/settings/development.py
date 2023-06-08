@@ -25,8 +25,14 @@ CORS_ORIGIN_ALLOW_ALL = True
 # static & media files #
 ########################
 
-STATICFILES_STORAGE = "safers.core.storage.LocalStaticStorage"
-DEFAULT_FILE_STORAGE = "safers.core.storage.LocalMediaStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "safers.core.storage.LocalMediaStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "safers.core.storage.LocalStaticStorage",
+    }
+}
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "_static"
