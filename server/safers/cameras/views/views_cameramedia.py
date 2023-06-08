@@ -180,13 +180,12 @@ class CameraMediaViewSet(
         """
         ensures that favorite camera_medias are at the start of the qs
         """
+        qs = CameraMedia.objects.active(
+        ).select_related("camera").prefetch_related("tags", "fire_classes")
+
         user = self.request.user
         favorite_camera_meda_ids = user.favorite_camera_medias.values_list(
             "id", flat=True
-        )
-
-        qs = CameraMedia.objects.active().prefetch_related(
-            "tags", "fire_classes"
         )
         qs = qs.annotate(
             favorite=ExpressionWrapper(
