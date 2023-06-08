@@ -29,8 +29,14 @@ INSTALLED_APPS += []
 # Using Bucketeer to allow Heroku to manage storage in AWS S3.  PublicMediaS3Storage is
 # used by default; I can also specify PrivateMediaS3Storage on a field-by-field basis.
 
-STATICFILES_STORAGE = "safers.core.storage.StaticS3Storage"
-DEFAULT_FILE_STORAGE = "safers.core.storage.PublicMediaS3Storage"
+STORAGES = {
+    "default": {
+        "BACKEND": "safers.core.storage.PublicMediaS3Storage"
+    },
+    "staticfiles": {
+        "BACKEND": "safers.core.storage.StaticS3Storage"
+    },
+}
 
 AWS_ACCESS_KEY_ID = env("BUCKETEER_AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = env("BUCKETEER_AWS_SECRET_ACCESS_KEY")
