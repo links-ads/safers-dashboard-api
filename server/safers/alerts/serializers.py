@@ -115,5 +115,6 @@ class AlertViewSetSerializer(AlertSerializer):
     favorite = serializers.SerializerMethodField(method_name="is_favorite")
 
     def is_favorite(self, obj):
-        user = self.context["request"].user
-        return obj in user.favorite_alerts.all()
+        # a bit of indirection here to prevent multiple db hits
+        favorite_alert_ids = self.context.get("favorite_alert_ids", [])
+        return obj.id in favorite_alert_ids

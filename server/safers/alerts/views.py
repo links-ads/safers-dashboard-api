@@ -210,6 +210,15 @@ class AlertViewSet(
     permission_classes = [IsAuthenticated, IsRemote]
     serializer_class = AlertViewSetSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # run this query once in the view instead of N times in the serializer
+        context["favorite_alert_ids"
+               ] = self.request.user.favorite_alerts.values_list(
+                   "id", flat=True
+               )
+        return context
+
     def get_queryset(self):
         """
         ensures that favorite alerts are at the start of the qs
@@ -217,7 +226,8 @@ class AlertViewSet(
         user = self.request.user
         favorite_alert_ids = user.favorite_alerts.values_list("id", flat=True)
 
-        qs = Alert.objects.all().prefetch_related("geometries")
+        qs = Alert.objects.all().select_related("country"
+                                               ).prefetch_related("geometries")
         qs = qs.annotate(
             favorite=ExpressionWrapper(
                 Q(id__in=favorite_alert_ids),
