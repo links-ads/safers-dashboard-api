@@ -20,6 +20,7 @@ class EventAdmin(gis_admin.GeoModelAdmin):
         "geometry_collection",
         "bounding_box",
         "center",
+        "country",
     )
     filter_horizontal = ("alerts", )
     list_display = (
