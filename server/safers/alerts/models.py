@@ -191,7 +191,7 @@ class Alert(models.Model):
     bounding_box = gis_models.PolygonField(blank=True, null=True)
     center = gis_models.PointField(blank=True, null=True)
     country = models.ForeignKey(
-        Country, blank=True, null=True, on_delete=models.CASCADE
+        Country, blank=True, null=True, on_delete=models.SET_NULL
     )
 
     @property
@@ -240,6 +240,7 @@ class Alert(models.Model):
         self.bounding_box = GeometryCollection(
             *geometries_geometries.values_list("bounding_box", flat=True)
         ).envelope
+
         self.country = Country.objects.filter(
             # geometry__intersects=self.geometry_collection  # TODO: if geometry_collection is malformed can potentially get "GEOSIntersects: TopologyException: side location conflict"
             geometry__intersects=self.center
