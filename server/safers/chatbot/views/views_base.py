@@ -9,6 +9,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 
 from safers.core.authentication import TokenAuthentication
+from safers.core.clients import REQUEST_TIMEOUT
 
 
 def parse_none(value):
@@ -98,7 +99,7 @@ class ChatbotView(views.APIView):
                 proxy_url,
                 auth=TokenAuthentication(self.request.auth),
                 params=proxy_params,
-                timeout=4,  # 4 seconds as per https://requests.readthedocs.io/en/stable/user/advanced/#timeouts
+                timeout=REQUEST_TIMEOUT,
             )  # yapf: disable
             response.raise_for_status()
         except Exception as e:
