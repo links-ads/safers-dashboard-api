@@ -3,7 +3,9 @@ from urllib.parse import urljoin, urlencode
 
 from django.conf import settings
 
-REQUEST_TIMEOUT = 4
+REQUEST_TIMEOUT = (
+    4, 60
+)  # specifying both connect timeout and read timeout (as per https://requests.readthedocs.io/en/latest/user/advanced/#timeouts)
 
 requests_session = requests.Session()
 
