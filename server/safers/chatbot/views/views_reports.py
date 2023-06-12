@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.users.authentication import ProxyAuthentication
+from safers.core.authentication import TokenAuthentication
 
 from safers.chatbot.models import Report, ReportCategory
 from safers.chatbot.serializers import ReportSerializer, ReportViewSerializer
@@ -90,7 +90,7 @@ class ReportListView(ReportView):
         proxy_data = self.get_proxy_list_data(
             request,
             proxy_url=urljoin(
-                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_LIST_PATH
+                settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_LIST_PATH
             ),
         )
 
@@ -168,10 +168,10 @@ class ReportDetailView(ReportView):
         }
         try:
             response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_DETAIL_PATH),
-                auth=ProxyAuthentication(request.user),
+                urljoin(settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_DETAIL_PATH),
+                auth=TokenAuthentication(request.auth),
                 params=proxy_params,
-                timeout=4,  # 4 seconds as per https://requests.readthedocs.io/en/stable/user/advanced/#timeouts
+                timeout=4,
             )  # yapf: disable
             response.raise_for_status()
             proxy_data = response.json()
@@ -248,9 +248,11 @@ def report_categories_view(request):
     """
     Returns the list of possible Report categories.
     """
-    report_categories_groups = ReportCategory.objects.order_by("group").values_list(
-        "group", flat=True
-    ).distinct()
+    report_categories_groups = ReportCategory.objects.order_by("group"
+                                                              ).values_list(
+                                                                  "group",
+                                                                  flat=True
+                                                              ).distinct()
     return Response(report_categories_groups, status=status.HTTP_200_OK)
 
 

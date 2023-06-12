@@ -1,7 +1,5 @@
-import requests
 from collections import OrderedDict
-from datetime import datetime, timedelta
-from itertools import repeat
+from datetime import datetime
 from urllib.parse import quote_plus, urlencode, urljoin
 
 from django.conf import settings
@@ -11,139 +9,113 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 
-from safers.core.models import SafersSettings, GeoserverStandards
+from safers.core.authentication import TokenAuthentication
+from safers.core.clients import GATEWAY_CLIENT
 from safers.core.utils import chunk
 
-from safers.users.authentication import ProxyAuthentication
-from safers.users.exceptions import AuthenticationException
-from safers.users.permissions import IsRemote
-
 from safers.data.models import DataType
-from safers.data.serializers import DataLayerViewSerializer
-from safers.data.utils import extent_to_scaled_resolution
+from safers.data.serializers import LayerViewSerializer
 
 ###########
 # swagger #
 ###########
 
-_data_layer_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "id": "1",
-        "text": "Weather forecast",
-        "domain": None,
-        "source": None,
-        "info": "whatever",
-        "info_url": None,
-        "children": [
-          {
-            "id": "1.1",
-            "text": "Short term",
-            "domain": None,
-            "source": None,
-            "info": "whatever",
-            "info_url": None,
-            "children": [
-              {
-                "id": "1.1.1",
-                "text": "Temperature at 2m",
-                "units": "°C",
-                "domain": "Weather",
-                "source": "RISC",
-                "info": "whatever",
-                "info_url": None,
-                "children": [
-                  {
-                    "datatype_id": "31101",
-                    "id": "1.1.1.1",
-                    "text": "2022-04-28T12:15:20Z",
-                    "title": "Temperature at 2m",
-                    "units": "°C",
-                    "feature_string": "value of pixel: {{t2m}} °C",
-                    "info": None,
-                    "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=text",
-                    "metadata_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=json",
-                    "legend_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetLegendGraphic&srs=EPSG%3A4326&width=256&height=256&format=image%2Fpng",
-                    "pixel_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GetFeatureInfo...",
-                    "timeseries_urls": [
-                      "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
-                      "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
-                    ],
-                    "urls": {
-                      "2022-04-28T12:15:20Z": ["https://geoserver-test1.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T12%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng" "https://geoserver-test2.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T12%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng"],
-                      "2022-04-28T13:15:20Z": ["https://geoserver-test1.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T13%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng", "https://geoserver-test2.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T13%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng"],
-                      "2022-04-28T14:15:20Z": ["https://geoserver-test1.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T14%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng", "https://geoserver-test2.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T14%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng"],
-                    }
+_operational_layer_view_response = OpenApiResponse(
+    OpenApiTypes.ANY,
+    examples=[
+        OpenApiExample(
+            "valid response",
+            [
+                {
+                    "id": "1",
+                    "text": "Weather forecast",
+                    "domain": None,
+                    "source": None,
+                    "info": "whatever",
+                    "info_url": None,
+                    "children": [
+                        {
+                            "id": "1.1",
+                            "text": "Short term",
+                            "domain": None,
+                            "source": None,
+                            "info": "whatever",
+                            "info_url": None,
+                            "children": [
+                                {
+                                    "id": "1.1.1",
+                                    "text": "Temperature at 2m",
+                                    "units": "°C",
+                                    "domain": "Weather",
+                                    "source": "RISC",
+                                    "info": "whatever",
+                                    "info_url": None,
+                                    "children": [
+                                        {
+                                            "datatype_id": "31101",
+                                            "id": "1.1.1.1",
+                                            "text": "2022-04-28T12:15:20Z",
+                                            "title": "Temperature at 2m",
+                                            "units": "°C",
+                                            "feature_string": "value of pixel: {{t2m}} °C",
+                                            "info": None,
+                                            "info_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=text",
+                                            "metadata_url": "http://localhost:8000/api/data/layers/metadata/02bae14e-c24a-4264-92c0-2cfbf7aa65f5?metadata_format=json",
+                                            "legend_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMS&request=GetLegendGraphic&srs=EPSG%3A4326&width=256&height=256&format=image%2Fpng",
+                                            "pixel_url": "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GetFeatureInfo...",
+                                            "timeseries_urls": [
+                                                "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
+                                                "https://geoserver-test.safers-project.cloud/geoserver/ermes/wms?request=GeTimeSeries...",
+                                            ],
+                                            "urls": {
+                                                "2022-04-28T12:15:20Z": [
+                                                    "https://geoserver-test1.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T12%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng"
+                                                    "https://geoserver-test2.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T12%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng"
+                                                ],
+                                                "2022-04-28T13:15:20Z": [
+                                                    "https://geoserver-test1.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T13%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng",
+                                                    "https://geoserver-test2.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T13%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng"
+                                                ],
+                                                "2022-04-28T14:15:20Z": [
+                                                    "https://geoserver-test1.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T14%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng",
+                                                    "https://geoserver-test2.safers-project.cloud/geoserver/gwc/service/wmts?time=2022-04-28T14%3A15%3A20Z&layer=ermes%3A33101_t2m_33001_b7aa380a-20fc-41d2-bfbc-a6ca73310f4d&service=WMTS&request=GetTile&srs=EPSG%3A900913&tilematrixset=EPSG%3A900913&tilematrix=EPSG%3A900913%3A{{z}}&tilecol={{x}}&tilerole={{y}}&format=image%2Fpng"
+                                                ],
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
                 }
-              ]
-            }
-          ]
-        }
-      ]
-    }
+            ]
+        )
+    ]
 )  # yapf: disable
 
-
-_data_layer_list_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=_data_layer_schema
-)  # yapf: disable
-
-
-_data_layer_domains_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-)  # yapf: disable
-
+_layer_domains_schema = OpenApiResponse(
+    OpenApiTypes.ANY, examples=[OpenApiExample("valid response", [
+        "string",
+    ])]
+)
 
 #########
 # views #
 #########
 
 
-class DataLayerView(views.APIView):
+class OperationalLayerView(views.APIView):
 
-    permission_classes = [IsAuthenticated, IsRemote]
-    serializer_class = DataLayerViewSerializer
+    permission_classes = [IsAuthenticated]
+    serializer_class = LayerViewSerializer
 
-    def get_serializer_context(self):
-        """
-        Extra context provided to the serializer class.
-        (If this were some type of ModelView, this fn would be built-in.)
-        """
-
-        return {
-            'request': self.request, 'format': self.format_kwarg, 'view': self
+    @extend_schema(
+        request=None,
+        responses={
+            status.HTTP_200_OK: _operational_layer_view_response,
         }
-
-    ## REMOVED TIMESTAMP/BBOX FILTERING AS PER https://astrosat.atlassian.net/browse/SAFB-255
-    ##
-    ## def update_default_data(self, data):
-    ##
-    ##     if data.pop("default_bbox") and "bbox" not in data:
-    ##         user = self.request.user
-    ##         default_bbox = user.default_aoi.geometry.extent
-    ##         data["bbox"] = ",".join(map(str, default_bbox))
-    ##
-    ##     default_date = data.pop("default_date")
-    ##     if default_date and "start" not in data:
-    ##         data["start"] = timezone.now() - timedelta(days=3)
-    ##     if default_date and "end" not in data:
-    ##         data["end"] = timezone.now()
-    ##
-    ##     # as per https://stackoverflow.com/a/42777551/1060339, DateTimeField doesn't
-    ##     # automatically output "Z" for UTC timezone; so put it in explicitly
-    ##     if "start" in data:
-    ##         data["start"] = data["start"].strftime('%Y-%m-%dT%H:%M:%SZ')
-    ##     if "end" in data:
-    ##         data["end"] = data["end"].strftime('%Y-%m-%dT%H:%M:%SZ')
-    ##
-    ##     return data
-
-    @swagger_auto_schema(
-        query_serializer=DataLayerViewSerializer,
-        responses={status.HTTP_200_OK: _data_layer_list_schema}
     )
     def get(self, request, *args, **kwargs):
         """
@@ -154,7 +126,6 @@ class DataLayerView(views.APIView):
         DATETIME_INPUT_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
         DATETIME_OUTPUT_FORMAT = "%Y-%m-%dT%H:%M:%S.000Z"
 
-        GATEWAY_URL_PATH = "/api/services/app/Layers/GetLayers"
         GEOSERVER_WMS_URL_PATH = "/geoserver/ermes/wms"
         GEOSERVER_WMTS_URL_PATH = "/geoserver/gwc/service/wmts"
         METADATA_URL_PATH = "/api/data/layers/metadata"
@@ -164,82 +135,37 @@ class DataLayerView(views.APIView):
 
         MAX_GEOSERVER_TIMES = 100  # the maximum timestamps that can be passed to GetTimeSeries at once
 
-        safers_settings = SafersSettings.load()
-        max_resolution = safers_settings.map_request_resolution
-        # if safers_settings.restrict_data_to_aoi:
-        #     width, height = extent_to_scaled_resolution(request.user.default_aoi.geometry.extent, max_resolution)
-        # else:
-        #     width, height = repeat(max_resolution, 2)
-        width, height = repeat(max_resolution, 2)
-
         serializer = self.serializer_class(
             data=request.query_params,
-            context=self.get_serializer_context(),
+            context={"include_map_requests": False},
         )
         serializer.is_valid(raise_exception=True)
 
-        ## REMOVED TIMESTAMP/BBOX FILTERING AS PER https://astrosat.atlassian.net/browse/SAFB-255
-        ## updated_data = self.update_default_data(serializer.validated_data)
+        operational_layers_data = GATEWAY_CLIENT.get_layers(
+            auth=TokenAuthentication(request.auth),
+            params=serializer.validated_data
+        )
 
-        proxy_params = {
-            serializer.ProxyFieldMapping[k]: v
-            for k, v in serializer.validated_data.items()
-            if k in serializer.ProxyFieldMapping
-        }  # yapf: disable
-
-        try:
-            response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, GATEWAY_URL_PATH),
-                auth=ProxyAuthentication(request.user),
-                params=proxy_params,
-            )
-            response.raise_for_status()
-        except Exception as e:
-            raise AuthenticationException(e)
-
-        if safers_settings.geoserver_standard == GeoserverStandards.WMS:
-            geoserver_layer_query_params = urlencode(
-                {
-                    "time": "{time}",
-                    "layers": "{name}",
-                    "service": "WMS",
-                    "request": "GetMap",
-                    "srs": WMS_CRS,
-                    "version": "1.1.0",
-                    "bbox": "{{bbox}}",
-                    "transparent": True,
-                    "width": width,  # max_resolution,
-                    "height": height,  # max_resolution,
-                    "format": "image/png",
-                },
-                safe="{}",
-            )
-            geoserver_layer_urls = [
-                f"{urljoin(geoserver_api_url, GEOSERVER_WMS_URL_PATH)}?{geoserver_layer_query_params}"
-                for geoserver_api_url in settings.SAFERS_GEOSERVER_API_URLS
-            ]
-
-        elif safers_settings.geoserver_standard == GeoserverStandards.WMTS:
-            geoserver_layer_query_params = urlencode(
-                {
-                    "time": "{time}",
-                    "layer": "{name}",
-                    "service": "WMTS",
-                    "request": "GetTile",
-                    "version": "1.0.0",
-                    "transparent": True,
-                    "tilematrixset": WMTS_CRS,
-                    "tilematrix": WMTS_CRS + ":{{z}}",
-                    "tilecol": "{{x}}",
-                    "tilerow": "{{y}}",
-                    "format": "image/png",
-                },
-                safe="{}",
-            )
-            geoserver_layer_urls = [
-                f"{urljoin(geoserver_api_url, GEOSERVER_WMTS_URL_PATH)}?{geoserver_layer_query_params}"
-                for geoserver_api_url in settings.SAFERS_GEOSERVER_API_URLS
-            ]
+        geoserver_layer_query_params = urlencode(
+            {
+                "time": "{time}",
+                "layer": "{name}",
+                "service": "WMTS",
+                "request": "GetTile",
+                "version": "1.0.0",
+                "transparent": True,
+                "tilematrixset": WMTS_CRS,
+                "tilematrix": WMTS_CRS + ":{{z}}",
+                "tilecol": "{{x}}",
+                "tilerow": "{{y}}",
+                "format": "image/png",
+            },
+            safe="{}",
+        )
+        geoserver_layer_urls = [
+            f"{urljoin(geoserver_api_url, GEOSERVER_WMTS_URL_PATH)}?{geoserver_layer_query_params}"
+            for geoserver_api_url in settings.SAFERS_GEOSERVER_URLS
+        ]
 
         geoserver_legend_query_params = urlencode(
             {
@@ -254,7 +180,7 @@ class DataLayerView(views.APIView):
             },
             safe="{}",
         )
-        geoserver_legend_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_WMS_URL_PATH)}?{geoserver_legend_query_params}"
+        geoserver_legend_url = f"{urljoin(settings.SAFERS_GEOSERVER_URL, GEOSERVER_WMS_URL_PATH)}?{geoserver_legend_query_params}"
 
         geoserver_pixel_query_params = urlencode(
             {
@@ -273,7 +199,7 @@ class DataLayerView(views.APIView):
             },
             safe="{}",
         )
-        geoserver_pixel_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_WMS_URL_PATH)}?{geoserver_pixel_query_params}"
+        geoserver_pixel_url = f"{urljoin(settings.SAFERS_GEOSERVER_URL, GEOSERVER_WMS_URL_PATH)}?{geoserver_pixel_query_params}"
 
         geoserver_timeseries_query_params = urlencode(
             # this seems unintuitive, but the GetTimeseries Geoserver API uses the bbox (not x & y)
@@ -284,8 +210,7 @@ class DataLayerView(views.APIView):
                 "version": "1.1.0",
                 "request": "GetTimeSeries",
                 "srs": WMS_CRS,
-                "format":
-                    "text/csv",  # "image/png" or "image/jpg" or "text/csv"
+                "format": "text/csv",
                 "styles": "raw",
                 "time": "{time}",
                 "layers": "{name}",
@@ -298,7 +223,7 @@ class DataLayerView(views.APIView):
             },
             safe="{}",
         )
-        geoserver_timeseries_url = f"{urljoin(settings.SAFERS_GEOSERVER_API_URL, GEOSERVER_WMS_URL_PATH)}?{geoserver_timeseries_query_params}"
+        geoserver_timeseries_url = f"{urljoin(settings.SAFERS_GEOSERVER_URL, GEOSERVER_WMS_URL_PATH)}?{geoserver_timeseries_query_params}"
 
         metadata_url = f"{self.request.build_absolute_uri(METADATA_URL_PATH)}/{{metadata_id}}?metadata_format={{metadata_format}}"
 
@@ -314,8 +239,6 @@ class DataLayerView(views.APIView):
             data_type_sources[data_type_key] = data_type.source
             data_type_domains[data_type_key] = data_type.domain
             data_type_feature_strings[data_type_key] = data_type.feature_string
-
-        content = response.json()
 
         data = [
           {
@@ -403,20 +326,22 @@ class DataLayerView(views.APIView):
               }
               for j, sub_group in enumerate(group.get("subGroups") or [], start=1)
             ]
-          } for i, group in enumerate(content.get("layerGroups") or [], start=1)
+          } for i, group in enumerate(operational_layers_data.get("layerGroups") or [], start=1)
         ]  # yapf: disable
 
         return Response(data)
 
 
-@swagger_auto_schema(
-    responses={status.HTTP_200_OK: _data_layer_domains_schema}, method="get"
+@extend_schema(
+    request=None, responses={
+        status.HTTP_200_OK: _layer_domains_schema,
+    }
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
-def data_layer_domains_view(request):
+def operational_layer_domains_view(request):
     """
-    Returns the list of possible DataLayer domains.
+    Returns the list of possible OperationalLayer domains.
     """
     data_type_domains = DataType.objects.operational().only("domain").exclude(
         domain__isnull=True
@@ -424,161 +349,18 @@ def data_layer_domains_view(request):
     return Response(data_type_domains, status=status.HTTP_200_OK)
 
 
-"""
-SAMPLE PROXY DATA SHAPE:
-{
-  "layerGroups": [
-    {
-      "groupKey": "weather forecast",
-      "group": "Weather forecast",
-      "subGroups": [
-        {
-          "subGroupKey": "short term",
-          "subGroup": "Short term",
-          "layers": [
-            {
-              "dataTypeId": 33101,
-              "group": "Weather forecast",
-              "groupKey": "weather forecast",
-              "subGroup": "Short term",
-              "subGroupKey": "short term",
-              "name": "Temperature at 2m",
-              "partnerName": "FMI",
-              "type": "Forecast",
-              "frequency": "H6",
-              "details": [
-                {
-                  "name": "ermes:33101_t2m_33001_78a8a797-fb5c-4b40-9f12-88a64fffc616",
-                  "timestamps": [
-                    "2022-04-05T01:00:00Z",
-                    "2022-04-05T02:00:00Z",
-                  ],
-                  "created_At": "2022-04-05T07:10:30Z",
-                  "request_Code": null,
-                  "mapRequestCode": null,
-                  "creator": null
-                }  
-              ]
-            },
-            {
-              "dataTypeId": 35007,
-              "group": "Environment",
-              "groupKey": "environment",
-              "subGroup": "Forecast",
-              "subGroupKey": "forecast",
-              "name": "Fire perimeter simulation as isochrones maps",
-              "partnerName": "CIMA",
-              "type": "Forecast",
-              "frequency": "OnDemand",
-              "details": [
-                {
-                  "name": "ermes:35007_85f6e495-c258-437d-a447-190742071807",
-                  "timestamps": [
-                    "2021-12-12T16:00:00"
-                  ],
-                  "created_At": "2022-03-10T12:14:43Z",
-                  "request_Code": null,
-                  "mapRequestCode": null,
-                  "creator": null
-                }
-              ]
-            },
-            {
-              "dataTypeId": 35008,
-              "group": "Environment",
-              "groupKey": "environment",
-              "subGroup": "Forecast",
-              "subGroupKey": "forecast",
-              "name": "Mean fireline intensity",
-              "partnerName": "CIMA",
-              "type": "Forecast",
-              "frequency": "OnDemand",
-              "details": [
-                {
-                  "name": "ermes:35008_efc92e30-3333-408e-83bb-fcc43f6b3280",
-                  "timestamps": [
-                    "2021-12-12T16:00:00"
-                  ],
-                  "created_At": "2022-03-10T12:14:47Z",
-                  "request_Code": null,
-                  "mapRequestCode": null,
-                  "creator": null
-                }
-              ]
-            },
-            {
-              "dataTypeId": 35009,
-              "group": "Environment",
-              "groupKey": "environment",
-              "subGroup": "Forecast",
-              "subGroupKey": "forecast",
-              "name": "Max fireline intensity",
-              "partnerName": "CIMA",
-              "type": "Forecast",
-              "frequency": "OnDemand",
-              "details": [
-                {
-                  "name": "ermes:35009_67576ad9-95c8-4736-9f28-cf4c13bc11bd",
-                  "timestamps": [
-                    "2021-12-12T16:00:00"
-                  ],
-                  "created_At": "2022-03-10T12:14:49Z",
-                  "request_Code": null,
-                  "mapRequestCode": null,
-                  "creator": null
-                }
-              ]
-            },
-            {
-              "dataTypeId": 35010,
-              "group": "Environment",
-              "groupKey": "environment",
-              "subGroup": "Forecast",
-              "subGroupKey": "forecast",
-              "name": "Mean rate of spread",
-              "partnerName": "CIMA",
-              "type": "Forecast",
-              "frequency": "OnDemand",
-              "details": [
-                {
-                  "name": "ermes:35010_ae63de06-9161-4f9e-bcb1-1e1ebb215688",
-                  "timestamps": [
-                    "2021-12-12T16:00:00"
-                  ],
-                  "created_At": "2022-03-10T12:14:44Z",
-                  "request_Code": null,
-                  "mapRequestCode": null,
-                  "creator": null
-                }
-              ]
-            },
-            {
-              "dataTypeId": 35011,
-              "group": "Environment",
-              "groupKey": "environment",
-              "subGroup": "Forecast",
-              "subGroupKey": "forecast",
-              "name": "Max rate of spread",
-              "partnerName": "CIMA",
-              "type": "Forecast",
-              "frequency": "OnDemand",
-              "details": [
-                {
-                  "name": "ermes:35011_42dcea6e-d4cd-4ba0-be9f-e79d576c6f82",
-                  "timestamps": [
-                    "2021-12-12T16:00:00"
-                  ],
-                  "created_At": "2022-03-10T12:14:46Z",
-                  "request_Code": null,
-                  "mapRequestCode": null,
-                  "creator": null
-                }
-              ]
-            }
-          ]
-        }
-      ]
+@extend_schema(
+    request=None, responses={
+        status.HTTP_200_OK: _layer_domains_schema,
     }
-  ]
-}
-"""
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def on_demand_layer_domains_view(request):
+    """
+    Returns the list of possible OnDemandLayer domains.
+    """
+    data_type_domains = DataType.objects.on_demand().only("domain").exclude(
+        domain__isnull=True
+    ).order_by("domain").values_list("domain", flat=True).distinct()
+    return Response(data_type_domains, status=status.HTTP_200_OK)

@@ -1,0 +1,71 @@
+{
+  "variables": {
+    "apiKey": "#{ENV.FUSIONAUTH_API_KEY}",
+    "adminEmail": "#{ENV.FUSIONAUTH_ADMIN_EMAIL}",
+    "adminPassword": "#{ENV.FUSIONAUTH_ADMIN_PASSWORD}",
+    "applicationId": "#{ENV.FUSIONAUTH_APPLICATION_ID}",
+    "clientId": "#{ENV.FUSIONAUTH_CLIENT_ID}",
+    "clientSecret": "#{ENV.FUSIONAUTH_CLIENT_SECRET}",
+    "defaultApplicationId": "3c219e58-ed0e-4b18-ad48-f4f92793ae32",
+    "defaultThemeId": "75a068fd-e94b-451a-9aeb-3ddb9a3b5987",
+    "defaultTenantId": "30663132-6464-6665-3032-326466613934",
+    "tenantId": "#{ENV.FUSIONAUTH_TENANT_ID}",
+    "tenantName": "#{ENV.FUSIONAUTH_TENANT_NAME}",
+    "redirectURL": "#{ENV.FUSIONAUTH_REDIRECT_URL}"
+  },
+  "apiKeys": [
+    {
+      "key": "#{apiKey}",
+      "description": "default safers key"
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "url": "/api/tenant/#{tenantId}",
+      "body": {
+        "sourceTenantId": "#{defaultTenantId}",
+        "tenant": {
+          "name": "#{tenantName}"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/api/application/#{applicationId}",
+      "sourceApplicationId": "#{defaultApplicationId}",
+      "tenantId": "#{tenantId}",
+      "body": {
+        "application": {
+          "name": "safers",
+          "oauthConfiguration": {
+            "authorizedOriginURLs": [],
+            "authorizedRedirectURLs": ["#{redirectURL}"],
+            "clientSecret": "#{clientSecret}",
+            "enabledGrants": ["authorization_code", "password", "refresh_token"],
+            "generateRefreshToken": true
+          },
+          "registrationConfiguration": {
+            "confirmPassword": true,
+            "enabled": true
+          },
+          "roles": "&{json/roles.json}"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/api/user/registration/",
+      "body": {
+        "user": {
+          "email": "#{adminEmail}",
+          "password": "#{adminPassword}"
+        },
+        "registration": {
+          "applicationId": "#{FUSIONAUTH_APPLICATION_ID}",
+          "roles": ["admin"]
+        }
+      }
+    }
+  ]
+}

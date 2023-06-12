@@ -6,41 +6,24 @@ from django.utils.translation import gettext_lazy as _
 from safers.core.mixins import SingletonMixin
 
 
-class GeoserverStandards(models.TextChoices):
-    WMS = "WMS", _("WMS")
-    WMTS = "WMTS", _("WMTS")
-
-
 class SafersSettings(SingletonMixin, models.Model):
     class Meta:
         verbose_name = "Safers Settings"
         verbose_name_plural = "Safers Settings"
 
-    allow_local_signin = models.BooleanField(
-        default=False,
-        help_text=_("Allow users to signin locally."),
-    )
-
-    allow_remote_signin = models.BooleanField(
-        default=True,
-        help_text=_("Allow users to signin remotely (via SSO)."),
-    )
-
     allow_signup = models.BooleanField(
         default=True,
-        help_text=_("Allow users to register w/ Safers."),
+        help_text=_("Allow users to register w/ the dashboard."),
+    )
+
+    allow_signin = models.BooleanField(
+        default=True,
+        help_text=_("Allow users to signin w/ the dashboard."),
     )
 
     allow_password_change = models.BooleanField(
         default=False,
         help_text=_("Allow users to change their password via the dashboard.")
-    )
-
-    require_verification = models.BooleanField(
-        default=True,
-        help_text=_(
-            "Require an email verification step to the sign up process."
-        ),
     )
 
     require_terms_acceptance = models.BooleanField(
@@ -50,26 +33,11 @@ class SafersSettings(SingletonMixin, models.Model):
         ),
     )
 
-    restrict_data_to_aoi = models.BooleanField(
+    allow_remote_deletion = models.BooleanField(
         default=False,
         help_text=_(
-            "Always resize DataLayers to the user's AOI, regardless of either the map viewport "
-            "or the full extent of the DataLayer."
-        )
-    )
-
-    map_request_resolution = models.PositiveIntegerField(
-        default=512,
-        help_text=_(
-            "The resolution (ie: height x width) to use for MapRequests."
-        )
-    )
-
-    geoserver_standard = models.CharField(
-        max_length=32,
-        choices=GeoserverStandards.choices,
-        default=GeoserverStandards.WMTS,
-        help_text=_("Whether to use tiled (WMTS) or non-tiled data (WMS)."),
+            "When deleting a user from the dashboard also delete a user from all of safers."
+        ),
     )
 
     polling_frequency = models.FloatField(

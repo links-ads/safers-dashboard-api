@@ -1,60 +1,70 @@
-import uuid
+from enum import Enum
 
+from django.conf import settings
 from django.db import models
 
+from safers.auth.clients import AUTH_CLIENT
+from safers.auth.utils import reshape_auth_errors
 
-class RoleManager(models.Manager):
-    def safe_get(self, *args, **kwargs):
-        """
-        models that aren't stored locally (like the chatbot models)
-        sometimes try to reference Role that might not exist
-        this allows me to cope w/ those cases
-        """
-        try:
-            return Role.objects.get(*args, **kwargs)
-        except Role.DoesNotExist:
-            return None
+from safers.core.managers import CachedTransientModelManager, TransientModelQuerySet
+
+from safers.users.tests.mocks import MOCK_ROLES_DATA
 
 
-class RoleQuerySet(models.QuerySet):
-    def active(self):
-        return self.filter(is_active=True)
+class RoleNames(str, Enum):
+    CITIZEN = "citizen"
 
-    def inactive(self):
-        return self.filter(is_active=False)
+
+class RoleQuerySet(TransientModelQuerySet):
+
+    pass
+
+
+class RoleManager(CachedTransientModelManager):
+
+    queryset_class = RoleQuerySet
+
+    cache_key = "roles"
+
+    def get_transient_queryset_data(self):
+        auth_response = AUTH_CLIENT.retrieve_application(
+            settings.FUSIONAUTH_APPLICATION_ID
+        )
+        if not auth_response.was_successful():
+            errors = reshape_auth_errors(auth_response.error_response)
+            raise Exception(errors)
+
+        auth_application = auth_response.success_response.get("application")
+        assert auth_application is not None
+        roles_data = auth_application.get("roles", [])
+
+        # roles_data = MOCK_ROLES_DATA
+
+        return roles_data
 
 
 class Role(models.Model):
+    class Meta:
+        managed = False
 
     objects = RoleManager.from_queryset(RoleQuerySet)()
 
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    role_id = models.SlugField(
-        blank=True,
-        null=True,
-    )
-    name = models.CharField(
-        max_length=128,
-        blank=False,
-        null=False,
-        unique=True,
-    )
-    label = models.CharField(
-        max_length=128,
-        blank=True,
-        null=True,
-    )
-    description = models.TextField(
-        blank=True,
-        null=True,
-    )
-    is_default = models.BooleanField(default=False)
-    is_super = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    id = models.UUIDField(primary_key=True)
+    name = models.CharField(max_length=128)
+    description = models.TextField(null=True)
+    isDefault = models.BooleanField(null=True)
+    isSuperRole = models.BooleanField(null=True)
 
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return str(self.name)
+
+    @property
+    def title(self) -> str:
+        """
+        Return a pretty name for the role
+        """
+        return str(self).title().replace("_", " ")
+
+    @property
+    def is_citizen(self) -> bool:
+        return self.name == RoleNames.CITIZEN

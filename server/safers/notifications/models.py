@@ -1,6 +1,6 @@
 import uuid
 
-from django.contrib.gis import geos
+from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
 from django.db.models import Q
 from django.contrib.gis.db import models as gis_models
@@ -157,9 +157,10 @@ class Notification(models.Model):
         blank=True,
         null=True,
     )
-    target_organizations = models.ManyToManyField(
-        "users.organization",
-        related_name="targeted_notifications",
+    target_organization_ids = ArrayField(
+        models.CharField(max_length=64),
+        blank=True,
+        default=list,
     )
 
     category = models.CharField(max_length=128, blank=True, null=True)
@@ -228,7 +229,6 @@ class Notification(models.Model):
 
     @classmethod
     def process_message(cls, message_body, **kwargs):
-
         message_properties = kwargs.get("properties", {})
 
         message_type = message_body["msgType"]

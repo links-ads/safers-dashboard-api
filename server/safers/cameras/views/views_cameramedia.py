@@ -2,50 +2,23 @@ from django.conf import settings
 from django.contrib.gis.geos import Polygon
 from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.utils import timezone
-from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import ParseError, ValidationError
-from rest_framework.generics import get_object_or_404 as drf_get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema, no_body
+from drf_spectacular.utils import extend_schema, extend_schema_field, extend_schema_view, OpenApiExample, OpenApiResponse, OpenApiTypes, OpenApiParameter
 
+from safers.core.decorators import swagger_fake
 from safers.core.filters import CaseInsensitiveChoiceFilter, CharInFilter, DefaultFilterSetMixin, MultiFieldOrderingFilter, SwaggerFilterInspector
-
-from safers.users.permissions import IsLocal, IsRemote
 
 from safers.cameras.models import Camera, CameraMedia, CameraMediaType, CameraMediaFireClass, CameraMediaTag
 from safers.cameras.serializers import CameraMediaSerializer
-
-_camera_media_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "id": "4b9f28a9-8d70-4d62-914e-1bb64da07908",
-        "timestamp": "2022-01-27T08:48:00Z",
-        "description": None,
-        "camera_id":  "PCF_El_Perello_297",
-        "type":  "IMAGE",
-        "fire_classes": ["C1"],
-        "tags": ["fire"],
-        "direction": 1,
-        "distance": 2,
-        "geometry": {},
-        "url": "https://s3.eu-central-1.amazonaws.com/waterview.faketp/PCFElPerello_1db3454c2250/2022/05/19/pic_2022-05-19_08-22-40.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJQR7EL2CSUT7FDIA%2F20220519%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Date=20220519T082248Z&X-Amz-Expires=1200&X-Amz-SignedHeaders=host&X-Amz-Signature=e7e68343d43abaa7bb0771c50bb180e7b7ac0bd11c3aeaf433a8f2c8a90b0a86",
-        "favorite": False,
-    }
-)  # yapf: disable
-
-
-_camera_media_list_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=_camera_media_schema
-)
 
 
 class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
@@ -55,12 +28,14 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
             "type",
         }
 
+    # TODO: MULTIPLE CHOICES ALLOWED IN SWAGGER
     order = MultiFieldOrderingFilter(
         fields=(("timestamp", "date"), ), multi_fields=["-favorite"]
     )
 
     type = CaseInsensitiveChoiceFilter(choices=CameraMediaType.choices)
 
+    # TODO: RENDER CHOICES IN SWAGGER
     camera_id = filters.ModelChoiceFilter(
         field_name="camera",
         lookup_expr="exact",  # not sure why I can't use "iexact" ?
@@ -135,32 +110,6 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         return super().filter_queryset(queryset)
 
 
-@method_decorator(
-    swagger_auto_schema(
-        responses={status.HTTP_200_OK: _camera_media_list_schema},
-        filter_inspectors=[SwaggerFilterInspector]
-    ),
-    name="list",
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _camera_media_schema}),
-    name="retrieve",
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _camera_media_schema}),
-    name="update",
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _camera_media_schema}),
-    name="partial_update",
-)
-@method_decorator(
-    swagger_auto_schema(
-        responses={status.HTTP_200_OK: _camera_media_schema},
-        request_body=no_body,
-    ),
-    name="favorite",
-)
 class CameraMediaViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -176,6 +125,7 @@ class CameraMediaViewSet(
     permission_classes = [IsAuthenticated]
     serializer_class = CameraMediaSerializer
 
+    @swagger_fake(CameraMedia.objects.none())
     def get_queryset(self):
         """
         ensures that favorite camera_medias are at the start of the qs
@@ -194,24 +144,6 @@ class CameraMediaViewSet(
             )
         )
         return qs.order_by("-favorite")
-
-    def get_object(self):
-        queryset = self.get_queryset()
-
-        # disable filtering for detail views
-        # (the rest of this fn is just like the parent class)
-        # TODO: https://github.com/astrosat/safers-dashboard-api/issues/45
-        if self.action in ["list"]:
-            queryset = self.filter_queryset(queryset)
-
-        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-
-        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
-        obj = drf_get_object_or_404(queryset, **filter_kwargs)
-
-        self.check_object_permissions(self.request, obj)
-
-        return obj
 
     @action(detail=True, methods=["post"])
     def favorite(self, request, **kwargs):
@@ -237,15 +169,18 @@ class CameraMediaViewSet(
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(
+@extend_schema(
+    request=None,
     responses={
         status.HTTP_200_OK:
-            openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Schema(type=openapi.TYPE_STRING)
+            OpenApiResponse(
+                OpenApiTypes.ANY,
+                examples=[OpenApiExample(
+                    "valid response",
+                    ["string"],
+                )]
             )
-    },
-    method="get"
+    }
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])

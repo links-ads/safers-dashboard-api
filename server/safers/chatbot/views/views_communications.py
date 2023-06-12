@@ -15,8 +15,9 @@ from rest_framework.utils.encoders import JSONEncoder
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from safers.core.authentication import TokenAuthentication
+
 from safers.users.models import Organization
-from safers.users.authentication import ProxyAuthentication
 
 from safers.chatbot.models import Communication
 from safers.chatbot.serializers import CommunicationSerializer, CommunicationCreateSerializer, CommunicationViewSerializer
@@ -50,7 +51,7 @@ class CommunicationListView(CommunicationView):
         proxy_data = self.get_proxy_list_data(
             request,
             proxy_url=urljoin(
-                settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_LIST_PATH
+                settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_LIST_PATH
             ),
         )
 
@@ -69,11 +70,11 @@ class CommunicationListView(CommunicationView):
                 # source= (source has a default value so no need to parse from proxy_data)
                 scope=data.get("scope"),
                 restriction=data.get("restriction"),
-                source_organization=Organization.objects.safe_get(name=data.get("organizationName")),
+                source_organization=Organization.objects.get(name=data.get("organizationName")),
                 target_organizations=filter(
                     None,
                     [
-                        Organization.objects.safe_get(organization_id=organization_id)
+                        Organization.objects.get(id=organization_id)
                         for organization_id in data.get("organizationIdList") or []
                     ]
                 ),
@@ -118,13 +119,13 @@ class CommunicationListView(CommunicationView):
         }
 
         proxy_url = urljoin(
-            settings.SAFERS_GATEWAY_API_URL, self.GATEWAY_URL_CREATE_PATH
+            settings.SAFERS_GATEWAY_URL, self.GATEWAY_URL_CREATE_PATH
         )
 
         try:
             response = requests.post(
                 proxy_url,
-                auth=ProxyAuthentication(request.user),
+                auth=TokenAuthentication(request.auth),
                 headers={"Content-Type": "application/json"},
                 json=proxy_data,
                 timeout=4,

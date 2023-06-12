@@ -43,3 +43,16 @@ class UnderspecifiedDateTimeField(serializers.DateTimeField):
     def to_representation(self, value):
         representation = super().to_representation(value)
         return representation.replace(**self.replacements)
+
+
+class EmptyBooleanField(serializers.BooleanField):
+    """
+    A BooleanField that _properly_ supports default values.  The standard
+    DRF BooleanField initially defaults to False.  This means passing an 
+    explicit default value has no effect.  This class gets around that by
+    ensuring that missing initial_data is treated as `empty` rather than
+    `False`.  This forces default values to be evaluated as per:
+    https://github.com/encode/django-rest-framework/blob/d252d22343b9c9688db77b59aa72dabd540bd252/rest_framework/serializers.py#L503
+    """
+    default_empty_html = serializers.empty
+    initial = serializers.empty

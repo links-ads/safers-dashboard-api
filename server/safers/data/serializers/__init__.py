@@ -1,2 +1,2 @@
-from .serializers_datalayers import DataLayerViewSerializer
-from .serializers_maprequest import MapRequestSerializer, MapRequestViewSerializer
+from .serializers_maprequest import MapRequestSerializer
+from .serializers_views import LayerViewSerializer

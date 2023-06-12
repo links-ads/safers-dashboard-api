@@ -47,7 +47,7 @@ class CameraMediaFactory(factory.django.DjangoModelFactory):
         "date_time_between", start_date=timezone.now() - timedelta(days=1)
     )  # default timestamp is recent enough to match default filters
     description = optional_declaration(FactoryFaker("text"), chance=50)
-    url = FactoryFaker("uri")
+    remote_url = FactoryFaker("uri")
     # direction = None
     # distance = None
     # geometry = None

@@ -56,8 +56,9 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
         "created",
         "modified",
         "description",
-        "url",
+        "remote_url",
         "media",
+        "thumbnail",
         "type",
         "tags",
         "fire_classes",
@@ -119,17 +120,24 @@ class CameraMediaAdmin(gis_admin.GeoModelAdmin):
         except:
             pass
 
-    @admin.display(description="Copy selected Camera Media URLS to files")
+    @admin.display(
+        description=
+        "Copy selected Camera Media Remote URLS to files and create thumbnails"
+    )
     def copy_urls(self, request, queryset):
 
         for camera_media in queryset:
 
             try:
-                camera_media.copy_url_to_file(
-                    camera_media.url, camera_media.media
+                camera_media.copy_url_to_media(
+                    camera_media.remote_url, camera_media.media
                 )
-                msg = f"copied {camera_media.id} URL to {camera_media.media}"
+                camera_media.copy_media_to_thumbnail(
+                    camera_media.media.file, camera_media.thumbnail
+                )
+                msg = f"copied {camera_media.id} Remote URL to {camera_media.media} and {camera_media.thumbnail}."
                 self.message_user(request, msg, messages.SUCCESS)
+
             except Exception as e:
-                msg = f"error copying {camera_media.id} URL: {e}"
+                msg = f"error copying {camera_media.id} Remote URL: {e}"
                 self.message_user(request, msg, messages.ERROR)

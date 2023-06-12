@@ -168,6 +168,7 @@ class AlertAdmin(gis_admin.GeoModelAdmin):
         # "geometry_collection",
         "center",
         "bounding_box",
+        "country",
 
     )
     formfield_overrides = {

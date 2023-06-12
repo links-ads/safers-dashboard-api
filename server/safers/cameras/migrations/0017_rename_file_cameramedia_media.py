@@ -14,5 +14,5 @@ class Migration(migrations.Migration):
             model_name='cameramedia',
             old_name='file',
             new_name='media',
-        ),
+        ),       
     ]

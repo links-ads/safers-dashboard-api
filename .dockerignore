@@ -1,0 +1,6 @@
+.git*
+docker-compose.yml
+***/.pdm.toml
+**/*.pyc
+**/.vscode
+*.code-workspace

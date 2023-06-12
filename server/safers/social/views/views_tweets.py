@@ -13,7 +13,8 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from safers.users.authentication import ProxyAuthentication
+from safers.core.authentication import TokenAuthentication
+
 from safers.users.permissions import IsRemote
 
 from safers.social.models import Tweet
@@ -98,8 +99,8 @@ class TweetView(views.APIView):
 
         try:
             response = requests.get(
-                urljoin(settings.SAFERS_GATEWAY_API_URL, GATEWAY_URL_PATH),
-                auth=ProxyAuthentication(request.user),
+                urljoin(settings.SAFERS_GATEWAY_URL, GATEWAY_URL_PATH),
+                auth=TokenAuthentication(request.auth),
                 params=proxy_params,
             )
             response.raise_for_status()

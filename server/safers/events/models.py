@@ -101,18 +101,15 @@ class Event(gis_models.Model):
     )
     bounding_box = gis_models.PolygonField(blank=True, null=True)
     center = gis_models.PointField(blank=True, null=True)
-
+    country = models.ForeignKey(
+        Country, blank=True, null=True, on_delete=models.SET_NULL
+    )
     alerts = models.ManyToManyField("alerts.Alert", related_name="events")
 
     @property
     def name(self):
 
         serial_number = f"S{self.sequence_number:0>5}"
-
-        country = Country.objects.filter(
-            # geometry__intersects=self.geometry_collection  # TODO: if geometry_collection is malformed can potentially get "GEOSIntersects: TopologyException: side location conflict"
-            geometry__intersects=self.center
-        ).first()
 
         return "-".join(
             map(
@@ -123,7 +120,7 @@ class Event(gis_models.Model):
                         "WF",
                         self.start_date.year,
                         serial_number,
-                        country.admin_code if country else None,
+                        self.country.admin_code if self.country else None,
                     ]
                 )
             )
@@ -157,6 +154,12 @@ class Event(gis_models.Model):
             self.MIN_BOUNDING_BOX_SIZE
         ).envelope if geometry_collection.envelope.geom_type == "Point" else geometry_collection.envelope
         self.center = geometry_collection.centroid
+
+        self.country = Country.objects.filter(
+            # geometry__intersects=self.geometry_collection  # TODO: if geometry_collection is malformed can potentially get "GEOSIntersects: TopologyException: side location conflict"
+            geometry__intersects=self.center
+        ).first()
+
         if force_save:
             self.save()
 
