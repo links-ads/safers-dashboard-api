@@ -52,7 +52,7 @@ def teams_view(request):
                 settings.SAFERS_GATEWAY_URL,
                 GET_TEAMS_URL_PATH,
             ),
-            auth=TokenAuthentication(user.auth),
+            auth=TokenAuthentication(request.auth),
             params={"MaxResultCount": 1000}
         )
         response.raise_for_status()
