@@ -108,8 +108,10 @@ services:
     networks:
       - safers
 
-  scheduler:
+  safers-scheduler:
     build: .
+    env_file:
+      - .env
     environment:
       SYS_ENV: development
       ENABLE_CRON: 1
