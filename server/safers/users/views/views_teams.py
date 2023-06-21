@@ -8,7 +8,7 @@ from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from safers.core.authentication import TokenAuthentication
 from safers.core.clients import GATEWAY_CLIENT
 
-_team_view_response = OpenApiResponse(
+_teams_view_response = OpenApiResponse(
     OpenApiTypes.ANY,
     examples=[
         OpenApiExample(
@@ -28,7 +28,7 @@ _team_view_response = OpenApiResponse(
 
 
 @extend_schema(responses={
-    status.HTTP_200_OK: _team_view_response,
+    status.HTTP_200_OK: _teams_view_response,
 })
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
