@@ -318,7 +318,7 @@ DEFAULT_FROM_EMAIL = f"{PROJECT_NAME} <{PROJECT_EMAIL.format(role='noreply')}>" 
 # TODO: UPDATE W/ AUTH
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.BasicAuthentication",
+        # "rest_framework.authentication.BasicAuthentication",
         # "rest_framework.authentication.SessionAuthentication",
         # "rest_framework.authentication.TokenAuthentication",
         "safers.auth.authentication.OAuth2Authentication",

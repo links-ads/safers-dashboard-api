@@ -18,6 +18,7 @@ class GatewayClient(object):
     ACTIVITY_PATH = "api/services/app/Activity"
     LAYERS_PATH = "api/services/app/Layers"
     PROFILE_PATH = "api/services/app/Profile"
+    TEAMS_PATH = "/api/services/app/Teams"
 
     headers = {
         "Content-Type": "application/json",
@@ -90,6 +91,28 @@ class GatewayClient(object):
                 )
 
         return organizations_data
+
+    def get_teams(
+        self, params=None, auth=None, timeout=REQUEST_TIMEOUT
+    ) -> dict:
+        url = urljoin(
+            settings.SAFERS_GATEWAY_URL, f"{self.TEAMS_PATH}/GetTeams"
+        )
+
+        default_params = {"MaxResultCount": 1000}
+        if params:
+            default_params.update(params)
+
+        response = requests_session.request(
+            method="GET",
+            headers=self.headers,
+            url=url,
+            params=default_params,
+            auth=auth,
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        return response.json()
 
     def get_layers(
         self, params=None, auth=None, timeout=REQUEST_TIMEOUT

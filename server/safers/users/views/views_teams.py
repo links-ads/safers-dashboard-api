@@ -1,78 +1,62 @@
-import json
-import logging
-import requests
-from urllib.parse import urljoin
-
-from django.conf import settings
-
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 
 from safers.core.authentication import TokenAuthentication
+from safers.core.clients import GATEWAY_CLIENT
 
-logger = logging.getLogger(__file__)
-
-_team_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "id": 123,
-        "name": "team1",
-        "members": [{
-            "id": 456,
-            "name": "user1",
-        }]
-    }
-)  # yapf: disable
-
-_team_list_schema = openapi.Schema(type=openapi.TYPE_ARRAY, items=_team_schema)
-
-
-@swagger_auto_schema(
-    responses={status.HTTP_200_OK: _team_list_schema}, method="get"
+_team_view_response = OpenApiResponse(
+    OpenApiTypes.ANY,
+    examples=[
+        OpenApiExample(
+            "professional response",
+            [{
+                "id": 123,
+                "name": "team1",
+                "members": [{
+                    "id": 456,
+                    "name": "user1",
+                }]
+            }]
+        ),
+        OpenApiExample("citizen response", [None]),
+    ]
 )
+
+
+@extend_schema(responses={
+    status.HTTP_200_OK: _team_view_response,
+})
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def teams_view(request):
     """
     Returns a summary of teams for the current user
     """
-
-    GET_TEAMS_URL_PATH = "/api/services/app/Teams/GetTeams"
-
     user = request.user
-
-    if user.is_remote and user.is_professional:
-        response = requests.get(
-            urljoin(
-                settings.SAFERS_GATEWAY_URL,
-                GET_TEAMS_URL_PATH,
-            ),
+    if user.is_professional:
+        teams_data = GATEWAY_CLIENT.get_teams(
             auth=TokenAuthentication(request.auth),
-            params={"MaxResultCount": 1000}
-        )
-        response.raise_for_status()
-        content = response.json()["data"]
+        )["data"]
     else:
-        content = []
+        teams_data = []
 
     teams = [
         {
-            "id": data["id"],
-            "name": data["name"],
+            "id": team["id"],
+            "name": team["name"],
             "members": [
                 {
                     "id": member["id"],
                     "name": member["displayName"],
                 }
-                for member in data["members"]
+                for member in team["members"]
             ]
         }
-        for data in content
+        for team in teams_data
     ]  # yapf: disable
 
     return Response(teams, status=status.HTTP_200_OK)

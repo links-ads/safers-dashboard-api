@@ -23,8 +23,6 @@ class SwaggerOAuth2AuthenticationScheme(OpenApiAuthenticationExtension):
         Authorization: Bearer 401f7ac837da42b97f613d789819ff93537bee6a
     """
 
-    # TODO: FOUND A BUG IN drf-spectacular (`target_class` requires Class object instead of path) ?
-    # taget_class = "safers.auth.authentication.OAuth2Authentication"
     target_class = OAuth2Authentication
     name = "access_token Authentication"
     match_subclasses = False
