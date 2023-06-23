@@ -3,6 +3,8 @@ from collections import OrderedDict
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
+from drf_spectacular.utils import extend_schema_field
+
 from safers.cameras.models import Camera
 
 
@@ -34,6 +36,13 @@ class CameraDetailSerializer(serializers.ModelSerializer):
 
     description = serializers.SerializerMethodField()
 
+    @extend_schema_field({
+        "type": "object",
+        "example": {
+            "longitude": 12.9721,
+            "latitude": 77.5933,
+        }
+    })
     def get_location(self, obj):
         if obj.geometry:
             longitude, latitude = obj.geometry.coords
