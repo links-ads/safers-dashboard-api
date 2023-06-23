@@ -3,7 +3,6 @@ from copy import deepcopy
 from django.conf import settings
 from django.contrib.gis.geos import Polygon
 from django.db.models import BooleanField, ExpressionWrapper, Q
-from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -16,66 +15,15 @@ from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema, no_body
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 
+from safers.core.decorators import swagger_fake
 from safers.core.filters import CaseInsensitiveChoiceFilter, DefaultFilterSetMixin, MultiFieldOrderingFilter, SwaggerFilterInspector
 
 from safers.users.permissions import IsRemote
 
 from safers.alerts.models import Alert, AlertType, AlertSource
 from safers.alerts.serializers import AlertViewSetSerializer
-
-_alert_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "id": "3a851a61-7f8a-4aa1-ad63-31e61b051a36",
-        "title": "Notification 3a851a61 [Fire]",
-        "type": "UNVALIDATED",
-        "timestamp": "2022-04-12T14:29:34Z",
-        "status": "string",
-        "source": "string",
-        "scope": "string",
-        "category": "string",
-        "event": "string",
-        "urgency": "string",
-        "severity": "string",
-        "certainty": "string",
-        "description": "",
-        "geometry": {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [
-                            [1, 2],
-                            [3, 4],
-                        ]
-                    },
-                    "properties": {}
-                }
-            ]
-        },
-        "center": [1, 2],
-        "bounding_box": [1, 2, 3, 4],
-        "information": "Lorem ipsum dolor sit amet"
-    }
-)  # yapf: disable
-
-_alert_list_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=_alert_schema
-)
-
-_alert_validation_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={"detail": "added Alert 123 to new event: 456"}
-)
-
-_alert_sources_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-)
 
 
 class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
@@ -162,39 +110,6 @@ class AlertFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         return super().filter_queryset(queryset)
 
 
-@method_decorator(
-    swagger_auto_schema(
-        responses={status.HTTP_200_OK: _alert_list_schema},
-        filter_inspectors=[SwaggerFilterInspector]
-    ),
-    name="list",
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
-    name="retrieve",
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
-    name="update",
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _alert_schema}),
-    name="partial_update",
-)
-@method_decorator(
-    swagger_auto_schema(
-        responses={status.HTTP_200_OK: _alert_validation_schema},
-        request_body=no_body,
-    ),
-    name="validate",
-)
-@method_decorator(
-    swagger_auto_schema(
-        responses={status.HTTP_200_OK: _alert_schema},
-        request_body=no_body,
-    ),
-    name="favorite",
-)
 class AlertViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -219,6 +134,7 @@ class AlertViewSet(
                )
         return context
 
+    @swagger_fake(Alert.objects.none())
     def get_queryset(self):
         """
         ensures that favorite alerts are at the start of the qs
@@ -254,6 +170,34 @@ class AlertViewSet(
 
         return obj
 
+    @extend_schema(
+        responses={
+            status.HTTP_200_OK:
+                OpenApiResponse(
+                    OpenApiTypes.OBJECT,
+                    examples=[
+                        OpenApiExample(
+                            "valid responese",
+                            {
+                                "detail":
+                                    "added alert <name> to existing event: <id>"
+                            }
+                        )
+                    ]
+                ),
+            status.HTTP_201_CREATED:
+                OpenApiResponse(
+                    OpenApiTypes.OBJECT,
+                    examples=[
+                        OpenApiExample(
+                            "valid response",
+                            {"detail": "added alert <name> to new event: <id>"}
+                        )
+                    ]
+                ),
+        },
+        request=None,
+    )
     @action(detail=True, methods=["post"])
     def validate(self, request, **kwargs):
         """
@@ -274,6 +218,7 @@ class AlertViewSet(
 
         return Response({"detail": response_data}, status=response_status)
 
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"])
     def favorite(self, request, **kwargs):
         """
@@ -298,8 +243,15 @@ class AlertViewSet(
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(
-    responses={status.HTTP_200_OK: _alert_sources_schema}, method="get"
+@extend_schema(
+    request=None,
+    responses={
+        status.HTTP_200_OK:
+            OpenApiResponse(
+                OpenApiTypes.ANY,
+                examples=[OpenApiExample("valid response", ["string"])]
+            ),
+    }
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
