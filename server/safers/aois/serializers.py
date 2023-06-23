@@ -5,11 +5,42 @@ from django.contrib.gis.geos import Point
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
+from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+
 from safers.core.fields import SimplifiedGeometryField
 
 from safers.aois.models import Aoi
 
 
+@extend_schema_serializer(
+    examples=[
+        OpenApiExample(
+            "valid responese",
+            {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [1, 2],
+                            [3, 4],
+                        ]
+                    },
+                    "properties": {
+                        "id": 1,
+                        "name": "string",
+                        "description": "string",
+                        "country": "string",
+                        "zoomLevel": 0,
+                        "midPoint": [1, 2]
+                    }
+                }]
+            },
+            response_only=True,
+        )
+    ]
+)  # yapf: disable
 class AoiSerializer(gis_serializers.GeoFeatureModelSerializer):
     class Meta:
         model = Aoi
@@ -38,11 +69,11 @@ class AoiSerializer(gis_serializers.GeoFeatureModelSerializer):
         precision=Aoi.PRECISION, remove_duplicates=True
     )
 
-    def to_representation(self, data):
+    def to_representation(self, instance):
         """
         Output a single AOI as a FeatureCollection, even though there is only one Feature
         """
-        representation = super().to_representation(data)
+        representation = super().to_representation(instance)
         return OrderedDict((
             ("type", "FeatureCollection"),
             ("features", [representation]),
