@@ -1,73 +1,18 @@
 from copy import deepcopy
 
 from django.contrib.gis.geos import Polygon
-from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 from rest_framework.exceptions import ParseError
 from rest_framework.permissions import IsAuthenticated
 
 from django_filters import rest_framework as filters
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
-
-from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector
+from safers.core.filters import DefaultFilterSetMixin
 
 from safers.cameras.models import Camera
 from safers.cameras.serializers import CameraListSerializer, CameraDetailSerializer
-
-###########
-# swagger #
-###########
-
-_camera_list_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [1, 2]
-                },
-                "properties": {
-                    "id": "PCF_El_Perello_083",
-                    "description": "name: El_Perello, model: reolink RLC-823A, owner: PCF, nation: Spain",
-                    "direction": 83,
-                    "altitude": 298,
-                    "location": {
-                        "longitude": 1,
-                        "latitude": 2,
-                    },
-                    "last_update": "2022-05-18T09:28:56.361Z",
-                },
-            }
-        ]
-    }
-)  # yapf: disable
-
-_camera_detail_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "id": "PCF_El_Perello_083",
-        "description": "name: El_Perello, model: reolink RLC-823A, owner: PCF, nation: Spain",
-        "direction": 83,
-        "altitude": 298,
-        "location": {
-            "longitude": 1,
-            "latitude": 2,
-        },
-        "geometry": {
-            "type": "Point",
-            "coordinates": [1, 2]
-        },
-        "last_update": "2022-05-18T09:28:56.361Z",
-    }
-)  # yapf: disable
 
 ###########
 # filters #
@@ -96,8 +41,8 @@ class CameraFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 
         try:
             xmin, ymin, xmax, ymax = list(map(float, value.split(",")))
-        except ValueError:
-            raise ParseError("invalid bbox string supplied")
+        except ValueError as exception:
+            raise ParseError("invalid bbox string supplied") from exception
         bbox = Polygon.from_bbox((xmin, ymin, xmax, ymax))
 
         return queryset.filter(geometry__intersects=bbox)
@@ -128,17 +73,6 @@ class CameraFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 #########
 
 
-@method_decorator(
-    swagger_auto_schema(
-        responses={status.HTTP_200_OK: _camera_list_schema},
-        filter_inspectors=[SwaggerFilterInspector],
-    ),
-    name="list"
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _camera_detail_schema}),
-    name="retrieve"
-)
 class CameraViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Returns a GeoJSON FeatureCollection of all cameras

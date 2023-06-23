@@ -12,10 +12,10 @@ from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
-from drf_spectacular.utils import extend_schema, extend_schema_field, extend_schema_view, OpenApiExample, OpenApiResponse, OpenApiTypes, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 
 from safers.core.decorators import swagger_fake
-from safers.core.filters import CaseInsensitiveChoiceFilter, CharInFilter, DefaultFilterSetMixin, MultiFieldOrderingFilter, SwaggerFilterInspector
+from safers.core.filters import CaseInsensitiveChoiceFilter, CharInFilter, DefaultFilterSetMixin, MultiFieldOrderingFilter
 
 from safers.cameras.models import Camera, CameraMedia, CameraMediaType, CameraMediaFireClass, CameraMediaTag
 from safers.cameras.serializers import CameraMediaSerializer
