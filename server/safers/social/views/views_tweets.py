@@ -10,8 +10,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 
 from safers.core.authentication import TokenAuthentication
 
@@ -19,28 +18,6 @@ from safers.users.permissions import IsRemote
 
 from safers.social.models import Tweet
 from safers.social.serializers import TweetSerializer, TweetViewSerializer
-
-
-_tweets_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [5.3805535, 43.28032785]
-                },
-                "properties": {
-                    "tweet_id": "1526291911878713344",
-                    "timestamp": "2022-05-16T20:02:03+00:00",
-                    "text": "Faits divers : un mort dans l'incendie d'un appartement à Marseille - 20 Minutes https://t.co/MowahsbiPd #family #life #followforfollow"
-                },
-            }
-        ]
-    }
-)  # yapf: disable
 
 
 class TweetView(views.APIView):
@@ -69,9 +46,9 @@ class TweetView(views.APIView):
 
         return data
 
-    @swagger_auto_schema(
-        query_serializer=TweetViewSerializer,
-        responses={status.HTTP_200_OK: _tweets_schema},
+    @extend_schema(
+        request=TweetViewSerializer,
+        responses={status.HTTP_200_OK: TweetSerializer(many=True)}
     )
     def get(self, request, *args, **kwargs):
         """
