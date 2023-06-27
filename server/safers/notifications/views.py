@@ -3,7 +3,6 @@ from copy import deepcopy
 from django.conf import settings
 from django.contrib.gis.geos import Polygon
 from django.utils import timezone
-from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status, viewsets
@@ -15,61 +14,15 @@ from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiTypes, OpenApiExample
 
 from safers.core.decorators import swagger_fake
-from safers.core.filters import DefaultFilterSetMixin, SwaggerFilterInspector, CaseInsensitiveChoiceFilter
+from safers.core.filters import DefaultFilterSetMixin, CaseInsensitiveChoiceFilter
 
 from safers.users.permissions import IsRemote
 
 from safers.notifications.models import Notification, NotificationSourceChoices, NotificationTypeChoices, NotificationScopeChoices, NotificationRestrictionChoices
 from safers.notifications.serializers import NotificationSerializer
-
-
-_notification_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "id": "db9634fc-ae64-44bf-ba31-7abf4f68daa9",
-        "title": "Notification db9634c [Met]",
-        "type": "RECOMMENDATION",
-        "timestamp": "2022-04-28T11:38:28Z",
-        "status": "Actual",
-        "source": "EFFIS_FWI",
-        "scope": "Public",
-        "restriction": None,
-        "target_organizations": [],
-        "scopeRestriction": "Public",
-        "category": "Met",
-        "event": "Probability of fire",
-        "description": "Do not light open-air barbecues in forest.",
-        "geometry": {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [
-                            [1, 2],
-                            [3, 4]
-                        ]
-                    },
-                    "properties": {
-                        "description": "areaDesc"
-                    }
-                }
-            ]
-        },
-        "center": [1, 2],
-        "bounding_box": [1, 2, 3, 4]
-    }
-)  # yapf: disable
-
-
-_notification_list_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=_notification_schema
-)
 
 
 class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
@@ -176,19 +129,6 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         return super().filter_queryset(queryset)
 
 
-@method_decorator(
-    swagger_auto_schema(
-        responses={status.HTTP_200_OK: _notification_list_schema},
-        filter_inspectors=[SwaggerFilterInspector]
-    ),
-    name="list",
-)
-@method_decorator(
-    swagger_auto_schema(
-        responses={status.HTTP_200_OK: _notification_list_schema},
-    ),
-    name="retrieve",
-)
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
     filter_backends = (filters.DjangoFilterBackend, )
@@ -223,15 +163,19 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         return obj
 
 
-@swagger_auto_schema(
+@extend_schema(
+    request=None,
     responses={
         status.HTTP_200_OK:
-            openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Schema(type=openapi.TYPE_STRING)
-            )
-    },
-    method="get"
+            OpenApiResponse(
+                OpenApiTypes.ANY,
+                examples=[
+                    OpenApiExample(
+                        "valid response", NotificationSourceChoices.values
+                    )
+                ]
+            ),
+    }
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -242,15 +186,19 @@ def notification_sources_view(request):
     return Response(NotificationSourceChoices.values, status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(
+@extend_schema(
+    request=None,
     responses={
         status.HTTP_200_OK:
-            openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Schema(type=openapi.TYPE_STRING)
-            )
-    },
-    method="get"
+            OpenApiResponse(
+                OpenApiTypes.ANY,
+                examples=[
+                    OpenApiExample(
+                        "valid response", NotificationTypeChoices.values
+                    )
+                ]
+            ),
+    }
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -261,15 +209,20 @@ def notification_types_view(request):
     return Response(NotificationTypeChoices.values, status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(
+@extend_schema(
+    request=None,
     responses={
         status.HTTP_200_OK:
-            openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Schema(type=openapi.TYPE_STRING)
-            )
-    },
-    method="get"
+            OpenApiResponse(
+                OpenApiTypes.ANY,
+                examples=[
+                    OpenApiExample(
+                        "valid response",
+                        ["Public", "Citizen", "Professional", "Organization"]
+                    )
+                ]
+            ),
+    }
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
