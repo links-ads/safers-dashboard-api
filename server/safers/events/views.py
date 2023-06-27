@@ -16,60 +16,15 @@ from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 
-from safers.core.filters import DefaultFilterSetMixin, MultiFieldOrderingFilter, SwaggerFilterInspector
+from safers.core.decorators import swagger_fake
+from safers.core.filters import DefaultFilterSetMixin, MultiFieldOrderingFilter
 
 from safers.users.permissions import IsRemote
 
 from safers.events.models import Event, EventStatusChoices
 from safers.events.serializers import EventSerializer
-
-###########
-# swagger #
-###########
-
-_event_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "id": "31d34fbf-570e-4b6d-8bdd-fad72a9a41cc",
-        "description": "whatever",
-        "start_date": "2022-05-06T15:28:42Z",
-        "end_date": None,
-        "people_affected": 123,
-        "causalties": 456,
-        "estimated_damage": 789,
-        "alerts": [
-            {
-                "id": "739a052b-bbc5-4fe6-8b67-dd981f4eb4c0",
-                "title": "ALRT-DSS-2022-S0001-ITA",
-            }
-        ],
-        "status": "OPEN",
-        "geometry": {
-            "type": "GeometryCollection",
-            "geometries": [
-                {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                    [1, 2],
-                    [3, 4],
-                    ]
-                ]
-                }
-            ]
-        },
-        "center": [1, 2],
-        "bounding_box": [1, 2, 3, 4],
-        "favorite": True
-    }
-)  # yapf: disable
-
-_event_list_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=_event_schema
-)
 
 ###########
 # filters #
@@ -167,29 +122,6 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
 #########
 
 
-@method_decorator(
-    swagger_auto_schema(
-        responses={status.HTTP_200_OK: _event_list_schema},
-        filter_inspectors=[SwaggerFilterInspector]
-    ),
-    name="list",
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _event_schema}),
-    name="retrieve",
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _event_schema}),
-    name="update",
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _event_schema}),
-    name="partial_update",
-)
-@method_decorator(
-    swagger_auto_schema(responses={status.HTTP_200_OK: _event_schema}),
-    name="favorite",
-)
 class EventViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -204,6 +136,7 @@ class EventViewSet(
     permission_classes = [IsAuthenticated, IsRemote]
     serializer_class = EventSerializer
 
+    @swagger_fake(Event.objects.none())
     def get_queryset(self):
         """
         ensures that favorite events are at the start of the qs
@@ -238,6 +171,7 @@ class EventViewSet(
 
         return obj
 
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"])
     def favorite(self, request, **kwargs):
         """

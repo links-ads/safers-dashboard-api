@@ -3,7 +3,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from safers.alerts.models import Alert
+from drf_spectacular.utils import extend_schema_field
 
 from safers.events.models import Event, EventStatusChoices
 
@@ -52,7 +52,21 @@ class EventSerializer(serializers.ModelSerializer):
 
         return validated_data
 
-    def get_geometry(self, obj):
+    @extend_schema_field({
+        "type": "object",
+        "example": {
+            "type":
+                "GeometryCollection",
+            "geometries": [{
+                "type": "Polygon",
+                "coordinates": [[
+                    [12.97, 77.59],
+                    [13.00, 78.00],
+                ]]
+            }]
+        },
+    })
+    def get_geometry(self, obj) -> dict:
         geometry_serializer = gis_serializers.GeometryField(
             # context=self.context
         )
@@ -70,21 +84,30 @@ class EventSerializer(serializers.ModelSerializer):
             ]
         }  # yapf: disable
 
+    @extend_schema_field({"type": "object", "example": [12.9721, 77.5933]})
     def get_center(self, obj):
         coords = obj.center.coords
         return map(lambda x: round(x, Event.PRECISION), coords)
 
-    def get_bounding_box(self, obj):
+    @extend_schema_field({
+        "type": "object", "example": [12.97, 77.59, 13.00, 78.00]
+    })
+    def get_bounding_box(self, obj) -> list:
         coords = obj.bounding_box.extent
         return map(lambda x: round(x, Event.PRECISION), coords)
 
-    def get_status(self, obj):
+    def get_status(self, obj) -> str:
         if obj.closed:
             return EventStatusChoices.CLOSED
         elif obj.ongoing:
             return EventStatusChoices.ONGOING
 
-    def get_alerts(self, obj):
+    @extend_schema_field({
+        "type": "object", "example": [{
+            "id": "uuid", "title": "string"
+        }]
+    })
+    def get_alerts(self, obj) -> list:
         """
         returns some high-level details of the alerts comprising this event
         """
@@ -93,6 +116,6 @@ class EventSerializer(serializers.ModelSerializer):
             "title": alert.title,
         } for alert in obj.alerts.only("id", "category")]
 
-    def is_favorite(self, obj):
+    def is_favorite(self, obj) -> bool:
         user = self.context["request"].user
         return obj in user.favorite_events.all()
