@@ -18,7 +18,7 @@ from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 
 from safers.core.decorators import swagger_fake
-from safers.core.filters import CaseInsensitiveChoiceFilter, DefaultFilterSetMixin, MultiFieldOrderingFilter, SwaggerFilterInspector
+from safers.core.filters import CaseInsensitiveChoiceFilter, DefaultFilterSetMixin, MultiFieldOrderingFilter
 
 from safers.users.permissions import IsRemote
 
