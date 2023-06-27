@@ -8,9 +8,6 @@ from rest_framework.response import Response
 from rest_framework.utils.encoders import JSONEncoder
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-
 from safers.core.decorators import swagger_fake
 
 from safers.rmq import RMQ
@@ -28,7 +25,6 @@ class MessageViewSet(ReadOnlyModelViewSet):
         return Message.objects.all()
 
     @action(detail=False, methods=["post"])
-    @swagger_auto_schema(responses={status.HTTP_200_OK: MessageSerializer})
     def publish(self, request, *args, **kwargs):
         """
         For development purposes only.
