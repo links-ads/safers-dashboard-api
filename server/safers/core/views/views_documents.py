@@ -4,7 +4,7 @@ from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import status
 
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiTypes
 
 from safers.core.models import Document
 
@@ -19,8 +19,8 @@ class DocumentView(generics.RetrieveAPIView):
     lookup_field = "slug"
     lookup_url_kwarg = "document_slug"
 
-    @swagger_auto_schema(
-        responses={status.HTTP_200_OK: "FileResponse"},
+    @extend_schema(
+        responses={(status.HTTP_200_OK, "application/pdf"): OpenApiTypes.BINARY}
     )
     def get(self, request, *args, **kwargs):
         """
