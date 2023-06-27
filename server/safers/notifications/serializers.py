@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
+from drf_spectacular.utils import extend_schema_field
+
 from safers.notifications.models import Notification, NotificationGeometry
 
 
@@ -50,11 +52,15 @@ class NotificationSerializer(serializers.ModelSerializer):
     bounding_box = serializers.SerializerMethodField()
     message = serializers.JSONField(write_only=True)
 
-    def get_center(self, obj):
+    @extend_schema_field({"type": "object", "example": [12.9721, 77.5933]})
+    def get_center(self, obj) -> list:
         coords = obj.center.coords
         return map(lambda x: round(x, Notification.PRECISION), coords)
 
-    def get_bounding_box(self, obj):
+    @extend_schema_field({
+        "type": "object", "example": [12.97, 77.59, 13.00, 78.00]
+    })
+    def get_bounding_box(self, obj) -> list:
         coords = obj.bounding_box.extent
         return map(lambda x: round(x, Notification.PRECISION), coords)
 
