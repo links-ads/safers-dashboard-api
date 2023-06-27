@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
+from drf_spectacular.utils import extend_schema_field
+
 from safers.users.models import Organization
 
 from safers.core.fields import UnderspecifiedDateTimeField
@@ -48,6 +50,13 @@ class CommunicationSerializer(serializers.ModelSerializer):
 
     location = serializers.SerializerMethodField()
 
+    @extend_schema_field({
+        "type": "object",
+        "example": {
+            "longitude": 12.9721,
+            "latitude": 77.5933,
+        }
+    })
     def get_location(self, obj):
         if obj.geometry:
             return obj.geometry.coords

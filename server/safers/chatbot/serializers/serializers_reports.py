@@ -3,6 +3,8 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, ISO_8601
 from rest_framework_gis import serializers as gis_serializers
 
+from drf_spectacular.utils import extend_schema_field
+
 from safers.chatbot.models import Report, ReportHazardTypes, ReportStatusTypes, ReportContentTypes, ReportVisabilityTypes
 
 from .serializers_base import ChatbotViewSerializer
@@ -87,15 +89,37 @@ class ReportSerializer(serializers.ModelSerializer):
     categories = serializers.SerializerMethodField()
     categories_info = serializers.SerializerMethodField()
 
+    @extend_schema_field({
+        "type": "object",
+        "example": {
+            "longitude": 12.9721,
+            "latitude": 77.5933,
+        }
+    })
     def get_location(self, obj):
         if obj.geometry:
             return obj.geometry.coords
 
+    @extend_schema_field({"type": "object", "example": ["People"]})
     def get_categories(self, obj):
         # only returning the category_group
         categories_groups = [category["group"] for category in obj.categories]
         return set(categories_groups)
 
+    @extend_schema_field({
+        "type":
+            "object",
+        "example": [
+            "Infected: 1",
+            "Dead: 0",
+            "Evacuated: 15",
+            "Missing: 0",
+            "Injured: 5",
+            "Recovered: 1",
+            "Rescued: 25",
+            "Hospitalized: 2",
+        ]
+    })
     def get_categories_info(self, obj):
         categories_info = []
         for category in obj.categories:

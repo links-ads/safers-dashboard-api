@@ -1,7 +1,7 @@
-import json
-
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
+
+from drf_spectacular.utils import extend_schema_field
 
 from safers.chatbot.models import Mission, MissionStatusChoices
 from .serializers_base import ChatbotViewSerializer, ChatbotDateTimeFormats
@@ -57,6 +57,13 @@ class MissionSerializer(serializers.ModelSerializer):
 
     location = serializers.SerializerMethodField()
 
+    @extend_schema_field({
+        "type": "object",
+        "example": {
+            "longitude": 12.9721,
+            "latitude": 77.5933,
+        }
+    })
     def get_location(self, obj):
         if obj.geometry:
             return obj.geometry.coords
