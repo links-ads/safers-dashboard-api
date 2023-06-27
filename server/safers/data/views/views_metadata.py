@@ -8,8 +8,7 @@ from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiTypes, OpenApiExample
 
 from safers.core.authentication import TokenAuthentication
 
@@ -22,18 +21,33 @@ class DataLayerMetadataView(views.APIView):
 
     permission_classes = [IsAuthenticated, IsRemote]
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
                 "metadata_format",
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_STRING,
+                location="query",
+                description="The type of metadata to return.",
                 enum=METADATA_FORMAT_TYPES,
+                default="json",
                 required=False,
             )
         ],
         responses={
-            status.HTTP_200_OK: openapi.Schema(type=openapi.TYPE_STRING)
+            status.HTTP_200_OK:
+                OpenApiResponse(
+                    OpenApiTypes.ANY,
+                    examples=[
+                        OpenApiExample(
+                            "json response",
+                            {
+                                "key1": "value1",
+                                "key2": "value2",
+                                "keyN": "valueN",
+                            }
+                        ),
+                        OpenApiExample("text response", "string")
+                    ]
+                ),
         }
     )
     def get(self, request, *args, **kwargs):

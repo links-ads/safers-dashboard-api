@@ -1,18 +1,15 @@
-import requests
 from collections import OrderedDict, defaultdict
 from datetime import datetime
 from urllib.parse import quote_plus, urlencode, urljoin
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.decorators import method_decorator
 
 from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 
 from safers.core.decorators import swagger_fake
@@ -34,32 +31,34 @@ UserModel = get_user_model()
 # swagger #
 ###########
 
-_map_request_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "id": "0736d0dd-6dd4-48dd-8a3c-586ec8ab61b2",
-        "request_id": "string",
-        "timestamp": "2022-07-04T14:09:31.618887Z",
-        "user": "c1090335-a744-4a46-8712-24b6a45cc553",
-        "category": "Fire Simulation",
-        "parameters": {},
-        "geometry": {},
-        "geometry_wkt": "POLYGON ((1 2, 3 4, 5 6, 1 2))",
-        "layers": [
+_map_request_schema = OpenApiResponse(
+    OpenApiTypes.ANY,
+    examples=[
+        OpenApiExample(
+            "valid response",
             {
-                "datatype_id": "string",
-                "name": "string",
-                "source": "string",
-                "domain": "string",
-                "info": "string",
-                "info_url": None,
-                "status": "PROCESSING",
-                "message": None,
+                "id": "0736d0dd-6dd4-48dd-8a3c-586ec8ab61b2",
+                "request_id": "string",
+                "timestamp": "2022-07-04T14:09:31.618887Z",
+                "user": "c1090335-a744-4a46-8712-24b6a45cc553",
+                "category": "Fire Simulation",
+                "parameters": {},
+                "geometry": {},
+                "geometry_wkt": "POLYGON ((1 2, 3 4, 5 6, 1 2))",
+                "layers": [{
+                    "datatype_id": "string",
+                    "name": "string",
+                    "source": "string",
+                    "domain": "string",
+                    "info": "string",
+                    "info_url": None,
+                    "status": "PROCESSING",
+                    "message": None,
+                }]
             }
-        ]
-    }
+        )
+    ]
 )  # yapf: disable
-
 
 _on_demand_layer_view_response = OpenApiResponse(
     OpenApiTypes.ANY,
@@ -125,20 +124,15 @@ _on_demand_layer_view_response = OpenApiResponse(
     ]
 )  # yapf: disable
 
-_map_request_domains_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-)  # yapf: disable
-
-
 #########
 # views #
 #########
 
 
-# @method_decorator(
-#     swagger_auto_schema(responses={status.HTTP_200_OK: _map_request_schema}),
-#     name="create",
-# )
+@method_decorator(
+    extend_schema(responses={status.HTTP_200_OK: _map_request_schema}),
+    name="create",
+)
 class MapRequestViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
