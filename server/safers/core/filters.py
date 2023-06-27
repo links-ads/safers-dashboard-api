@@ -1,4 +1,3 @@
-from copy import deepcopy
 from datetime import datetime, timedelta
 
 from django.contrib.gis.geos import Polygon
@@ -7,64 +6,8 @@ from django.utils import timezone
 
 from rest_framework.exceptions import ParseError
 
-from rest_framework_gis.filterset import GeoFilterSet
-
 from django_filters import rest_framework as filters
 from django_filters import fields as filters_fields
-
-from drf_yasg import openapi
-from drf_yasg.inspectors import CoreAPICompatInspector
-
-
-class SwaggerFilterInspector(CoreAPICompatInspector):
-    """
-    Make sure that filter widgets are rendered nicely in swagger
-    idea came from https://github.com/axnsan12/drf-yasg/issues/514
-    """
-    def get_filter_parameters(self, filter_backend):
-
-        parameters = []
-
-        for parameter, (field_name, filter_field) in zip(
-            super().get_filter_parameters(filter_backend),
-            filter_backend.get_filterset_class(self.view).base_filters.items()
-        ):
-            assert parameter.name == field_name, "Error mapping filter fields to swagger"
-
-            filter_field_type = type(filter_field)
-
-            if issubclass(filter_field_type, filters.BooleanFilter):
-                parameter.type = openapi.TYPE_BOOLEAN
-            elif issubclass(filter_field_type, filters.ModelChoiceFilter):
-                model_qs = filter_field.extra.get("queryset")
-                if model_qs:
-                    parameter.enum = list(
-                        model_qs.values_list(
-                            filter_field.extra.get("to_field_name", "pk"),
-                            flat=True
-                        )
-                    )
-            elif issubclass(filter_field_type, filters.ChoiceFilter):
-                parameter.enum = [
-                    choice[0] for choice in filter_field.extra.get("choices")
-                ]
-            elif issubclass(filter_field_type, filters.DateFilter):
-                parameter.format = openapi.FORMAT_DATE
-            elif issubclass(filter_field_type, filters.DateTimeFilter):
-                parameter.format = openapi.FORMAT_DATETIME
-            # elif issubclass(
-            #     filter_field_type, filters.IsoDateTimeFromToRangeFilter
-            # ):
-            #     after_parameter = deepcopy(parameter)
-            #     after_parameter.name = f"{field_name}_after"
-            #     parameters.append(after_parameter)
-            #     before_parameter = deepcopy(parameter)
-            #     before_parameter.name = f"{field_name}_before"
-            #     parameters.append(before_parameter)
-
-            parameters.append(parameter)
-
-        return parameters
 
 
 class CharInFilter(filters.BaseInFilter, filters.CharFilter):

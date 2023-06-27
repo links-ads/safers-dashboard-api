@@ -65,7 +65,6 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "dbbackup",
     "django_filters",
-    "drf_yasg",
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "rest_framework",
