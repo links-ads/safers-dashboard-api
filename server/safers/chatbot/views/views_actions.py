@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiTypes, OpenApiExample
 
 from safers.core.clients import GATEWAY_CLIENT
 
@@ -27,13 +27,11 @@ class ActionListView(ActionView):
 
     GATEWAY_URL_PATH = "/api/services/app/Actions/GetActions"
 
-    # @swagger_auto_schema(
-    #     query_serializer=ActionViewSerializer,
-    #     responses={status.HTTP_200_OK: ActionSerializer},
-    # )
-    @extend_schema(responses={
-        status.HTTP_200_OK: ActionSerializer,
-    })
+    @extend_schema(
+        responses={
+            status.HTTP_200_OK: ActionSerializer(many=True),
+        }
+    )
     def get(self, request, *args, **kwargs):
 
         proxy_data = self.get_proxy_list_data(
@@ -63,14 +61,20 @@ class ActionListView(ActionView):
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
 
 
-# _action_activities_schema = openapi.Schema(
-#     type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-# )
-#
-#
-# @swagger_auto_schema(
-#     responses={status.HTTP_200_OK: _action_activities_schema}, method="get"
-# )
+@extend_schema(
+    request=None,
+    responses={
+        status.HTTP_200_OK:
+            OpenApiResponse(
+                OpenApiTypes.ANY,
+                examples=[
+                    OpenApiExample(
+                        "valid response", ActionActivityTypes.values
+                    )
+                ]
+            ),
+    }
+)
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def action_activities_view(request):
@@ -82,14 +86,18 @@ def action_activities_view(request):
     )
 
 
-# _action_statuses_schema = openapi.Schema(
-#     type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-# )
-#
-#
-# @swagger_auto_schema(
-#     responses={status.HTTP_200_OK: _action_statuses_schema}, method="get"
-# )
+@extend_schema(
+    request=None,
+    responses={
+        status.HTTP_200_OK:
+            OpenApiResponse(
+                OpenApiTypes.ANY,
+                examples=[
+                    OpenApiExample("valid response", ActionStatusTypes.values)
+                ]
+            ),
+    }
+)
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def action_statuses_view(request):

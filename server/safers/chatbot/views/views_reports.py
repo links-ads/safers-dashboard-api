@@ -10,8 +10,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiTypes, OpenApiExample
 
 from safers.core.authentication import TokenAuthentication
 
@@ -19,56 +18,6 @@ from safers.chatbot.models import Report, ReportCategory
 from safers.chatbot.serializers import ReportSerializer, ReportViewSerializer
 
 from .views_base import ChatbotView, parse_none, parse_datetime
-
-_report_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    example={
-        "name": "Report 123",
-        "report_id": "123",
-        "mission_id": "456",
-        "timestamp": "2022-05-04T13:19:15.004Z",
-        "source": "Chatbot",
-        "hazard": "Fire",
-        "status": "Notified",
-        "content": "Submitted",
-        "visibility": "Private",
-        "description": "report fire on the hills",
-        "reporter": {
-            "name": "first.responder.test.2",
-            "organization": "Test Organization"
-        },
-        "media": [
-            {
-                "url": "https://safersblobstoragetest.blob.core.windows.net/reports/000019/113b8271-30b1-4987-a5d0-6ebac839bae2.jpeg",
-                "thumbnail": "https://safersblobstoragetest.blob.core.windows.net/thumbnails/000019/113b8271-30b1-4987-a5d0-6ebac839bae2.jpeg",
-                "type": "Image",
-            },
-        ],
-        "categories": [
-            "People"
-        ],
-        "categories_info": [
-            "Infected: 1",
-            "Dead: 0",
-            "Evacuated: 15",
-            "Missing: 0",
-            "Injured: 5",
-            "Recovered: 1",
-            "Rescued: 25",
-            "Hospitalized: 2",
-        ],
-        "geometry": {
-            "type": "Point",
-            "coordinates": [1, 2]
-        },
-        "location": [1, 2],
-  }
-)  # yapf: disable
-
-
-_report_list_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=_report_schema
-)
 
 
 class ReportView(ChatbotView):
@@ -81,9 +30,9 @@ class ReportListView(ReportView):
 
     GATEWAY_URL_LIST_PATH = "/api/services/app/Reports/GetReports"
 
-    @swagger_auto_schema(
-        query_serializer=ReportViewSerializer,
-        responses={status.HTTP_200_OK: _report_list_schema},
+    @extend_schema(
+        request=ReportViewSerializer,
+        responses={status.HTTP_200_OK: ReportSerializer(many=True)}
     )
     def get(self, request, *args, **kwargs):
 
@@ -156,10 +105,7 @@ class ReportDetailView(ReportView):
 
     GATEWAY_URL_DETAIL_PATH = "/api/services/app/Reports/GetReportById"
 
-    @swagger_auto_schema(
-        query_serializer=ReportViewSerializer,
-        responses={status.HTTP_200_OK: _report_schema},
-    )
+    @extend_schema(responses={status.HTTP_200_OK: ReportSerializer})
     def get(self, request, *args, **kwargs):
 
         proxy_params = {
@@ -234,13 +180,20 @@ class ReportDetailView(ReportView):
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
 
 
-_report_categories_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-)
-
-
-@swagger_auto_schema(
-    responses={status.HTTP_200_OK: _report_categories_schema}, method="get"
+@extend_schema(
+    request=None,
+    responses={
+        status.HTTP_200_OK:
+            OpenApiResponse(
+                OpenApiTypes.ANY,
+                examples=[
+                    OpenApiExample(
+                        "valid response",
+                        ["Damages", "Effects", "Measurements", "People"]
+                    )
+                ]
+            ),
+    }
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -248,11 +201,9 @@ def report_categories_view(request):
     """
     Returns the list of possible Report categories.
     """
-    report_categories_groups = ReportCategory.objects.order_by("group"
-                                                              ).values_list(
-                                                                  "group",
-                                                                  flat=True
-                                                              ).distinct()
+    report_categories_groups = ReportCategory.objects.only("group").order_by(
+        "group"
+    ).values_list("group", flat=True).distinct()
     return Response(report_categories_groups, status=status.HTTP_200_OK)
 
 

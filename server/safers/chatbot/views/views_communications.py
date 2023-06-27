@@ -1,7 +1,5 @@
 import json
 import requests
-from collections import OrderedDict
-from datetime import datetime
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -12,8 +10,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.utils.encoders import JSONEncoder
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiTypes, OpenApiExample
 
 from safers.core.authentication import TokenAuthentication
 
@@ -23,12 +20,6 @@ from safers.chatbot.models import Communication
 from safers.chatbot.serializers import CommunicationSerializer, CommunicationCreateSerializer, CommunicationViewSerializer
 
 from .views_base import ChatbotView, parse_datetime, parse_none
-
-_communication_create_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties=OrderedDict((("msg", openapi.Schema(type=openapi.TYPE_STRING)), )
-                          )
-)
 
 
 class CommunicationView(ChatbotView):
@@ -42,12 +33,14 @@ class CommunicationListView(CommunicationView):
     GATEWAY_URL_LIST_PATH = "/api/services/app/Communications/GetCommunications"
     GATEWAY_URL_CREATE_PATH = "/api/services/app/Communications/CreateOrUpdateCommunication"
 
-    @swagger_auto_schema(
-        query_serializer=CommunicationViewSerializer,
-        responses={status.HTTP_200_OK: CommunicationSerializer},
+    @extend_schema(
+        request=CommunicationViewSerializer,
+        responses={status.HTTP_200_OK: CommunicationSerializer(many=True)}
     )
     def get(self, request, *args, **kwargs):
-
+        """
+        Return all communications for the user making the request
+        """
         proxy_data = self.get_proxy_list_data(
             request,
             proxy_url=urljoin(
@@ -91,12 +84,25 @@ class CommunicationListView(CommunicationView):
 
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        request_body=CommunicationCreateSerializer,
-        responses={status.HTTP_200_OK: _communication_create_schema}
+    @extend_schema(
+        request=CommunicationCreateSerializer,
+        responses={
+            status.HTTP_200_OK:
+                OpenApiResponse(
+                    OpenApiTypes.OBJECT,
+                    examples=[
+                        OpenApiExample(
+                            "valid responese",
+                            {"msg": "successfully created <name>"}
+                        )
+                    ]
+                )
+        }
     )
     def post(self, request, *args, **kwargs):
-
+        """
+        Create a new communication.
+        """
         serializer = CommunicationCreateSerializer(
             data=request.data,
             context=self.get_serializer_context(),
@@ -132,8 +138,8 @@ class CommunicationListView(CommunicationView):
             )
             response.raise_for_status()
 
-        except Exception as e:
-            raise APIException(e)
+        except Exception as exeption:
+            raise APIException(exeption) from exeption
 
         instance.communication_id = response.json(
         )["feature"]["properties"].get("id")

@@ -14,8 +14,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.utils.encoders import JSONEncoder
 from rest_framework.response import Response
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiTypes, OpenApiExample
 
 from safers.core.authentication import TokenAuthentication
 
@@ -25,40 +24,6 @@ from safers.chatbot.serializers import MissionSerializer, MissionCreateSerialize
 from .views_base import ChatbotView, parse_datetime, parse_none
 
 logger = logging.getLogger(__name__)
-
-_mission_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties=OrderedDict((
-        ("id", openapi.Schema(type=openapi.TYPE_STRING)),
-        ("name", openapi.Schema(type=openapi.TYPE_STRING)),
-        ("description", openapi.Schema(type=openapi.TYPE_STRING)),
-        ("username", openapi.Schema(type=openapi.TYPE_STRING)),
-        ("organization", openapi.Schema(type=openapi.TYPE_STRING)),
-        ("start", openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME)),
-        ("end", openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME)),
-        ("status", openapi.Schema(type=openapi.TYPE_STRING, example="Created")),
-        ("source", openapi.Schema(type=openapi.TYPE_STRING, example="Chatbot")),
-        ("reports", openapi.Schema(type=openapi.TYPE_OBJECT, example=[
-            {"name": "Report N", "id": "N"}
-        ])),
-        ("geometry", openapi.Schema(type=openapi.TYPE_OBJECT, example={
-            "type": "Point",
-            "coordinates": [1,2]
-        })),
-        ("location", openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_NUMBER), example=[1, 2])),
-    ))
-)  # yapf: disable
-
-
-_mission_list_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=_mission_schema
-)
-
-_mission_create_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties=OrderedDict((("msg", openapi.Schema(type=openapi.TYPE_STRING)), )
-                          )
-)
 
 
 class MissionView(ChatbotView):
@@ -72,9 +37,9 @@ class MissionListView(MissionView):
     GATEWAY_URL_LIST_PATH = "/api/services/app/Missions/GetMissions"
     GATEWAY_URL_CREATE_PATH = "/api/services/app/Missions/CreateOrUpdateMission"
 
-    @swagger_auto_schema(
-        query_serializer=MissionViewSerializer,
-        responses={status.HTTP_200_OK: _mission_list_schema},
+    @extend_schema(
+        request=MissionViewSerializer,
+        responses={status.HTTP_200_OK: MissionSerializer(many=True)}
     )
     def get(self, request, *args, **kwargs):
         """
@@ -121,9 +86,20 @@ class MissionListView(MissionView):
 
         return Response(data=model_serializer.data, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        request_body=MissionCreateSerializer,
-        responses={status.HTTP_200_OK: _mission_create_schema}
+    @extend_schema(
+        request=MissionCreateSerializer,
+        responses={
+            status.HTTP_200_OK:
+                OpenApiResponse(
+                    OpenApiTypes.OBJECT,
+                    examples=[
+                        OpenApiExample(
+                            "valid responese",
+                            {"msg": "successfully created <name>"}
+                        )
+                    ]
+                )
+        }
     )
     def post(self, request, *args, **kwargs):
         """
@@ -177,13 +153,19 @@ class MissionListView(MissionView):
         return Response({"msg": msg}, status=status.HTTP_200_OK)
 
 
-_mission_statuses_schema = openapi.Schema(
-    type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)
-)
-
-
-@swagger_auto_schema(
-    responses={status.HTTP_200_OK: _mission_statuses_schema}, method="get"
+@extend_schema(
+    request=None,
+    responses={
+        status.HTTP_200_OK:
+            OpenApiResponse(
+                OpenApiTypes.ANY,
+                examples=[
+                    OpenApiExample(
+                        "valid response", MissionStatusChoices.values
+                    )
+                ]
+            ),
+    }
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])

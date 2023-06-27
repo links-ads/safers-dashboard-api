@@ -105,11 +105,11 @@ class Communication(gis_models.Model):
     geometry = gis_models.GeometryField(blank=False, null=False)
 
     @property
-    def name(self):
+    def name(self) -> str:
         return f"Communication {self.communication_id}"
 
     @property
-    def status(self):
+    def status(self) -> str:
         now = timezone.now().date()
         end = self.end.date()
         if self.end_inclusive and end >= now:
@@ -120,7 +120,7 @@ class Communication(gis_models.Model):
             return CommunicationStatusTypes.EXPIRED
 
     @property
-    def target(self):
+    def target(self) -> str:
         if self.scope == CommunicationScopeTypes.PUBLIC:
             return self.scope
         elif self.scope == CommunicationScopeTypes.RESTRICTED:
