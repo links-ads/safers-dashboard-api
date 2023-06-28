@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
+from drf_spectacular.utils import extend_schema_field
+
 from safers.alerts.models import Alert, AlertGeometry, AlertType
 
 
@@ -46,10 +48,14 @@ class AlertSerializer(serializers.ModelSerializer):
     bounding_box = serializers.SerializerMethodField()
     message = serializers.JSONField(write_only=True)
 
+    @extend_schema_field({"type": "object", "example": [12.9721, 77.5933]})
     def get_center(self, obj):
         coords = obj.center.coords
         return map(lambda x: round(x, Alert.PRECISION), coords)
 
+    @extend_schema_field({
+        "type": "object", "example": [12.97, 77.59, 13.00, 78.00]
+    })
     def get_bounding_box(self, obj):
         coords = obj.bounding_box.extent
         return map(lambda x: round(x, Alert.PRECISION), coords)
@@ -114,7 +120,7 @@ class AlertViewSetSerializer(AlertSerializer):
 
     favorite = serializers.SerializerMethodField(method_name="is_favorite")
 
-    def is_favorite(self, obj):
+    def is_favorite(self, obj) -> bool:
         # a bit of indirection here to prevent multiple db hits
         favorite_alert_ids = self.context.get("favorite_alert_ids", [])
         return obj.id in favorite_alert_ids

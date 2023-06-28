@@ -195,7 +195,7 @@ class Alert(models.Model):
     )
 
     @property
-    def title(self):
+    def title(self) -> str:
         title = self.name
         if self.category:
             title += f" [{self.category}]"

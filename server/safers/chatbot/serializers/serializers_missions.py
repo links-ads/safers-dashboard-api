@@ -116,7 +116,7 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     duration = serializers.SerializerMethodField()
 
-    def get_duration(self, obj):
+    def get_duration(self, obj) -> dict:
         return {
             "lowerBound": obj.start,
             "upperBound": obj.end,
@@ -124,7 +124,7 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
             "upperBoundIsInclusive": obj.end_inclusive,
         }
 
-    def get_organization_id(self, obj):
+    def get_organization_id(self, obj) -> int | None:
         user = self.context["request"].user
         if user.organization:
             return int(user.organization.organization_id)

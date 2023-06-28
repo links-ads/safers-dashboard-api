@@ -161,7 +161,7 @@ class Report(gis_models.Model):
         return f"{self.report_id}"
 
     @property
-    def name(self):
+    def name(self) -> str:
 
         if self.reporter.get("organization"):
             report_scope = "PRO"  # user has organization => professional report
@@ -190,7 +190,7 @@ class Report(gis_models.Model):
         )
 
     @property
-    def visibility(self):
+    def visibility(self) -> str:
         if self.is_public:
             return ReportVisabilityTypes.PUBLIC
         return ReportVisabilityTypes.PRIVATE

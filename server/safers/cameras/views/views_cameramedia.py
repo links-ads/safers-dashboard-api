@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
+from drf_spectacular.utils import extend_schema, extend_schema_field, OpenApiExample, OpenApiResponse, OpenApiTypes
 
 from safers.core.decorators import swagger_fake
 from safers.core.filters import CaseInsensitiveChoiceFilter, CharInFilter, DefaultFilterSetMixin, MultiFieldOrderingFilter
@@ -76,6 +76,7 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         )
     )
 
+    @extend_schema_field(OpenApiTypes.STR)
     def bbox_filter(self, queryset, name, value):
 
         try:

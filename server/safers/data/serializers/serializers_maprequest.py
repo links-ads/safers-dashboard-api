@@ -137,7 +137,7 @@ class MapRequestDataTypeSerializer(serializers.ModelSerializer):
     info = serializers.CharField(source="data_type.info")
     proxy_details = serializers.SerializerMethodField()
 
-    def get_proxy_details(self, obj):
+    def get_proxy_details(self, obj) -> dict:
         request_id = obj.map_request.request_id
         datatype_id = obj.data_type.datatype_id
         proxy_details = self.context.get("proxy_details", {})

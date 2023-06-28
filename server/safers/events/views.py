@@ -16,7 +16,7 @@ from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_field, OpenApiTypes
 
 from safers.core.decorators import swagger_fake
 from safers.core.filters import DefaultFilterSetMixin, MultiFieldOrderingFilter
@@ -79,6 +79,7 @@ class EventFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         }
         return queryset.filter(**filter_kwargs)
 
+    @extend_schema_field(OpenApiTypes.STR)
     def bbox_method(self, queryset, name, value):
 
         try:
