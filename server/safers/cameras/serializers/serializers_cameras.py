@@ -3,7 +3,7 @@ from collections import OrderedDict
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.utils import extend_schema_field, OpenApiTypes
 
 from safers.cameras.models import Camera
 
@@ -51,6 +51,7 @@ class CameraDetailSerializer(serializers.ModelSerializer):
                 "latitude": latitude,
             }
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_description(self, obj):
         descriptors = OrderedDict((
             ("name", obj.name),

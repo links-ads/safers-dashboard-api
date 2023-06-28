@@ -77,7 +77,7 @@ class Mission(gis_models.Model):
     geometry = gis_models.GeometryField(blank=False, null=False)
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.title or f"Mission {self.mission_id}"
 
     def save(self, *args, **kwargs):

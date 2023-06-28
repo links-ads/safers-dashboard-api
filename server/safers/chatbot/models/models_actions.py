@@ -82,7 +82,7 @@ class Action(gis_models.Model):
     geometry = gis_models.GeometryField(blank=False, null=False)
 
     @property
-    def name(self):
+    def name(self) -> str:
         return f"Action {self.action_id}"
 
     def save(self, *args, **kwargs):

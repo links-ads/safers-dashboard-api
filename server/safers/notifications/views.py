@@ -14,7 +14,7 @@ from rest_framework.response import Response
 
 from django_filters import rest_framework as filters
 
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiTypes, OpenApiExample
+from drf_spectacular.utils import extend_schema, extend_schema_field, OpenApiResponse, OpenApiTypes, OpenApiExample
 
 from safers.core.decorators import swagger_fake
 from safers.core.filters import DefaultFilterSetMixin, CaseInsensitiveChoiceFilter
@@ -91,6 +91,7 @@ class NotificationFilterSet(DefaultFilterSetMixin, filters.FilterSet):
             return queryset.filter(restriction=value)
         return queryset
 
+    @extend_schema_field(OpenApiTypes.STR)
     def bbox_method(self, queryset, name, value):
 
         try:

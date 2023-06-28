@@ -1,7 +1,10 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
+from drf_spectacular.utils import extend_schema_field
 
+
+@extend_schema_field({"type": "object", "example": [12.9721, 77.5933]})
 class SimplifiedGeometryField(serializers.Field):
     """
     Don't deal w/ rest_framework_gis stuff;

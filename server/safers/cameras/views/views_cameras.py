@@ -9,6 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from django_filters import rest_framework as filters
 
+from drf_spectacular.utils import extend_schema_field, OpenApiTypes
+
 from safers.core.filters import DefaultFilterSetMixin
 
 from safers.cameras.models import Camera
@@ -37,6 +39,7 @@ class CameraFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         )
     )
 
+    @extend_schema_field(OpenApiTypes.STR)
     def bbox_method(self, queryset, name, value):
 
         try:

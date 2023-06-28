@@ -264,13 +264,13 @@ class MapRequest(gis_models.Model):
     )
 
     @property
-    def category(self):
+    def category(self) -> str:
         category = self.data_types.values_list("group", flat=True).first()
         if category:
             return category.title()
 
     @property
-    def category_info(self):
+    def category_info(self) -> dict:
         category_info = self.data_types.values("group", "group_info").first()
         return category_info
 
