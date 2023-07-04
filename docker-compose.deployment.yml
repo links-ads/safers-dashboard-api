@@ -1,0 +1,67 @@
+version: "3"
+
+services:
+
+  safers-deployment-db:
+    image: kartoza/postgis:latest
+    environment:
+      POSTGRES_DBNAME: safers_db
+      POSTGRES_USER: safers_user
+      POSTGRES_PASS: safers_pwd
+      ALLOW_IP_RANGE: 0.0.0.0/0
+    networks:
+      - safers-deployment
+    ports:
+      - "5666:5432"
+
+  safers-deployment-server:
+    build:
+      context: .
+    tty: true
+    env_file:
+      - .env
+    environment:
+      SYS_ENV: deployment
+      ENABLE_GUNICORN: 1
+      DJANGO_SETTINGS_MODULE: config.settings
+    working_dir: /home/app/server
+    volumes:
+      - ./server:/home/app/server
+    networks:
+      - safers-deployment
+    ports:
+      - "8000:8000" # API
+      - "8080:8080" # profiling
+
+  safers-deployment-worker:
+    build: .
+    tty: true
+    env_file:
+      - .env
+    environment:
+      SYS_ENV: deployment
+      ENABLE_RMQ_WORKER: 1
+      DJANGO_SETTINGS_MODULE: config.settings
+    volumes:
+      - ./server:/home/app/server
+    networks:
+      - safers-deployment
+
+  safers-deployment-scheduler:
+    build: .
+    env_file:
+      - .env
+    environment:
+      SYS_ENV: deployment
+      ENABLE_CRON: 1
+      DJANGO_SETTINGS_MODULE: config.settings
+    volumes:
+      - ./server:/home/app/server
+      - ./scheduler:/home/app/scheduler
+    networks:
+      - safers-deployment
+
+networks:
+  safers-deployment:
+    name: safers-deployment
+    driver: bridge

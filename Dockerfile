@@ -17,6 +17,7 @@ WORKDIR $APP_HOME
 
 # set all services to be off (0); they can be explicitly enabled (1) at runtime
 ENV ENABLE_DJANGO=0
+ENV ENABLE_GUNICORN=0
 ENV ENABLE_UWSGI=0
 ENV ENABLE_RMQ_WORKER=0
 ENV ENABLE_CRON=0
