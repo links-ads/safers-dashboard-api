@@ -170,10 +170,15 @@ class MapRequestViewSet(
         return all MapRequests owned by this user / organization
         """
         current_user = self.request.user
-        if current_user.organization_name:
-            organization_users = UserModel.objects.filter(
-                organization_name=current_user.organization_name
-            ).active()
+        if current_user.organization_name is not None:
+            organization_users = set(
+                UserModel.objects.only(
+                    "organization_name", "is_active", "pk"
+                ).filter(
+                    organization_name=current_user.organization_name,
+                    is_active=True,
+                ).values_list("pk", flat=True)
+            )
             queryset = MapRequest.objects.filter(user__in=organization_users)
         else:
             queryset = current_user.map_requests.all()
