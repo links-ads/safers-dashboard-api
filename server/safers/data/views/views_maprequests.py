@@ -12,6 +12,8 @@ from rest_framework.response import Response
 
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 
+from silk.profiling.profiler import silk_profile
+
 from safers.core.decorators import swagger_fake
 from safers.core.clients import GATEWAY_CLIENT
 
@@ -201,6 +203,7 @@ class MapRequestViewSet(
         request=None,
         responses={status.HTTP_200_OK: _on_demand_layer_view_response}
     )
+    @silk_profile(name='List MapRequests')
     def list(self, request, *args, **kwargs):
         """
         does the normal ListModelMixin stuff to get local MapRequests
