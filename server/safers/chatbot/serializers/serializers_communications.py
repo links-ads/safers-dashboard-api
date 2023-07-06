@@ -113,5 +113,5 @@ class CommunicationCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
     def get_target_organization_ids(self, obj) -> list:
         user = self.context["request"].user
         if user.organization:
-            return [user.organization.organization_id]
+            return [user.organization.id]
         return []
