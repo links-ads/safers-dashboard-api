@@ -127,7 +127,7 @@ class MissionCreateSerializer(gis_serializers.GeoFeatureModelSerializer):
     def get_organization_id(self, obj) -> int | None:
         user = self.context["request"].user
         if user.organization:
-            return int(user.organization.organization_id)
+            return user.organization.id
         return None
 
     def to_representation(self, instance):
