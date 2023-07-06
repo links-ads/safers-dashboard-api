@@ -34,6 +34,7 @@ class DataTypeAdmin(admin.ModelAdmin):
         "source",
         "domain",
         "feature_string",
+        "opacity",
         "is_on_demand",
         "extra_info",
     )
@@ -107,6 +108,7 @@ class DataTypeAdmin(admin.ModelAdmin):
             "Responsible": "source",
             "Domain": "domain",
             "GetFeatureInfo Format": "feature_string",
+            "Opacity": "opacity",
             # (this is a CSV column but not a DB field;
             #  it is used to determine whether to process a CSV row
             #  - and it is conveniently ignored by the DB.)

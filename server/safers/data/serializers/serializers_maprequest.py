@@ -122,6 +122,7 @@ class MapRequestDataTypeSerializer(serializers.ModelSerializer):
             "title",
             "source",
             "domain",
+            "opacity",
             "feature_string",
             "status",
             "message",
@@ -134,6 +135,7 @@ class MapRequestDataTypeSerializer(serializers.ModelSerializer):
     source = serializers.CharField(source="data_type.source")
     domain = serializers.CharField(source="data_type.domain")
     feature_string = serializers.CharField(source="data_type.feature_string")
+    opacity = serializers.FloatField(source="data_type.opacity")
     info = serializers.CharField(source="data_type.info")
     proxy_details = serializers.SerializerMethodField()
 

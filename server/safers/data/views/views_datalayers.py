@@ -231,6 +231,7 @@ class OperationalLayerView(views.APIView):
         data_type_sources = {"None": None}
         data_type_domains = {"None": None}
         data_type_feature_strings = {"None": None}
+        data_type_opacity = {"None": None}
         for data_type in DataType.objects.operational():
             data_type_key = (
                 data_type.datatype_id or data_type.subgroup or data_type.group
@@ -239,6 +240,7 @@ class OperationalLayerView(views.APIView):
             data_type_sources[data_type_key] = data_type.source
             data_type_domains[data_type_key] = data_type.domain
             data_type_feature_strings[data_type_key] = data_type.feature_string
+            data_type_opacity[data_type_key] = data_type.opacity
 
         data = [
           {
@@ -272,6 +274,7 @@ class OperationalLayerView(views.APIView):
                         "title": layer["name"],
                         "text": next(iter(detail.get("timestamps") or []), None),
                         "units": layer.get("unitOfMeasure"),
+                        "opacity": data_type_opacity.get(str(layer.get("dataTypeId"))),
                         "feature_string": data_type_feature_strings.get(str(layer.get("dataTypeId"))),
                         "info": None,
                         "info_url": metadata_url.format(

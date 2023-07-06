@@ -101,6 +101,7 @@ class DataType(models.Model):
         null=True,
         help_text="format string to use when rendering output from GetFeatureInfo"
     )
+    opacity = models.FloatField(default=0.5)
     is_on_demand = models.BooleanField(default=False)
     extra_info = models.JSONField(blank=True, null=True)
 
