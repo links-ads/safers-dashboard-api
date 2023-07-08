@@ -138,19 +138,16 @@ if SENTRY_DSN:
 # Backups #
 ###########
 
-# # DBBACKUP_STORAGE = "safers.core.storage.PublicMediaS3Storage"
-# # stores backups at s3://<bucket-root>/backups/
-# DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+# DBBACKUP_STORAGE = "safers.core.storage.PublicMediaS3Storage"
+# stores backups at s3://<bucket-root>/backups/
+DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
-# # For available options, see:
-# # https://github.com/jschneier/django-storages/blob/master/storages/backends/s3boto3.py#L306-L338
-# DBBACKUP_STORAGE_OPTIONS = {
-#     "access_key": AWS_ACCESS_KEY_ID,
-#     "secret_key": AWS_SECRET_ACCESS_KEY,
-#     "bucket_name": AWS_STORAGE_BUCKET_NAME,
-#     "default_acl": "private",
-#     "location": "backups/",
-# }
-
-DBBACKUP_STORAGE = "django.core.files.storage.FileSystemStorage"
-DBBACKUP_STORAGE_OPTIONS = {"location": "/app/server/_media/"}
+# For available options, see:
+# https://github.com/jschneier/django-storages/blob/master/storages/backends/s3boto3.py#L306-L338
+DBBACKUP_STORAGE_OPTIONS = {
+    "access_key": AWS_ACCESS_KEY_ID,
+    "secret_key": AWS_SECRET_ACCESS_KEY,
+    "bucket_name": AWS_STORAGE_BUCKET_NAME,
+    "default_acl": "private",
+    "location": "backups/",
+}
