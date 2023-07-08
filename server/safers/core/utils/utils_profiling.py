@@ -24,3 +24,12 @@ class RegexPathMatcher(PathMatcher):
         for pattern in self.url_patterns:
             if re.match(pattern, path):
                 return True
+
+
+def is_profiling_enabled(request):
+    """
+    Dyanmically enable profiling
+    """
+    from safers.core.models import SafersSettings
+    settings = SafersSettings.load()
+    return settings.profile

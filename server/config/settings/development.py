@@ -123,11 +123,12 @@ LOGGING = {
 # Profiling #
 #############
 
-SILKY_PYTHON_PROFILER = True
-SILKY_PYTHON_PROFILER_BINARY = False  # do not generate ".prof" files
 SILKY_MAX_REQUEST_BODY_SIZE = -1  # accept all requests
 # SILKY_MAX_RESPONSE_BODY_SIZE = 1024
 SILKY_MAX_RECORDED_REQUESTS = 10**4
+
+SILKY_STORAGE_CLASS = "silk.storage.ProfilerResultStorage"
+SILKY_PYTHON_PROFILER_RESULT_PATH = f"{MEDIA_ROOT}/profiling/"
 
 ###########
 # Backups #

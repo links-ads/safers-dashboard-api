@@ -134,6 +134,16 @@ if SENTRY_DSN:
         send_default_pii=False
     )
 
+#############
+# Profiling #
+#############
+
+SILKY_MAX_REQUEST_BODY_SIZE = -1  # accept all requests
+# SILKY_MAX_RESPONSE_BODY_SIZE = 1024
+SILKY_MAX_RECORDED_REQUESTS = 10**4
+
+SILKY_STORAGE_CLASS = "safers.core.storage.PublicMediaS3Storage"
+
 ###########
 # Backups #
 ###########

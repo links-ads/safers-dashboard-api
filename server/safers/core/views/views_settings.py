@@ -5,6 +5,8 @@ from rest_framework.response import Response
 
 from drf_spectacular.utils import extend_schema
 
+from silk.profiling.profiler import silk_profile
+
 from safers.core.models import SafersSettings
 from safers.core.serializers import SafersSettingsSerializer
 
@@ -14,6 +16,7 @@ from safers.core.serializers import SafersSettingsSerializer
 })
 @permission_classes([AllowAny])
 @api_view(["GET"])
+@silk_profile(name="View Settings")
 def settings_view(request):
     """
     Returns some information required by the client for initial configuration

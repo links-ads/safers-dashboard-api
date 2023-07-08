@@ -15,6 +15,7 @@ from safers.core.utils import (
     DynamicSetting,
     RegexPathMatcher,
     backup_filename_template,
+    is_profiling_enabled,
 )
 
 #########
@@ -366,6 +367,10 @@ SILKY_SENSITIVE_KEYS = {
     "client_id",
     "client_secret",
 }
+
+SILKY_PYTHON_PROFILER = True
+SILKY_PYTHON_PROFILER_BINARY = True
+SILKY_PYTHON_PROFILER_FUNC = is_profiling_enabled
 
 # futher profiling details set in environment module
 
