@@ -212,5 +212,5 @@ Localization is enabled in **safers-dashboard-app**.  This localizes text used i
 
 ## profiling
 
-Profiling is handled using **silk*.  Request info can be monitored by going to "http://localhost:8000/silk".  All requests will provide high level timing information.  Actual profiling must be enabled on a per-view basis using the `silk_profile` decorator and/or context manager.
+Profiling is handled using **silk*.  Request info can be monitored by going to "http://localhost:8000/silk".  All requests will provide high level timing information.  Actual profiling (ie: tracking function calls rather than queries) can be enabled by setting `SafersSettings.profile` to True.  Then the `silk_profile` decorator and/or context manager can be used on a per-view basis.  Corresponding binary ".prof" files can be downloaded from w/in the silk GUI and then inspected using `snakeviz`.
 
