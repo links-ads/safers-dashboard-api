@@ -17,4 +17,5 @@ class SafersSettingsSerializer(serializers.ModelSerializer):
             "max_favorite_alerts",
             "max_favorite_events",
             "display_dashboard_notifications",
+            "display_menu_notifications",
         )

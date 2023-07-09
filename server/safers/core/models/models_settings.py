@@ -16,6 +16,11 @@ class SafersSettings(SingletonMixin, models.Model):
         help_text=_("Display the top panel of the general dashboard."),
     )
 
+    display_menu_notifications = models.BooleanField(
+        default=True,
+        help_text=_("Display the notification icons on the sidebar menu."),
+    )
+
     profile = models.BooleanField(
         default=False,
         help_text=_("Enable silk profiling on API Views."),
