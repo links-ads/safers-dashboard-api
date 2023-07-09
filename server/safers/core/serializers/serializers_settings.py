@@ -16,4 +16,5 @@ class SafersSettingsSerializer(serializers.ModelSerializer):
             "request_timeout",
             "max_favorite_alerts",
             "max_favorite_events",
+            "display_dashboard_notifications",
         )

@@ -11,8 +11,14 @@ class SafersSettings(SingletonMixin, models.Model):
         verbose_name = "Safers Settings"
         verbose_name_plural = "Safers Settings"
 
+    display_dashboard_notifications = models.BooleanField(
+        default=True,
+        help_text=_("Display the top panel of the general dashboard."),
+    )
+
     profile = models.BooleanField(
-        default=False, help_text=_("Enable silk profiling on API Views.")
+        default=False,
+        help_text=_("Enable silk profiling on API Views."),
     )
 
     allow_signup = models.BooleanField(
