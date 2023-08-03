@@ -211,6 +211,6 @@ class RMQ(object):
                         logger.error(e)
 
         if unhandled_method:
-            logger.error(
+            logger.info(
                 f"'{method.routing_key}' does not match any BINDING_KEYS"
             )
