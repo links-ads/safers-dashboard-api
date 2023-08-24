@@ -23,9 +23,9 @@ services:
     env_file:
       - .env.deployment
     environment:
-      SYS_ENV: deployment
-      ENABLE_GUNICORN: 1
+      DJANGO_ENVIRONMENT: deployment
       DJANGO_SETTINGS_MODULE: config.settings
+      ENABLE_GUNICORN: 1
     working_dir: /home/app/server
     volumes:
       - ./server:/home/app/server
@@ -41,9 +41,9 @@ services:
     env_file:
       - .env.deployment
     environment:
-      SYS_ENV: deployment
-      ENABLE_RMQ_WORKER: 1
+      DJANGO_ENVIRONMENT: deployment
       DJANGO_SETTINGS_MODULE: config.settings
+      ENABLE_RMQ_WORKER: 1
     volumes:
       - ./server:/home/app/server
     networks:
@@ -54,9 +54,9 @@ services:
     env_file:
       - .env.deployment
     environment:
-      SYS_ENV: deployment
-      ENABLE_CRON: 1
+      DJANGO_ENVIRONMENT: deployment
       DJANGO_SETTINGS_MODULE: config.settings
+      ENABLE_CRON: 1
     volumes:
       - ./server:/home/app/server
       - ./scheduler:/home/app/scheduler

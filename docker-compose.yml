@@ -82,9 +82,9 @@ services:
     env_file:
       - .env
     environment:
-      SYS_ENV: development
-      ENABLE_DJANGO: 1
+      DJANGO_ENVIRONMENT: development
       DJANGO_SETTINGS_MODULE: config.settings
+      ENABLE_DJANGO: 1
     working_dir: /home/app/server
     volumes:
       - ./server:/home/app/server
@@ -100,9 +100,9 @@ services:
     env_file:
       - .env
     environment:
-      SYS_ENV: development
-      ENABLE_RMQ_WORKER: 1
+      DJANGO_ENVIRONMENT: development
       DJANGO_SETTINGS_MODULE: config.settings
+      ENABLE_RMQ_WORKER: 1
     volumes:
       - ./server:/home/app/server
     networks:
@@ -113,9 +113,9 @@ services:
     env_file:
       - .env
     environment:
-      SYS_ENV: development
-      ENABLE_CRON: 1
+      DJANGO_ENVIRONMENT: development
       DJANGO_SETTINGS_MODULE: config.settings
+      ENABLE_CRON: 1
     volumes:
       - ./server:/home/app/server
       - ./scheduler:/home/app/scheduler
