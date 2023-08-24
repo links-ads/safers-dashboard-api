@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 
 # startup script to determine which service(s) to launch at runtime
 
@@ -8,8 +8,8 @@ figlet -t "safers-dashboard-api"
 
 # ensure "app" user in the container has same ids as local user outside the container
 # (this allows them to both edit files in the mounted volume(s))
-usermod --uid $RUN_AS_UID app
-groupmod --gid $RUN_AS_GID app
+if [ ! -z ${RUN_AS_UID} ]; then usermod --uid $RUN_AS_UID app; fi
+if [ ! -z ${RUN_AS_GID} ]; then groupmod --gid $RUN_AS_GID app; fi
 
 # install dependencies
 cd "${APP_HOME}/server"
@@ -25,11 +25,6 @@ if [[ "${ENABLE_UWSGI}" -eq 1 ]]; then
     echo -e "\n### STARTING UWSGI ###\n"
     mkdir -p /etc/service/uwsgi
     cp ../run-uwsgi.sh /etc/service/uwsgi/run
-else
-    # Disable nginx service (enabled by default in deployment image)
-    if [[ "${SYS_ENV:-unknown}" == "deployment" ]]; then
-      rm -r /etc/service/nginx
-    fi
 fi
 
 if [[ "${ENABLE_RMQ_WORKER}" -eq 1 ]]; then
