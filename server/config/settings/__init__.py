@@ -1,5 +1,4 @@
 import environ
-import glob
 
 from pathlib import Path
 
