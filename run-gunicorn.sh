@@ -9,5 +9,4 @@ setuser app pdm run ./manage.py createcachetable
 setuser app pdm run ./manage.py migrate
 setuser app pdm run ./manage.py collectstatic --no-input --link
 
-exec /sbin/setuser app gunicorn config.wsgi
-
+exec /sbin/setuser app gunicorn --bind :8000 --workers 3 config.wsgi

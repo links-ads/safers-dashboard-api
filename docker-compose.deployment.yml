@@ -4,10 +4,12 @@ services:
 
   safers-deployment-db:
     image: kartoza/postgis:latest
+    env_file:
+      - .env.deployment
     environment:
       POSTGRES_DBNAME: safers_db
-      POSTGRES_USER: safers_user
-      POSTGRES_PASS: safers_pwd
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASS: ${DB_PASSWORD}
       ALLOW_IP_RANGE: 0.0.0.0/0
     networks:
       - safers-deployment
@@ -19,7 +21,7 @@ services:
       context: .
     tty: true
     env_file:
-      - .env
+      - .env.deployment
     environment:
       SYS_ENV: deployment
       ENABLE_GUNICORN: 1
@@ -37,7 +39,7 @@ services:
     build: .
     tty: true
     env_file:
-      - .env
+      - .env.deployment
     environment:
       SYS_ENV: deployment
       ENABLE_RMQ_WORKER: 1
@@ -50,7 +52,7 @@ services:
   safers-deployment-scheduler:
     build: .
     env_file:
-      - .env
+      - .env.deployment
     environment:
       SYS_ENV: deployment
       ENABLE_CRON: 1

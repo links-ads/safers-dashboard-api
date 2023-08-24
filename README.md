@@ -195,6 +195,7 @@ The following command will run a service: `docker-compose up <service-name>`
 Having run the server, if you need to interact with it via the termnial you may use the following command:  `docker-compose exec safers-server pdm run ./manage.py <command>`
 
 The server should be available in the browser at **[http://localhost:8000](http://localhost:8000)**.
+
 ## backups
 
 Periodic backups of the database and the media files are taken by the scheduler.  This utilises the "django-dbbackup" library.  

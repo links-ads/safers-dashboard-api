@@ -24,17 +24,20 @@ ENVIRONMENT = env("DJANGO_ENVIRONMENT")
 ############################################################
 
 if ENVIRONMENT == EnvironmentTypes.DEVELOPMENT:
-    for env_file in glob.glob(str(BASE_DIR / ".env*")):
-        # environment variables for development are stored in files
-        try:
-            env.read_env(env_file)
-        except Exception as e:
-            raise ImproperlyConfigured(f"Unable to read '{env_file}': {e}.")
+    env_file = str(BASE_DIR / ".env")
+    try:
+        env.read_env(env_file)
+    except Exception as e:
+        raise ImproperlyConfigured(f"Unable to read '{env_file}': {e}.")
 
     from config.settings.development import *
 
 elif ENVIRONMENT == EnvironmentTypes.DEPLOYMENT:
-    pass  # variables for deployment are dynamically created on the server
+    env_file = str(BASE_DIR / ".env.deployment")
+    try:
+        env.read_env(env_file)
+    except Exception as e:
+        raise ImproperlyConfigured(f"Unable to read '{env_file}': {e}.")
 
     from config.settings.deployment import *
 
