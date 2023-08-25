@@ -21,6 +21,12 @@ if [[ "${ENABLE_DJANGO}" -eq 1 ]]; then
     cp ../run-django.sh /etc/service/django/run
 fi
 
+if [[ "${ENABLE_GUNICORN}" -eq 1 ]]; then
+    echo -e "\n### STARTING GUNICORN ###\n"
+    mkdir -p /etc/service/gunicorn
+    cp ../run-gunicorn.sh /etc/service/gunicorn/run
+fi
+
 if [[ "${ENABLE_UWSGI}" -eq 1 ]]; then
     echo -e "\n### STARTING UWSGI ###\n"
     mkdir -p /etc/service/uwsgi

@@ -5,7 +5,7 @@ services:
   safers-deployment-db:
     image: kartoza/postgis:latest
     env_file:
-      - .env.deployment
+      - .env
     environment:
       POSTGRES_DBNAME: safers_db
       POSTGRES_USER: ${DB_USER}
@@ -21,7 +21,7 @@ services:
       context: .
     tty: true
     env_file:
-      - .env.deployment
+      - .env
     environment:
       DJANGO_ENVIRONMENT: deployment
       DJANGO_SETTINGS_MODULE: config.settings
@@ -39,7 +39,7 @@ services:
     build: .
     tty: true
     env_file:
-      - .env.deployment
+      - .env
     environment:
       DJANGO_ENVIRONMENT: deployment
       DJANGO_SETTINGS_MODULE: config.settings
@@ -52,7 +52,7 @@ services:
   safers-deployment-scheduler:
     build: .
     env_file:
-      - .env.deployment
+      - .env
     environment:
       DJANGO_ENVIRONMENT: deployment
       DJANGO_SETTINGS_MODULE: config.settings
