@@ -31,6 +31,8 @@ This API provides the backend for the safers-dashboard-app.
 ### database
 
 **PostGIS** database is used for safers-dashboard-api.
+
+Note that the `POSTGRES_USER` and `POSTGRES_PASS` must be set in ".env".  This is a top-level configuration file used for Docker itself (as opposed to the server-level configuration file used by Django). 
 ### auth
 
 **FusionAuth** is used for authentication.  This can be run locally for development (but not much else will work in safers because all the other components need to authenticate against tokens genreated from the _deployed_ authentication server).
@@ -121,7 +123,7 @@ To add a package use `pdm add <package>` or `pdm add -dG <group> <package>`.
 
 ### Local Settings
 
-The Django Server uses various environment variables as settings.  These are all automatically generated for CI and deployment.  But during development, users must provide them in "server/.env".  Here are some examples:
+The Django Server uses various environment variables as settings.  Uers must provide them in "server/.env" or "server/.env.deployment" depending on the environment.  Here are some examples:
 
 * DJANGO_SECRET_KEY
 * DATABASE_URL="postgis://safers_user:safers_pwd@safers-db:5432/safers_db"
