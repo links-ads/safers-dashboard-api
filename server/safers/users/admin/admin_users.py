@@ -7,28 +7,6 @@ from django.utils.translation import gettext_lazy as _
 from safers.core.widgets import DataListWidget, JSONWidget
 from safers.users.models import User, ProfileDirection, Organization, Role
 
-###########
-# filters #
-###########
-
-
-class LocalOrRemoteFilter(admin.SimpleListFilter):
-    title = "authentication type"
-    parameter_name = "_ignore"  # ignoring parameter_name and computing qs manually
-
-    def lookups(self, request, model_admin):
-        return (
-            ("_is_local", _("Local")),
-            ("_is_remote", _("Remote")),
-        )
-
-    def queryset(self, request, qs):
-        value = self.value()
-        if value:
-            qs = qs.filter(**{value: True})
-        return qs
-
-
 #########
 # forms #
 #########
@@ -164,12 +142,10 @@ class UserAdmin(DjangoUserAdmin):
         "is_active",
         "accepted_terms",
         "status",
-        "get_authentication_type_for_list_display",
         "organization_name",
         "role_name",
     )
     list_filter = (
-        LocalOrRemoteFilter,
         "status",
         "organization_name",
         "role_name",
@@ -178,15 +154,6 @@ class UserAdmin(DjangoUserAdmin):
         "id",
         "auth_id",
     ) + DjangoUserAdmin.readonly_fields
-
-    @admin.display(description="AUTHENTICATION TYPE")
-    def get_authentication_type_for_list_display(self, instance):
-        authentication_type = "unknown"
-        if instance.is_local:
-            authentication_type = "local"
-        elif instance.is_remote:
-            authentication_type = "remote"
-        return authentication_type
 
     @admin.display(
         description="Toggles the term acceptance of the selected users"

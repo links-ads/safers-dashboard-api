@@ -20,8 +20,6 @@ from drf_spectacular.utils import extend_schema, extend_schema_field, OpenApiExa
 from safers.core.decorators import swagger_fake
 from safers.core.filters import CaseInsensitiveChoiceFilter, DefaultFilterSetMixin, MultiFieldOrderingFilter
 
-from safers.users.permissions import IsRemote
-
 from safers.alerts.models import Alert, AlertType, AlertSource
 from safers.alerts.serializers import AlertViewSetSerializer
 
@@ -123,7 +121,7 @@ class AlertViewSet(
 
     lookup_field = "id"
     lookup_url_kwarg = "alert_id"
-    permission_classes = [IsAuthenticated, IsRemote]
+    permission_classes = [IsAuthenticated]
     serializer_class = AlertViewSetSerializer
 
     def get_serializer_context(self):

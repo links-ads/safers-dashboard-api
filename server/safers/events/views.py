@@ -21,8 +21,6 @@ from drf_spectacular.utils import extend_schema, extend_schema_field, OpenApiTyp
 from safers.core.decorators import swagger_fake
 from safers.core.filters import DefaultFilterSetMixin, MultiFieldOrderingFilter
 
-from safers.users.permissions import IsRemote
-
 from safers.events.models import Event, EventStatusChoices
 from safers.events.serializers import EventSerializer
 
@@ -134,7 +132,7 @@ class EventViewSet(
 
     lookup_field = "id"
     lookup_url_kwarg = "event_id"
-    permission_classes = [IsAuthenticated, IsRemote]
+    permission_classes = [IsAuthenticated]
     serializer_class = EventSerializer
 
     @swagger_fake(Event.objects.none())

@@ -14,8 +14,6 @@ from drf_spectacular.utils import extend_schema
 
 from safers.core.authentication import TokenAuthentication
 
-from safers.users.permissions import IsRemote
-
 from safers.social.models import Tweet
 from safers.social.serializers import TweetSerializer, TweetViewSerializer
 
@@ -25,7 +23,7 @@ class TweetView(views.APIView):
     Takes events from social media module and returns individual tweets
     """
 
-    permission_classes = [IsAuthenticated, IsRemote]
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
         return {

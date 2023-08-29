@@ -83,21 +83,6 @@ class UserManager(BaseUserManager):
 
         return self.create_user(username, email, password, **extra_fields)
 
-    def get_queryset(self):
-        """
-        Add some calculated fields to the default queryset
-        """
-        qs = super().get_queryset()
-
-        return qs.annotate(
-            _is_local=ExpressionWrapper(
-                Q(auth_id__isnull=True), output_field=models.BooleanField()
-            ),
-            _is_remote=ExpressionWrapper(
-                Q(auth_id__isnull=False), output_field=models.BooleanField()
-            )
-        )
-
 
 class UserQuerySet(models.QuerySet):
     def active(self):
@@ -105,12 +90,6 @@ class UserQuerySet(models.QuerySet):
 
     def inactive(self):
         return self.filter(is_active=False)
-
-    def local(self):
-        return self.filter(_is_local=True)
-
-    def remote(self):
-        return self.filter(_is_remote=True)
 
 
 ##########
@@ -206,14 +185,6 @@ class User(AbstractUser):
     favorite_camera_medias = models.ManyToManyField(
         "cameras.CameraMedia", related_name="favorited_users", blank=True
     )
-
-    @property
-    def is_local(self):
-        return self.auth_id is None
-
-    @property
-    def is_remote(self):
-        return self.auth_id is not None
 
     @property
     def is_citizen(self) -> bool:
