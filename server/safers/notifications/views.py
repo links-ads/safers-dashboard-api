@@ -19,8 +19,6 @@ from drf_spectacular.utils import extend_schema, extend_schema_field, OpenApiRes
 from safers.core.decorators import swagger_fake
 from safers.core.filters import DefaultFilterSetMixin, CaseInsensitiveChoiceFilter
 
-from safers.users.permissions import IsRemote
-
 from safers.notifications.models import Notification, NotificationSourceChoices, NotificationTypeChoices, NotificationScopeChoices, NotificationRestrictionChoices
 from safers.notifications.serializers import NotificationSerializer
 
@@ -137,7 +135,7 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
     lookup_field = "id"
     lookup_url_kwarg = "notification_id"
-    permission_classes = [IsAuthenticated, IsRemote]
+    permission_classes = [IsAuthenticated]
     serializer_class = NotificationSerializer
 
     @swagger_fake(Notification.objects.none())

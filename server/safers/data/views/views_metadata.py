@@ -12,14 +12,12 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiRespon
 
 from safers.core.authentication import TokenAuthentication
 
-from safers.users.permissions import IsRemote
-
 METADATA_FORMAT_TYPES = ["json", "text"]
 
 
 class DataLayerMetadataView(views.APIView):
 
-    permission_classes = [IsAuthenticated, IsRemote]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         parameters=[
