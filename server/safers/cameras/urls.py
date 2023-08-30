@@ -6,6 +6,7 @@ from safers.cameras.views import (
     CameraViewSet,
     CameraMediaViewSet,
     camera_media_sources_view,
+    camera_media_tags_view,
 )
 
 api_router = routers.DefaultRouter()
@@ -18,6 +19,11 @@ api_urlpatterns = [
         "cameras/media/sources",
         camera_media_sources_view,
         name="cameras_media-sources-list"
+    ),
+    path(
+        "cameras/media/tags",
+        camera_media_tags_view,
+        name="cameras_media-tags-list"
     ),
     path("", include(api_router.urls)),
 ]

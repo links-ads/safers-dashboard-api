@@ -44,10 +44,11 @@ class CameraMediaFilterSet(DefaultFilterSetMixin, filters.FilterSet):
         help_text=_("The id of the camera that created the media")
     )
 
-    tags = CharInFilter(
-        # not using MultipleModelChoiceFilter b/c I want to allow a comma-separated list of values
+    tags = filters.ModelMultipleChoiceFilter(
         field_name="tags__name",
-        lookup_expr="in",
+        to_field_name="name",
+        lookup_expr="contains",
+        queryset=CameraMediaTag.objects.all(),
         help_text=_("How this media has been taged (ie: 'smoke','fire')")
     )
 
@@ -192,4 +193,30 @@ def camera_media_sources_view(request):
     cameras = Camera.objects.active()
     return Response(
         cameras.values_list("camera_id", flat=True), status=status.HTTP_200_OK
+    )
+
+
+@extend_schema(
+    request=None,
+    responses={
+        status.HTTP_200_OK:
+            OpenApiResponse(
+                OpenApiTypes.ANY,
+                examples=[OpenApiExample(
+                    "valid response",
+                    ["string"],
+                )]
+            )
+    }
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def camera_media_tags_view(request):
+    """
+    Returns the list of possible tags for CameraMedia objects.
+    """
+    camera_media_tags = CameraMediaTag.objects.all()
+    return Response(
+        camera_media_tags.values_list("name", flat=True),
+        status=status.HTTP_200_OK
     )
