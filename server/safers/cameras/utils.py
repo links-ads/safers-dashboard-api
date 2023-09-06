@@ -124,8 +124,8 @@ def process_messages(message_body, **kwargs):
                             "properties": {},
                             "geometry": json.loads(camera.geometry.json)
                         }],
-                        "media": [camera_media.media.url] if camera_media.media else [camera_media.remote_url],
-                        "thumbnails": [camera_media.thumbnail.url] if camera_media.thumbnail else [],
+                        # "media": [camera_media.media.url] if camera_media.media else [camera_media.remote_url],
+                        # "thumbnails": [camera_media.thumbnail.url] if camera_media.thumbnail else [],
                         "message": message_body,
                     }
                 )

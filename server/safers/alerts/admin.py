@@ -164,8 +164,6 @@ class AlertAdmin(gis_admin.GeoModelAdmin):
         "description",
         "message",
         "information",
-        "media_urls",
-        "thumbnail_urls",
         # "geometry_collection",
         "center",
         "bounding_box",
