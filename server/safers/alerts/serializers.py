@@ -37,9 +37,18 @@ class AlertSerializer(serializers.ModelSerializer):
             "center",
             "bounding_box",
             "media",
+            "thumbnails",
             "message",
             "information",
         )
+        extra_kwargs = {
+            "media": {
+                "source": "media_urls"
+            },
+            "thumbnails": {
+                "source": "thumbnail_urls"
+            }
+        }
 
     geometry = AlertGeometrySerializer(
         many=True, source="geometries", required=False
@@ -101,10 +110,13 @@ class AlertViewSetSerializer(AlertSerializer):
             "center",
             "bounding_box",
             "media",
+            "thumbnails",
             "information",
             "favorite",
         )
         extra_kwargs = {
+            "media": {"source": "media_urls"},
+            "thumbnails": {"source": "thumbnail_urls"},
             "timestamp": {"read_only": True},
             "status": {"read_only": True},
             "source": {"read_only": True},

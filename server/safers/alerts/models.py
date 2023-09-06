@@ -164,7 +164,10 @@ class Alert(models.Model):
     )
     scope = models.CharField(max_length=128, blank=True, null=True)
 
-    media = ArrayField(
+    media_urls = ArrayField(
+        models.URLField(max_length=512), blank=True, default=list
+    )
+    thumbnail_urls = ArrayField(
         models.URLField(max_length=512), blank=True, default=list
     )
 
