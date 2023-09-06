@@ -164,12 +164,12 @@ class Alert(models.Model):
     )
     scope = models.CharField(max_length=128, blank=True, null=True)
 
-    media_urls = ArrayField(
-        models.URLField(max_length=512), blank=True, default=list
-    )
-    thumbnail_urls = ArrayField(
-        models.URLField(max_length=512), blank=True, default=list
-    )
+    # media_urls = ArrayField(
+    #     models.URLField(max_length=512), blank=True, default=list
+    # )
+    # thumbnail_urls = ArrayField(
+    #     models.URLField(max_length=512), blank=True, default=list
+    # )
 
     category = models.CharField(max_length=128, blank=True, null=True)
     event = models.CharField(max_length=128, blank=True, null=True)
@@ -196,6 +196,18 @@ class Alert(models.Model):
     country = models.ForeignKey(
         Country, blank=True, null=True, on_delete=models.SET_NULL
     )
+
+    @property
+    def media_urls(self):
+        """
+        returns a list of dictionaries: [{"image": <image_url>, "thumbnail": <thumbnail_url}, ...]
+        """
+        media_urls = []
+        for camera_media in self.camera_media.all():
+            image_url = camera_media.media.url if camera_media.media else camera_media.remote_url
+            thumbnail_url = camera_media.thumbnail.url if camera_media.thumbnail else None
+            media_urls.append({"image": image_url, "thumbnail": thumbnail_url})
+        return media_urls
 
     @property
     def title(self) -> str:

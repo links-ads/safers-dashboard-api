@@ -141,8 +141,11 @@ class AlertViewSet(
         user = self.request.user
         favorite_alert_ids = user.favorite_alerts.values_list("id", flat=True)
 
-        qs = Alert.objects.all().select_related("country"
-                                               ).prefetch_related("geometries")
+        qs = Alert.objects.all().select_related("country").prefetch_related(
+            "geometries",
+            "camera_media",
+        )
+
         qs = qs.annotate(
             favorite=ExpressionWrapper(
                 Q(id__in=favorite_alert_ids),
