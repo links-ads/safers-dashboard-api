@@ -50,6 +50,10 @@ PUBLIC_MEDIA_DEFAULT_ACL = ""
 PRIVATE_MEDIA_LOCATION = ""
 PRIVATE_MEDIA_DEFAULT_ACL = ""
 
+AZURE_ACCOUNT_NAME = ""
+AZURE_ACCOUNT_KEY = ""
+AZURE_CONTAINER = ""
+
 ##################
 # Security, etc. #
 ##################

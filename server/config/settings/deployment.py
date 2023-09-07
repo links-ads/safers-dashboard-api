@@ -26,9 +26,6 @@ INSTALLED_APPS += []
 # Static & Media Files #
 ########################
 
-# Using Bucketeer to allow Heroku to manage storage in AWS S3.  PublicMediaS3Storage is
-# used by default; I can also specify PrivateMediaS3Storage on a field-by-field basis.
-
 STORAGES = {
     "default": {
         "BACKEND": "safers.core.storage.PublicMediaS3Storage"
@@ -37,6 +34,8 @@ STORAGES = {
         "BACKEND": "safers.core.storage.StaticS3Storage"
     },
 }
+
+# S3 (bucketeer) storage settings...
 
 AWS_ACCESS_KEY_ID = env("BUCKETEER_AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = env("BUCKETEER_AWS_SECRET_ACCESS_KEY")
@@ -60,6 +59,17 @@ PUBLIC_MEDIA_LOCATION = 'media/public'
 PRIVATE_MEDIA_DEFAULT_ACL = 'private'
 PRIVATE_MEDIA_LOCATION = 'media/private'
 #PRIVATE_MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PRIVATE_MEDIA_LOCATION}/'
+
+# Azure settings...
+
+AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
+AZURE_ACCOUNT_KEY = env("AZURE_ACCOUNT_KEY")
+AZURE_CONTAINER = env("AZURE_CONTAINER")
+
+AZURE_SSL = True
+AZURE_UPLOAD_MAX_CONN = 2
+AZURE_CONNECTION_TIMEOUT_SECS = 20
+AZURE_URL_EXPIRATION_SECS = None
 
 ##################
 # Security, etc. #
@@ -133,6 +143,51 @@ if SENTRY_DSN:
         # django.contrib.auth) you may enable sending PII data.
         send_default_pii=False
     )
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {},
+    "formatters": {
+        "standard": {
+            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+        },
+        "colored": {
+            "()": "safers.core.logging.ColoredFormatter",
+            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "filters": [],
+            "formatter": "colored",
+        },
+        "mail_admins": {
+            "class": "django.utils.log.AdminEmailHandler",
+            "filters": [],
+            "level": "ERROR",
+        },
+    },
+    "loggers": {
+        # change the level of a few particularly verbose loggers
+        "django.db.backends": {
+            "level": "WARNING"
+        },
+        "django.utils.autoreload": {
+            "level": "WARNING"
+        },
+        "faker": {
+            "level": "WARNING"
+        },
+    },
+    "root": {
+        "handlers": [
+            "console",  # "mail_admins",  # don't bother w/ AdminEmailHandler
+        ],
+        "level": "DEBUG",
+    },
+}
 
 #############
 # Profiling #
