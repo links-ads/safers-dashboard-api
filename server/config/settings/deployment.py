@@ -12,7 +12,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 env = environ.Env()
 
-DEBUG = env("DJANGO_DEBUG", default="false") == "true"
+DEBUG = env("DJANGO_DEBUG", default="true") == "true"
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 SECRET_KEY_FALLBACKS = env("DJANGO_SECRET_KEY_FALLBACKS", default=[])
 
@@ -75,7 +75,7 @@ AZURE_URL_EXPIRATION_SECS = None
 # Security, etc. #
 ##################
 
-# ALLOWED_HOSTS = ?
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CORS_ORIGIN_ALLOW_ALL = True
 
